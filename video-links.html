@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Link Extractor</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#0a0a0f;--card:#1a1a2e;--input:#16162a;
+            --border:rgba(255,255,255,.06);--text:#f0f0f5;--text2:#8888aa;--muted:#555570;
+            --accent:#ff3860;--grad:linear-gradient(135deg,#ff3860,#7c3aed);
+            --green:#10b981;--r:16px;--r2:10px;
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+        .bg-g{position:fixed;inset:0;z-index:0;pointer-events:none}
+        .bg-g::before{content:'';position:absolute;width:600px;height:600px;top:-200px;right:-100px;background:radial-gradient(circle,rgba(255,56,96,.08) 0%,transparent 70%);animation:fo 15s ease-in-out infinite}
+        .bg-g::after{content:'';position:absolute;width:500px;height:500px;bottom:-150px;left:-100px;background:radial-gradient(circle,rgba(124,58,237,.08) 0%,transparent 70%);animation:fo 18s ease-in-out infinite reverse}
+        @keyframes fo{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-30px) scale(1.1)}66%{transform:translate(-30px,50px) scale(.9)}}
+        .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:40px 24px 80px}
+        .hdr{text-align:center;margin-bottom:48px}
+        .logo-i{width:56px;height:56px;background:var(--grad);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 0 20px rgba(255,56,96,.2);animation:pulse 3s ease-in-out infinite;margin-bottom:16px}
+        @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(255,56,96,.2)}50%{box-shadow:0 0 40px rgba(255,56,96,.4)}}
+        h1{font-size:2.5rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em}
+        .sub{font-size:1.05rem;color:var(--text2);margin-top:8px}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:32px;margin-bottom:28px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+        label{display:block;font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+        .hint{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.8rem}
+        .iw{position:relative}
+        .iw .ic{position:absolute;left:16px;top:16px;font-size:18px;color:var(--muted);pointer-events:none}
+        .iw .ic-mid{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--muted);pointer-events:none}
+        input[type="text"],input[type="password"]{width:100%;padding:14px 16px 14px 48px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;transition:all .3s;outline:none}
+        input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.3)}
+        input::placeholder{color:var(--muted)}
+        textarea.ch-input{width:100%;min-height:120px;padding:14px 16px 14px 48px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;transition:all .3s;outline:none;resize:vertical;line-height:1.8}
+        textarea.ch-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.3)}
+        textarea.ch-input::placeholder{color:var(--muted)}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        @media(max-width:640px){.row{grid-template-columns:1fr}}
+        select{width:100%;padding:10px 14px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;cursor:pointer}
+        select:focus{border-color:var(--accent)}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border:none;border-radius:var(--r2);font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .3s}
+        .btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(255,56,96,.3)}
+        .btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,56,96,.4)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-g{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 4px 20px rgba(16,185,129,.3)}
+        .btn-g:hover{transform:translateY(-2px)}
+        .btn-g:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-s{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+        .btn-s:hover{background:rgba(255,255,255,.1)}
+        .btn-o{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;box-shadow:0 4px 20px rgba(245,158,11,.3)}
+        .btn-o:hover{transform:translateY(-2px)}
+        .acts{display:flex;gap:12px;flex-wrap:wrap}
+
+        /* Tabs */
+        .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--input);border-radius:var(--r2);padding:4px}
+        .tab{flex:1;padding:12px;text-align:center;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text2);transition:all .3s;border:none;background:none;font-family:'Inter',sans-serif}
+        .tab.active{background:var(--grad);color:#fff;box-shadow:0 4px 15px rgba(255,56,96,.3)}
+        .tab:hover:not(.active){background:rgba(255,255,255,.05)}
+        .tab-content{display:none}
+        .tab-content.active{display:block}
+
+        .mode-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.7rem;font-weight:700;text-transform:uppercase;margin-left:8px}
+        .mode-badge.api{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+        .mode-badge.free{background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3)}
+
+        /* Channel cards progress */
+        .ch-progress{display:none;animation:su .4s ease}
+        .ch-progress.v{display:block}
+        @keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+        .ch-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r2);padding:16px 20px;margin-bottom:12px;transition:all .3s}
+        .ch-card.active{border-color:rgba(255,56,96,.3);box-shadow:0 0 20px rgba(255,56,96,.1)}
+        .ch-card.done{border-color:rgba(16,185,129,.3)}
+        .ch-card.error{border-color:rgba(255,56,96,.5);background:rgba(255,56,96,.03)}
+        .ch-card-header{display:flex;align-items:center;gap:14px}
+        .ch-card-av{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0}
+        .ch-card-info{flex:1;min-width:0}
+        .ch-card-name{font-size:.95rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .ch-card-url{font-size:.75rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+        .ch-card-stats{display:flex;gap:12px;font-size:.78rem;color:var(--text2);margin-top:4px}
+        .ch-card-stats strong{color:var(--text)}
+        .ch-card-status{font-size:.78rem;font-weight:600;white-space:nowrap}
+        .ch-card-status.pending{color:var(--muted)}
+        .ch-card-status.working{color:var(--accent)}
+        .ch-card-status.done{color:var(--green)}
+        .ch-card-status.error{color:#ef4444}
+        .ch-card-bar{width:100%;height:4px;background:var(--input);border-radius:2px;margin-top:10px;overflow:hidden}
+        .ch-card-fill{height:100%;width:0%;background:var(--grad);border-radius:2px;transition:width .3s}
+        .ch-card.done .ch-card-fill{background:linear-gradient(135deg,#10b981,#059669)}
+
+        /* Progress */
+        .prog{display:none;animation:su .4s ease}
+        .prog.v{display:block}
+        .prog-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+        .prog-t{font-size:.9rem;font-weight:500;color:var(--text2)}
+        .prog-p{font-size:1.1rem;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .prog-bar{width:100%;height:8px;background:var(--input);border-radius:4px;overflow:hidden}
+        .prog-fill{height:100%;width:0%;background:var(--grad);border-radius:4px;transition:width .3s}
+
+        /* Results section */
+        .res-sec{display:none;animation:su .5s ease}
+        .res-sec.v{display:block}
+        .res-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px}
+        .res-header h3{font-size:1.2rem;font-weight:700}
+        .res-stats{display:flex;gap:16px;flex-wrap:wrap}
+        .stat-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:20px;font-size:.82rem;color:var(--text2)}
+        .stat-pill strong{color:var(--text);font-weight:700}
+        .stat-pill.accent strong{color:var(--accent)}
+
+        /* Links output */
+        .links-box{position:relative;margin-top:16px}
+        .links-textarea{width:100%;min-height:400px;max-height:70vh;padding:20px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--green);font-family:'JetBrains Mono','Fira Code','Consolas',monospace;font-size:.85rem;line-height:1.8;resize:vertical;outline:none;transition:border-color .3s}
+        .links-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.15)}
+        .links-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+        .copy-hint{position:absolute;top:12px;right:12px;padding:4px 10px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:6px;font-size:.72rem;color:var(--green);font-weight:600;pointer-events:none;opacity:0;transition:opacity .3s}
+        .copy-hint.show{opacity:1}
+
+        /* Chunk pagination */
+        .chunk-nav{display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+        .chunk-btn{padding:8px 16px;border:1.5px solid var(--border);border-radius:8px;background:var(--input);color:var(--text2);font-family:'Inter',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap}
+        .chunk-btn:hover{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.15)}
+        .chunk-btn.active{background:var(--grad);color:#fff;border-color:transparent;box-shadow:0 4px 15px rgba(255,56,96,.3)}
+        .chunk-btn.copied{background:linear-gradient(135deg,#10b981,#059669);color:#fff;border-color:transparent;box-shadow:0 4px 15px rgba(16,185,129,.3)}
+        .chunk-info{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:12px 16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap;gap:8px}
+        .chunk-label{font-size:.88rem;font-weight:600;color:var(--text)}
+        .chunk-range{font-size:.8rem;color:var(--text2)}
+        .chunk-copy-big{padding:12px 28px;font-size:1rem}
+        .chunk-all-info{text-align:center;padding:10px;color:var(--text2);font-size:.82rem;margin-bottom:12px;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);border-radius:8px}
+
+        /* Toast */
+        .toast{position:fixed;bottom:30px;right:30px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;gap:10px;font-size:.9rem;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);max-width:420px}
+        .toast.show{transform:translateY(0);opacity:1}
+        .toast.error{border-color:rgba(255,56,96,.3)}
+        .toast.success{border-color:rgba(16,185,129,.3)}
+        .spin{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+
+        /* API Help */
+        .api-help{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:var(--r2);padding:16px 20px;margin-top:16px;font-size:.83rem;line-height:1.7;color:var(--text2)}
+        .api-help summary{cursor:pointer;color:#a78bfa;font-weight:600;font-size:.85rem}
+        .api-help ol{margin-top:10px;padding-left:20px}
+        .api-help a{color:var(--accent);text-decoration:none}
+        .api-help a:hover{text-decoration:underline}
+        .api-help .step-img{margin:8px 0;padding:8px 12px;background:rgba(255,255,255,.04);border-radius:6px;font-size:.8rem;color:var(--green)}
+
+        .ft{text-align:center;color:var(--muted);font-size:.8rem;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+        @media(max-width:768px){h1{font-size:1.8rem}.card{padding:20px}}
+
+        /* Video list table */
+        .video-table{width:100%;border-collapse:collapse;margin-top:16px}
+        .video-table th{text-align:left;padding:10px 14px;font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card);z-index:1}
+        .video-table td{padding:10px 14px;font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.03);transition:background .2s}
+        .video-table tr:hover td{background:rgba(255,255,255,.03)}
+        .video-table .vid-idx{color:var(--muted);font-weight:500;width:40px;text-align:center}
+        .video-table .vid-ch{color:#a78bfa;font-weight:600;font-size:.78rem;white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+        .video-table .vid-title{color:var(--text);font-weight:500;max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+        .video-table .vid-link{color:var(--green);font-family:'JetBrains Mono','Fira Code','Consolas',monospace;font-size:.78rem}
+        .video-table .vid-link a{color:var(--green);text-decoration:none;transition:color .2s}
+        .video-table .vid-link a:hover{color:#34d399;text-decoration:underline}
+        .video-table .vid-dur{color:var(--text2);font-size:.78rem;white-space:nowrap}
+        .table-wrap{max-height:60vh;overflow-y:auto;border-radius:var(--r2);border:1px solid var(--border)}
+        .table-wrap::-webkit-scrollbar{width:6px}
+        .table-wrap::-webkit-scrollbar-track{background:var(--input)}
+        .table-wrap::-webkit-scrollbar-thumb{background:var(--muted);border-radius:3px}
+        .table-wrap::-webkit-scrollbar-thumb:hover{background:var(--text2)}
+
+        /* Channel group separator in table */
+        .ch-group-row td{background:rgba(124,58,237,.08)!important;padding:8px 14px;font-weight:700;font-size:.82rem;color:#a78bfa;border-bottom:2px solid rgba(124,58,237,.2)}
+
+        /* View toggle */
+        .view-toggle{display:flex;gap:4px;background:var(--input);border-radius:8px;padding:3px}
+        .view-btn{padding:6px 14px;border:none;background:none;color:var(--text2);font-family:'Inter',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;border-radius:6px;transition:all .2s}
+        .view-btn.active{background:rgba(255,255,255,.1);color:var(--text)}
+        .view-btn:hover:not(.active){background:rgba(255,255,255,.04)}
+
+        .ch-count-badge{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:2px 10px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.3);border-radius:12px;font-size:.72rem;font-weight:700;color:#a78bfa;vertical-align:middle}
+    </style>
+</head>
+<body>
+<div class="bg-g"></div>
+<div class="wrap">
+    <header class="hdr">
+        <div class="logo-i">🔗</div>
+        <h1>YouTube Video Link Extractor</h1>
+        <p class="sub">Lấy toàn bộ link video từ nhiều kênh YouTube cùng lúc (không bao gồm Shorts)</p>
+        <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;flex-wrap:wrap;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="index.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">📸 Thumbnail</a>
+                    <a href="yt-downloader.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">⬇️ Tải Video</a>
+                    <a href="trending.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🔥 Xu hướng</a>
+                    <a href="channel-analyzer.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🧬 DNA</a>
+                    <a href="thumbnail-analyzer.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎨 AI Ảnh</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="music-check.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎵 Nhạc</a>
+                    <a href="audio-separator.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎚️ Tách nhạc</a>
+                    <a href="srt-maker.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">📝 SRT</a>
+                    <a href="suno-prompt.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎵 Suno</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="tiktok.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎬 TikTok</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="card">
+        <!-- Mode tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('api')">🔑 YouTube API <span class="mode-badge api">Nhanh</span></button>
+            <button class="tab" onclick="switchTab('free')">🌐 Không cần Key <span class="mode-badge free">Miễn phí</span></button>
+        </div>
+
+        <!-- API Key tab -->
+        <div class="tab-content active" id="tab-api">
+            <div style="margin-bottom:16px">
+                <label>YouTube API Key <span class="hint">(miễn phí từ Google)</span></label>
+                <div class="iw">
+                    <span class="ic-mid">🔑</span>
+                    <input type="password" id="apiKeyInput" placeholder="Dán API Key vào đây..." autocomplete="off">
+                </div>
+            </div>
+            <details class="api-help">
+                <summary>📖 Hướng dẫn lấy API Key (5 phút)</summary>
+                <ol>
+                    <li>Truy cập <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> và đăng nhập</li>
+                    <li>Click <strong>"Select a project"</strong> ở góc trên → <strong>"New Project"</strong> → đặt tên bất kỳ → <strong>Create</strong></li>
+                    <li>Ở thanh tìm kiếm trên cùng, gõ <strong>"YouTube Data API v3"</strong> → click vào kết quả → <strong>Enable</strong></li>
+                    <li>Sau khi bật xong, click <strong>"Create Credentials"</strong> (hoặc vào menu <strong>APIs & Services → Credentials</strong>)</li>
+                    <li>Chọn <strong>"API Key"</strong> → Key sẽ hiện ra → <strong>Copy</strong> và dán vào ô trên</li>
+                </ol>
+                <div class="step-img">💡 Mỗi ngày bạn được 10,000 đơn vị API miễn phí (đủ tải ~500+ video). Key được lưu tự động trong trình duyệt.</div>
+            </details>
+        </div>
+
+        <!-- Free tab (Invidious) -->
+        <div class="tab-content" id="tab-free">
+            <div style="padding:12px;background:rgba(124,58,237,.06);border-radius:8px;color:var(--text2);font-size:.85rem;line-height:1.6">
+                ℹ️ Chế độ miễn phí sử dụng server Invidious. Có thể chậm hơn hoặc không khả dụng tùy thời điểm.<br>
+                👉 Khuyên dùng chế độ <strong>YouTube API</strong> để nhanh và ổn định hơn.
+            </div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+
+        <!-- Multi-channel input -->
+        <div style="margin-bottom:20px">
+            <label>URL hoặc Handle kênh YouTube <span class="hint">(dán nhiều kênh, mỗi kênh 1 dòng hoặc cách nhau bằng dấu phẩy)</span></label>
+            <div class="iw">
+                <span class="ic">🔗</span>
+                <textarea class="ch-input" id="channelInput" placeholder="Ví dụ:&#10;https://youtube.com/@MrBeast&#10;https://youtube.com/@PewDiePie&#10;@Markiplier&#10;&#10;Hoặc: @MrBeast, @PewDiePie, @Markiplier" rows="4"></textarea>
+            </div>
+        </div>
+        <div style="margin-bottom:20px">
+            <label>Số lượng video tối đa mỗi kênh <span class="hint">(để trống hoặc 0 = lấy tất cả)</span></label>
+            <div class="iw">
+                <span class="ic-mid">📊</span>
+                <input type="text" id="maxVideosInput" value="0" placeholder="0 = Lấy tất cả video">
+            </div>
+        </div>
+        <div class="acts">
+            <button class="btn btn-p" id="fetchBtn" onclick="startFetching()">
+                <span>🚀</span> Lấy danh sách link
+            </button>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
+
+        <!-- Paste existing links to split -->
+        <div style="margin-bottom:12px">
+            <label>✂️ Hoặc: Dán link đã có để tách <span class="hint">(không cần chạy lại API — dán link cũ vào đây)</span></label>
+            <textarea class="ch-input" id="pasteInput" placeholder="Dán toàn bộ link video vào đây (mỗi link 1 dòng)...&#10;&#10;https://www.youtube.com/watch?v=abc123&#10;https://www.youtube.com/watch?v=def456&#10;..." rows="4" style="min-height:80px"></textarea>
+        </div>
+        <div class="acts">
+            <button class="btn btn-o" onclick="splitPastedLinks()">
+                <span>✂️</span> Tách link ngay
+            </button>
+        </div>
+    </section>
+
+    <!-- Channel progress cards -->
+    <section class="card ch-progress" id="chProgressSec">
+        <h3 style="margin-bottom:16px;font-size:1rem">📡 Tiến trình xử lý kênh</h3>
+        <div id="chCardList"></div>
+    </section>
+
+    <!-- Overall progress -->
+    <section class="card prog" id="progSec">
+        <div class="prog-h">
+            <span class="prog-t" id="progT">Đang tải...</span>
+            <span class="prog-p" id="progP">0%</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="progF"></div></div>
+    </section>
+
+    <!-- Results -->
+    <section class="card res-sec" id="resSec">
+        <div class="res-header">
+            <div>
+                <h3>🔗 Danh sách link video (<span id="totCnt">0</span>) <span class="ch-count-badge" id="chCountBadge">📺 0 kênh</span></h3>
+                <div class="res-stats" style="margin-top:10px">
+                    <span class="stat-pill"><span>📺</span> Kênh: <strong id="statChannels">0</strong></span>
+                    <span class="stat-pill"><span>📹</span> Video: <strong id="statVids">0</strong></span>
+                    <span class="stat-pill"><span>🚫</span> Shorts bỏ qua: <strong id="statShorts">0</strong></span>
+                    <span class="stat-pill accent"><span>📋</span> Tổng link: <strong id="statLinks">0</strong></span>
+                </div>
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="setView('list')" id="viewListBtn">📋 Danh sách</button>
+                <button class="view-btn" onclick="setView('table')" id="viewTableBtn">📊 Bảng</button>
+            </div>
+        </div>
+
+        <!-- List view -->
+        <div id="listView">
+            <div class="chunk-all-info" id="chunkAllInfo" style="display:none">
+                ⚠️ Google Ads giới hạn <strong>5000 vị trí/lần</strong>. Đã tách thành <strong><span id="chunkCount">0</span> phần</strong>, mỗi phần <strong>4500 link</strong>. Copy từng phần dán vào Ads.
+            </div>
+            <div class="chunk-nav" id="chunkNav"></div>
+            <div class="chunk-info" id="chunkInfo">
+                <span class="chunk-label" id="chunkLabel">Tất cả link</span>
+                <span class="chunk-range" id="chunkRange"></span>
+            </div>
+            <div class="links-box">
+                <span class="copy-hint" id="copyHint">✅ Đã copy!</span>
+                <textarea class="links-textarea" id="linksOutput" readonly spellcheck="false"></textarea>
+            </div>
+            <div class="links-actions">
+                <button class="btn btn-g chunk-copy-big" id="copyChunkBtn" onclick="copyCurrentChunk()"><span>📋</span> Copy phần này (4500 link)</button>
+                <button class="btn btn-o" onclick="exportTxt()"><span>💾</span> Tải file .txt</button>
+                <button class="btn btn-s" onclick="exportCsv()"><span>📊</span> Tải file .csv</button>
+            </div>
+        </div>
+
+        <!-- Table view -->
+        <div id="tableView" style="display:none">
+            <div class="links-actions" style="margin-bottom:16px">
+                <button class="btn btn-g" onclick="copyAll()"><span>📋</span> Copy tất cả link</button>
+                <button class="btn btn-o" onclick="exportTxt()"><span>💾</span> Tải file .txt</button>
+                <button class="btn btn-s" onclick="exportCsv()"><span>📊</span> Tải file .csv</button>
+            </div>
+            <div class="table-wrap">
+                <table class="video-table" id="videoTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Kênh</th>
+                            <th>Tiêu đề</th>
+                            <th>Link</th>
+                            <th>Thời lượng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <footer class="ft">YouTube Video Link Extractor — Lấy link video từ nhiều kênh, không bao gồm Shorts</footer>
+</div>
+
+<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+
+<script>
+// ===== STATE =====
+let mode = 'api';
+let channelResults = []; // Array of { channelName, channelUrl, channelId, avatar, subs, videos:[], shortsSkipped }
+let loading = false;
+let currentView = 'list';
+
+// CORS proxies for Invidious mode
+const CORS_PROXIES = [
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+];
+let activeProxy = null;
+
+const INSTANCES = [
+    'https://inv.nadeko.net',
+    'https://invidious.nerdvpn.de',
+    'https://iv.datura.network',
+    'https://invidious.privacyredirect.com',
+    'https://invidious.jing.rocks',
+    'https://invidious.protokolla.fi',
+    'https://yt.cdaut.de',
+];
+let workingInst = null;
+
+// Load saved API key
+const savedKey = localStorage.getItem('yt_api_key');
+if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+
+// ===== PARSE MULTI-CHANNEL INPUT =====
+function parseChannelInputs(text) {
+    // Split by newlines, then by commas, trim and filter empty
+    return text
+        .split(/[\n\r]+/)
+        .flatMap(line => line.split(','))
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+}
+
+// ===== TABS =====
+function switchTab(m) {
+    mode = m;
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i === (m==='api'?0:1)));
+    document.getElementById('tab-api').classList.toggle('active', m==='api');
+    document.getElementById('tab-free').classList.toggle('active', m==='free');
+}
+
+// ===== VIEW TOGGLE =====
+function setView(v) {
+    currentView = v;
+    document.getElementById('viewListBtn').classList.toggle('active', v==='list');
+    document.getElementById('viewTableBtn').classList.toggle('active', v==='table');
+    document.getElementById('listView').style.display = v==='list' ? 'block' : 'none';
+    document.getElementById('tableView').style.display = v==='table' ? 'block' : 'none';
+}
+
+// ===== UTILS =====
+function toast(msg, type='success') {
+    const t = document.getElementById('toast');
+    document.getElementById('tI').textContent = type==='success'?'✅':type==='error'?'❌':'ℹ️';
+    document.getElementById('tM').textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 4000);
+}
+function fmtNum(n) { if(!n) return '0'; n=parseInt(n); if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(1)+'K'; return n+'' }
+function prog(text, pct) { document.getElementById('progT').textContent=text; document.getElementById('progP').textContent=Math.round(pct)+'%'; document.getElementById('progF').style.width=pct+'%' }
+function fmtDur(s) { if(!s) return ''; const h=Math.floor(s/3600), m=Math.floor(s%3600/60), sec=s%60; return h>0 ? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}` }
+function esc(t) { const d=document.createElement('div'); d.textContent=t; return d.innerHTML }
+
+// ===== CHANNEL PROGRESS CARDS =====
+function createChannelCards(inputs) {
+    const container = document.getElementById('chCardList');
+    container.innerHTML = '';
+    inputs.forEach((input, idx) => {
+        const card = document.createElement('div');
+        card.className = 'ch-card';
+        card.id = `ch-card-${idx}`;
+        card.innerHTML = `
+            <div class="ch-card-header">
+                <img class="ch-card-av" id="ch-av-${idx}" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48'><rect fill='%2316162a' width='48' height='48' rx='24'/><text x='24' y='30' text-anchor='middle' fill='%23555570' font-size='18'>${idx+1}</text></svg>" alt="">
+                <div class="ch-card-info">
+                    <div class="ch-card-name" id="ch-name-${idx}">${esc(input)}</div>
+                    <div class="ch-card-url" id="ch-url-${idx}">${esc(input)}</div>
+                    <div class="ch-card-stats" id="ch-stats-${idx}"></div>
+                </div>
+                <div class="ch-card-status pending" id="ch-status-${idx}">⏳ Đợi</div>
+            </div>
+            <div class="ch-card-bar"><div class="ch-card-fill" id="ch-fill-${idx}"></div></div>
+        `;
+        container.appendChild(card);
+    });
+    document.getElementById('chProgressSec').classList.add('v');
+}
+
+function updateCardStatus(idx, status, text) {
+    const card = document.getElementById(`ch-card-${idx}`);
+    const statusEl = document.getElementById(`ch-status-${idx}`);
+    card.className = `ch-card ${status}`;
+    statusEl.className = `ch-card-status ${status}`;
+    const icons = { pending:'⏳', working:'⚡', done:'✅', error:'❌' };
+    statusEl.textContent = `${icons[status]||''} ${text}`;
+}
+
+function updateCardProgress(idx, pct) {
+    document.getElementById(`ch-fill-${idx}`).style.width = pct + '%';
+}
+
+function updateCardInfo(idx, name, url, avatar, subs, vidCount) {
+    document.getElementById(`ch-name-${idx}`).textContent = name;
+    document.getElementById(`ch-url-${idx}`).textContent = url;
+    if (avatar) document.getElementById(`ch-av-${idx}`).src = avatar;
+    if (subs || vidCount) {
+        document.getElementById(`ch-stats-${idx}`).innerHTML =
+            `<span><strong>${fmtNum(subs)}</strong> subs</span><span><strong>${fmtNum(vidCount)}</strong> videos</span>`;
+    }
+}
+
+// ===== YOUTUBE DATA API v3 =====
+async function ytApi(endpoint) {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    if (!key) throw new Error('Chưa nhập API Key!');
+    const url = `https://www.googleapis.com/youtube/v3/${endpoint}&key=${key}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data;
+}
+
+async function resolveChannelYT(input) {
+    input = input.trim();
+    if (input.startsWith('http')) {
+        try {
+            const u = new URL(input);
+            const p = u.pathname;
+            const cm = p.match(/\/channel\/(UC[\w-]+)/);
+            if (cm) return cm[1];
+            const hm = p.match(/\/@([\w.-]+)/);
+            if (hm) {
+                const d = await ytApi(`channels?part=id&forHandle=${encodeURIComponent(hm[1])}`);
+                if (d.items?.length) return d.items[0].id;
+            }
+            const um = p.match(/\/(c|user)\/([\w.-]+)/);
+            if (um) {
+                const d = await ytApi(`channels?part=id&forUsername=${encodeURIComponent(um[2])}`);
+                if (d.items?.length) return d.items[0].id;
+            }
+        } catch(e) { if (e.message.includes('API')) throw e; }
+    }
+    if (input.startsWith('@')) input = input.slice(1);
+    if (/^UC[\w-]{22}$/.test(input)) return input;
+    try {
+        const d = await ytApi(`channels?part=id&forHandle=${encodeURIComponent(input)}`);
+        if (d.items?.length) return d.items[0].id;
+    } catch(e) {}
+    const s = await ytApi(`search?part=snippet&type=channel&q=${encodeURIComponent(input)}&maxResults=1`);
+    if (s.items?.length) return s.items[0].snippet.channelId;
+    throw new Error('Không tìm thấy kênh: ' + input);
+}
+
+function parseDuration(iso) {
+    const m = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    if (!m) return 0;
+    return (parseInt(m[1]||0))*3600 + (parseInt(m[2]||0))*60 + (parseInt(m[3]||0));
+}
+
+async function getVideoDurations(videoIds) {
+    const durations = {};
+    for (let i = 0; i < videoIds.length; i += 50) {
+        const batch = videoIds.slice(i, i+50);
+        const data = await ytApi(`videos?part=contentDetails&id=${batch.join(',')}`);
+        if (data.items) {
+            for (const item of data.items) {
+                durations[item.id] = parseDuration(item.contentDetails.duration);
+            }
+        }
+    }
+    return durations;
+}
+
+// Fetch single channel via YT API - returns { channelName, channelUrl, channelId, avatar, subs, videos:[], shortsSkipped }
+async function fetchOneChannelYTApi(inputRaw, cardIdx, maxVids) {
+    const input = inputRaw.trim();
+    updateCardStatus(cardIdx, 'working', 'Đang tìm kênh...');
+    updateCardProgress(cardIdx, 10);
+
+    const channelId = await resolveChannelYT(input);
+    updateCardProgress(cardIdx, 20);
+
+    const info = await ytApi(`channels?part=snippet,statistics,contentDetails&id=${channelId}`);
+    if (!info.items?.length) throw new Error('Không tìm thấy kênh');
+    const ch = info.items[0];
+    const channelName = ch.snippet.title;
+    const channelUrl = `https://youtube.com/channel/${channelId}`;
+    const avatar = ch.snippet.thumbnails?.medium?.url || '';
+    const subs = ch.statistics.subscriberCount;
+
+    updateCardInfo(cardIdx, channelName, channelUrl, avatar, subs, ch.statistics.videoCount);
+    updateCardStatus(cardIdx, 'working', 'Tải video...');
+    updateCardProgress(cardIdx, 30);
+
+    const uploadsId = ch.contentDetails.relatedPlaylists.uploads;
+    const videos = [];
+    let shortsSkipped = 0;
+    let nextPage = '';
+    let page = 0;
+
+    while (videos.length < maxVids) {
+        let url = `playlistItems?part=snippet&playlistId=${uploadsId}&maxResults=50`;
+        if (nextPage) url += `&pageToken=${nextPage}`;
+
+        const data = await ytApi(url);
+        if (!data.items?.length) break;
+
+        const batchVideos = data.items.map(item => ({
+            videoId: item.snippet.resourceId.videoId,
+            title: item.snippet.title,
+            publishedAt: item.snippet.publishedAt,
+            published: new Date(item.snippet.publishedAt).getTime() / 1000,
+        }));
+        const ids = batchVideos.map(v => v.videoId);
+
+        updateCardStatus(cardIdx, 'working', `Kiểm tra ${videos.length} video...`);
+        const durations = await getVideoDurations(ids);
+
+        for (const v of batchVideos) {
+            const dur = durations[v.videoId] || 0;
+            if (dur > 60) {
+                v.lengthSeconds = dur;
+                videos.push(v);
+                if (videos.length >= maxVids) break;
+            } else {
+                shortsSkipped++;
+            }
+        }
+
+        page++;
+        const pct = 30 + Math.min((videos.length / Math.max(maxVids, 1)) * 65, 65);
+        updateCardProgress(cardIdx, pct);
+        updateCardStatus(cardIdx, 'working', `Trang ${page} — ${videos.length} video (bỏ ${shortsSkipped} Shorts)`);
+
+        nextPage = data.nextPageToken || '';
+        if (!nextPage) break;
+        await new Promise(r => setTimeout(r, 100));
+    }
+
+    updateCardProgress(cardIdx, 100);
+    updateCardStatus(cardIdx, 'done', `${videos.length} video (bỏ ${shortsSkipped} Shorts)`);
+
+    return { channelName, channelUrl, channelId, avatar, subs, videos, shortsSkipped };
+}
+
+// ===== INVIDIOUS (FREE MODE) =====
+async function corsF(url, timeout=12000) {
+    try {
+        const c = new AbortController(); const t = setTimeout(() => c.abort(), 5000);
+        const r = await fetch(url, {signal: c.signal, mode: 'cors'}); clearTimeout(t);
+        if (r.ok) { activeProxy = null; return r }
+    } catch(e) {}
+    if (activeProxy) { try { const c = new AbortController(); const t = setTimeout(() => c.abort(), timeout); const r = await fetch(activeProxy(url), {signal: c.signal}); clearTimeout(t); if (r.ok) return r } catch(e) {} }
+    for (const proxy of CORS_PROXIES) { try { const c = new AbortController(); const t = setTimeout(() => c.abort(), timeout); const r = await fetch(proxy(url), {signal: c.signal}); clearTimeout(t); if (r.ok) { activeProxy = proxy; return r } } catch(e) {} }
+    throw new Error('Không thể kết nối. Thử chế độ YouTube API.');
+}
+
+async function apiJson(url) { const r = await corsF(url); return r.json() }
+
+async function findInstance() {
+    for (const inst of INSTANCES) {
+        try { const d = await apiJson(`${inst}/api/v1/stats`); if (d?.software) { workingInst = inst; toast(`Kết nối: ${new URL(inst).hostname}`); return } } catch(e) {}
+    }
+    throw new Error('Không có server khả dụng. Dùng chế độ YouTube API.');
+}
+
+async function invApi(path) {
+    if (!workingInst) await findInstance();
+    try { return await apiJson(`${workingInst}${path}`) }
+    catch(e) { workingInst = null; await findInstance(); return await apiJson(`${workingInst}${path}`) }
+}
+
+async function fetchOneChannelInvidious(inputRaw, cardIdx, maxVids) {
+    const input = inputRaw.trim();
+    updateCardStatus(cardIdx, 'working', 'Tìm kênh...');
+    updateCardProgress(cardIdx, 15);
+
+    let parsed = input;
+    if (parsed.startsWith('http')) {
+        try {
+            const u = new URL(parsed); const p = u.pathname;
+            const cm = p.match(/\/channel\/(UC[\w-]+)/); if (cm) parsed = cm[1];
+            else { const hm = p.match(/\/@([\w.-]+)/); if (hm) parsed = hm[1]; else { const um = p.match(/\/(c|user)\/([\w.-]+)/); if (um) parsed = um[2] } }
+        } catch(e) {}
+    }
+    if (parsed.startsWith('@')) parsed = parsed.slice(1);
+
+    let chData;
+    if (/^UC[\w-]{22}$/.test(parsed)) {
+        chData = await invApi(`/api/v1/channels/${parsed}`);
+    } else {
+        const results = await invApi(`/api/v1/search?q=${encodeURIComponent(parsed)}&type=channel&page=1`);
+        const ch = results?.find(r => r.type === 'channel');
+        if (!ch) throw new Error('Không tìm thấy kênh');
+        chData = await invApi(`/api/v1/channels/${ch.authorId}`);
+    }
+
+    const channelId = chData.authorId;
+    const channelName = chData.author;
+    const channelUrl = `https://youtube.com/channel/${channelId}`;
+    const av = chData.authorThumbnails?.[chData.authorThumbnails.length-1]?.url || '';
+    const avatar = av.startsWith('//') ? 'https:'+av : av;
+
+    updateCardInfo(cardIdx, channelName, channelUrl, avatar, chData.subCount, '?');
+    updateCardStatus(cardIdx, 'working', 'Tải video...');
+    updateCardProgress(cardIdx, 30);
+
+    const videos = [];
+    let shortsSkipped = 0;
+    let p = 1;
+    while (videos.length < maxVids) {
+        updateCardStatus(cardIdx, 'working', `Trang ${p} — ${videos.length} video (bỏ ${shortsSkipped} Shorts)`);
+        try {
+            const vids = await invApi(`/api/v1/channels/${channelId}/videos?page=${p}&sort_by=newest`);
+            if (!vids?.length) break;
+            for (const v of vids) {
+                if (videos.length >= maxVids) break;
+                if (videos.find(x => x.videoId === v.videoId)) continue;
+                if (v.lengthSeconds && v.lengthSeconds <= 60) { shortsSkipped++; continue; }
+                videos.push({videoId: v.videoId, title: v.title, published: v.published, viewCount: v.viewCount, lengthSeconds: v.lengthSeconds});
+            }
+            const pct = 30 + Math.min((videos.length / Math.max(maxVids, 1)) * 65, 65);
+            updateCardProgress(cardIdx, pct);
+            p++;
+            await new Promise(r => setTimeout(r, 300));
+        } catch(e) { break }
+    }
+
+    updateCardProgress(cardIdx, 100);
+    updateCardStatus(cardIdx, 'done', `${videos.length} video (bỏ ${shortsSkipped} Shorts)`);
+
+    return { channelName, channelUrl, channelId, avatar, subs: chData.subCount, videos, shortsSkipped };
+}
+
+// ===== MAIN =====
+async function startFetching() {
+    if (loading) return;
+
+    const rawInput = document.getElementById('channelInput').value;
+    const inputs = parseChannelInputs(rawInput);
+    if (!inputs.length) { toast('Nhập ít nhất 1 kênh!', 'error'); return; }
+
+    if (mode === 'api') {
+        const apiKey = document.getElementById('apiKeyInput').value.trim();
+        if (!apiKey) { toast('Nhập API Key!', 'error'); return; }
+        localStorage.setItem('yt_api_key', apiKey);
+    }
+
+    loading = true;
+    const btn = document.getElementById('fetchBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Đang xử lý...';
+    document.getElementById('resSec').classList.remove('v');
+    document.getElementById('progSec').classList.add('v');
+    channelResults = [];
+
+    const maxVidsRaw = parseInt(document.getElementById('maxVideosInput').value) || 0;
+    const maxVids = maxVidsRaw <= 0 ? 999999 : maxVidsRaw;
+
+    // Create progress cards
+    createChannelCards(inputs);
+
+    prog(`Bắt đầu xử lý ${inputs.length} kênh...`, 0);
+
+    if (mode === 'free' && !workingInst) {
+        prog('Tìm server Invidious...', 5);
+        try { await findInstance(); } catch(e) { toast(e.message, 'error'); loading = false; btn.disabled = false; btn.innerHTML = '<span>🚀</span> Lấy danh sách link'; return; }
+    }
+
+    let totalVids = 0;
+    let totalShorts = 0;
+    let successCount = 0;
+
+    for (let i = 0; i < inputs.length; i++) {
+        const overallPct = (i / inputs.length) * 100;
+        prog(`Kênh ${i+1}/${inputs.length}: ${inputs[i].substring(0, 40)}...`, overallPct);
+
+        try {
+            let result;
+            if (mode === 'api') {
+                result = await fetchOneChannelYTApi(inputs[i], i, maxVids);
+            } else {
+                result = await fetchOneChannelInvidious(inputs[i], i, maxVids);
+            }
+            channelResults.push(result);
+            totalVids += result.videos.length;
+            totalShorts += result.shortsSkipped;
+            successCount++;
+        } catch(e) {
+            console.error(`Error on channel ${inputs[i]}:`, e);
+            updateCardStatus(i, 'error', e.message.substring(0, 60));
+            // Continue to next channel
+        }
+
+        await new Promise(r => setTimeout(r, 200));
+    }
+
+    if (totalVids === 0) {
+        toast('Không lấy được video nào!', 'error');
+    } else {
+        prog(`Hoàn tất! ${totalVids} video từ ${successCount} kênh`, 100);
+        renderResults();
+        document.getElementById('resSec').classList.add('v');
+        toast(`✅ ${totalVids} link từ ${successCount} kênh (bỏ ${totalShorts} Shorts)`);
+    }
+
+    loading = false;
+    btn.disabled = false;
+    btn.innerHTML = '<span>🚀</span> Lấy danh sách link';
+    setTimeout(() => document.getElementById('progSec').classList.remove('v'), 2000);
+}
+
+// ===== RENDER =====
+function getAllVideosFlat() {
+    const all = [];
+    for (const ch of channelResults) {
+        for (const v of ch.videos) {
+            all.push({ ...v, channelName: ch.channelName, channelUrl: ch.channelUrl });
+        }
+    }
+    return all;
+}
+
+// ===== CHUNK SYSTEM =====
+const CHUNK_SIZE = 4500;
+let allLinksArray = [];
+let totalChunks = 0;
+let currentChunk = 0;
+let copiedChunks = new Set();
+
+function renderResults() {
+    const totalVids = channelResults.reduce((s, ch) => s + ch.videos.length, 0);
+    const totalShorts = channelResults.reduce((s, ch) => s + ch.shortsSkipped, 0);
+
+    // Update stats
+    document.getElementById('totCnt').textContent = totalVids;
+    document.getElementById('statChannels').textContent = channelResults.length;
+    document.getElementById('statVids').textContent = totalVids;
+    document.getElementById('statShorts').textContent = totalShorts;
+    document.getElementById('statLinks').textContent = totalVids;
+    document.getElementById('chCountBadge').textContent = `📺 ${channelResults.length} kênh`;
+
+    // Build flat links array
+    allLinksArray = [];
+    channelResults.forEach(ch => {
+        ch.videos.forEach(v => {
+            allLinksArray.push(`https://www.youtube.com/watch?v=${v.videoId}`);
+        });
+    });
+
+    // Calculate chunks
+    totalChunks = Math.ceil(allLinksArray.length / CHUNK_SIZE);
+    currentChunk = 0;
+    copiedChunks = new Set();
+
+    // Show/hide chunk info
+    if (totalChunks > 1) {
+        document.getElementById('chunkAllInfo').style.display = 'block';
+        document.getElementById('chunkCount').textContent = totalChunks;
+    } else {
+        document.getElementById('chunkAllInfo').style.display = 'none';
+    }
+
+    // Render chunk navigation
+    renderChunkNav();
+    showChunk(0);
+
+    // Render table grouped by channel
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    let globalIdx = 0;
+    channelResults.forEach(ch => {
+        const sepTr = document.createElement('tr');
+        sepTr.className = 'ch-group-row';
+        sepTr.innerHTML = `<td colspan="5">📺 ${esc(ch.channelName)} — ${ch.channelUrl} (${ch.videos.length} video)</td>`;
+        tbody.appendChild(sepTr);
+
+        ch.videos.forEach(v => {
+            globalIdx++;
+            const link = `https://www.youtube.com/watch?v=${v.videoId}`;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="vid-idx">${globalIdx}</td>
+                <td class="vid-ch" title="${esc(ch.channelName)}">${esc(ch.channelName)}</td>
+                <td class="vid-title" title="${esc(v.title)}">${esc(v.title)}</td>
+                <td class="vid-link"><a href="${link}" target="_blank">${link}</a></td>
+                <td class="vid-dur">${fmtDur(v.lengthSeconds)}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+function renderChunkNav() {
+    const nav = document.getElementById('chunkNav');
+    nav.innerHTML = '';
+    if (totalChunks <= 1) return;
+
+    for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK_SIZE + 1;
+        const end = Math.min((i + 1) * CHUNK_SIZE, allLinksArray.length);
+        const btn = document.createElement('button');
+        btn.className = `chunk-btn ${i === currentChunk ? 'active' : ''} ${copiedChunks.has(i) ? 'copied' : ''}`;
+        btn.textContent = copiedChunks.has(i) ? `✅ Phần ${i+1}` : `Phần ${i+1} (${start}-${end})`;
+        btn.onclick = () => showChunk(i);
+        btn.id = `chunk-btn-${i}`;
+        nav.appendChild(btn);
+    }
+}
+
+function showChunk(idx) {
+    currentChunk = idx;
+    const start = idx * CHUNK_SIZE;
+    const end = Math.min(start + CHUNK_SIZE, allLinksArray.length);
+    const chunkLinks = allLinksArray.slice(start, end);
+
+    document.getElementById('linksOutput').value = chunkLinks.join('\n');
+
+    // Update info bar
+    if (totalChunks > 1) {
+        document.getElementById('chunkLabel').textContent = `📋 Phần ${idx+1}/${totalChunks}`;
+        document.getElementById('chunkRange').textContent = `Link ${start+1} → ${end} (${chunkLinks.length} link)`;
+        document.getElementById('copyChunkBtn').innerHTML = `<span>📋</span> Copy phần ${idx+1} (${chunkLinks.length} link)`;
+    } else {
+        document.getElementById('chunkLabel').textContent = `Tất cả link`;
+        document.getElementById('chunkRange').textContent = `${allLinksArray.length} link`;
+        document.getElementById('copyChunkBtn').innerHTML = `<span>📋</span> Copy tất cả (${allLinksArray.length} link)`;
+    }
+
+    // Update nav buttons
+    document.querySelectorAll('.chunk-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === idx);
+    });
+}
+
+function copyCurrentChunk() {
+    const text = document.getElementById('linksOutput').value;
+    if (!text) { toast('Chưa có link nào!', 'error'); return; }
+    const count = text.split('\n').length;
+
+    navigator.clipboard.writeText(text).then(() => {
+        copiedChunks.add(currentChunk);
+        const chunkLabel = totalChunks > 1 ? ` (phần ${currentChunk+1}/${totalChunks})` : '';
+        toast(`✅ Đã copy ${count} link${chunkLabel}`);
+
+        // Show copy hint
+        const hint = document.getElementById('copyHint');
+        hint.classList.add('show');
+        setTimeout(() => hint.classList.remove('show'), 2000);
+
+        // Update nav button to show copied
+        renderChunkNav();
+
+        // Auto-advance to next chunk
+        if (totalChunks > 1 && currentChunk < totalChunks - 1) {
+            setTimeout(() => {
+                showChunk(currentChunk + 1);
+                toast(`➡️ Chuyển sang phần ${currentChunk + 1}/${totalChunks}`, 'info');
+            }, 800);
+        } else if (totalChunks > 1 && copiedChunks.size === totalChunks) {
+            toast(`🎉 Đã copy tất cả ${totalChunks} phần!`);
+        }
+    }).catch(() => {
+        const ta = document.getElementById('linksOutput');
+        ta.select();
+        document.execCommand('copy');
+        copiedChunks.add(currentChunk);
+        renderChunkNav();
+        toast(`Đã copy ${count} link!`);
+    });
+}
+
+function exportTxt() {
+    const allVids = getAllVideosFlat();
+    if (!allVids.length) { toast('Chưa có link nào!', 'error'); return; }
+
+    // Plain links only, no headers
+    const content = allVids.map(v => `https://www.youtube.com/watch?v=${v.videoId}`).join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const names = channelResults.map(ch => ch.channelName.replace(/[^\w]/g, '_')).join('+');
+    a.download = `video_links_${names.substring(0,60)}_${new Date().toISOString().slice(0,10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(`Đã tải file .txt (${allVids.length} link)`);
+}
+
+function exportCsv() {
+    const allVids = getAllVideosFlat();
+    if (!allVids.length) { toast('Chưa có link nào!', 'error'); return; }
+
+    const header = 'STT,Kênh,URL Kênh,Tiêu đề,Link Video,Thời lượng\n';
+    const rows = allVids.map((v, i) => {
+        const chName = `"${v.channelName.replace(/"/g, '""')}"`;
+        const title = `"${v.title.replace(/"/g, '""')}"`;
+        const link = `https://www.youtube.com/watch?v=${v.videoId}`;
+        const dur = fmtDur(v.lengthSeconds);
+        return `${i+1},${chName},${v.channelUrl},${title},${link},${dur}`;
+    }).join('\n');
+
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + header + rows], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    const names = channelResults.map(ch => ch.channelName.replace(/[^\w]/g, '_')).join('+');
+    a.href = URL.createObjectURL(blob);
+    a.download = `video_links_${names.substring(0,60)}_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast(`Đã tải file .csv (${allVids.length} link, ${channelResults.length} kênh)`);
+}
+
+// ===== PASTE & SPLIT =====
+function splitPastedLinks() {
+    const raw = document.getElementById('pasteInput').value.trim();
+    if (!raw) { toast('Dán link vào ô trước!', 'error'); return; }
+
+    // Parse links: split by newlines, filter valid YouTube links
+    const links = raw.split(/[\n\r]+/)
+        .map(l => l.trim())
+        .filter(l => l.startsWith('http'));
+
+    if (!links.length) { toast('Không tìm thấy link hợp lệ!', 'error'); return; }
+
+    // Set into chunk system directly
+    allLinksArray = links;
+    totalChunks = Math.ceil(allLinksArray.length / CHUNK_SIZE);
+    currentChunk = 0;
+    copiedChunks = new Set();
+    channelResults = []; // Clear old data
+
+    // Update stats
+    document.getElementById('totCnt').textContent = links.length;
+    document.getElementById('statChannels').textContent = '—';
+    document.getElementById('statVids').textContent = links.length;
+    document.getElementById('statShorts').textContent = '—';
+    document.getElementById('statLinks').textContent = links.length;
+    document.getElementById('chCountBadge').textContent = `✂️ Đã tách`;
+
+    // Show chunk info
+    if (totalChunks > 1) {
+        document.getElementById('chunkAllInfo').style.display = 'block';
+        document.getElementById('chunkCount').textContent = totalChunks;
+    } else {
+        document.getElementById('chunkAllInfo').style.display = 'none';
+    }
+
+    // Render and show
+    renderChunkNav();
+    showChunk(0);
+    document.getElementById('resSec').classList.add('v');
+
+    // Hide unnecessary sections
+    document.getElementById('chProgressSec').classList.remove('v');
+    document.getElementById('progSec').classList.remove('v');
+
+    // Clear table
+    document.getElementById('tableBody').innerHTML = '';
+
+    toast(`✅ Đã tách ${links.length} link thành ${totalChunks} phần (mỗi phần ${CHUNK_SIZE} link)`);
+    document.getElementById('pasteInput').value = ''; // Clear paste area
+}
+
+// ===== EVENTS =====
+document.getElementById('apiKeyInput').addEventListener('change', () => { localStorage.setItem('yt_api_key', document.getElementById('apiKeyInput').value.trim()) });
+</script>
+</body>
+</html>

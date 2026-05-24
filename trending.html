@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Trend Research - Nghiên cứu xu hướng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0a0f;--card:#1a1a2e;--input:#16162a;--border:rgba(255,255,255,.06);--text:#f0f0f5;--text2:#8888aa;--muted:#555570;--accent:#ff3860;--grad:linear-gradient(135deg,#ff3860,#7c3aed);--green:#10b981;--yellow:#f59e0b;--r:16px;--r2:10px}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        .bg-g{position:fixed;inset:0;z-index:0;pointer-events:none}
+        .bg-g::before{content:'';position:absolute;width:600px;height:600px;top:-200px;right:-100px;background:radial-gradient(circle,rgba(255,56,96,.08) 0%,transparent 70%);animation:fo 15s ease-in-out infinite}
+        .bg-g::after{content:'';position:absolute;width:500px;height:500px;bottom:-150px;left:-100px;background:radial-gradient(circle,rgba(124,58,237,.08) 0%,transparent 70%);animation:fo 18s ease-in-out infinite reverse}
+        @keyframes fo{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-30px) scale(1.1)}66%{transform:translate(-30px,50px) scale(.9)}}
+        .wrap{position:relative;z-index:1;max-width:1300px;margin:0 auto;padding:30px 24px 80px}
+        .hdr{text-align:center;margin-bottom:40px}
+        .logo-i{width:56px;height:56px;background:var(--grad);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;animation:pulse 3s infinite}
+        @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(255,56,96,.2)}50%{box-shadow:0 0 40px rgba(255,56,96,.4)}}
+        h1{font-size:2.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sub{color:var(--text2);margin-top:6px;font-size:.95rem}
+        .nav-link{display:inline-block;margin-top:12px;color:var(--accent);text-decoration:none;font-size:.85rem;font-weight:600;padding:6px 16px;border:1px solid rgba(255,56,96,.3);border-radius:20px;transition:all .3s}
+        .nav-link:hover{background:rgba(255,56,96,.1)}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+        label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+        .hint{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.75rem}
+        .iw{position:relative}
+        .iw .ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted);pointer-events:none}
+        input[type="text"],input[type="password"]{width:100%;padding:12px 14px 12px 42px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;transition:all .3s;outline:none}
+        input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.3)}
+        input::placeholder{color:var(--muted)}
+        select{width:100%;padding:10px 12px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;cursor:pointer}
+        .row{display:grid;gap:14px}
+        .row2{grid-template-columns:1fr 1fr}
+        .row3{grid-template-columns:1fr 1fr 1fr}
+        .row4{grid-template-columns:2fr 1fr 1fr 1fr}
+        @media(max-width:768px){.row2,.row3,.row4{grid-template-columns:1fr}}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:var(--r2);font-family:'Inter',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s}
+        .btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(255,56,96,.3)}
+        .btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,56,96,.4)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-g{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+        .btn-s{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+        .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+        .spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+        .toast{position:fixed;bottom:30px;right:30px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;gap:10px;font-size:.85rem;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);max-width:400px}
+        .toast.show{transform:translateY(0);opacity:1}
+
+        /* Results table */
+        .results{margin-top:24px}
+        .results h3{font-size:1.1rem;font-weight:700;margin-bottom:16px}
+        .table-scroll-wrap{overflow-x:scroll;overflow-y:auto;max-width:100%;max-height:75vh;-webkit-overflow-scrolling:touch;scrollbar-color:var(--accent) var(--input);position:relative}
+        .table-scroll-wrap::-webkit-scrollbar{height:14px;width:10px;display:block!important}
+        .table-scroll-wrap::-webkit-scrollbar-track{background:var(--input);border-radius:6px}
+        .table-scroll-wrap::-webkit-scrollbar-thumb{background:var(--grad);border-radius:6px;border:2px solid var(--input)}
+        .table-scroll-wrap::-webkit-scrollbar-thumb:hover{background:var(--accent)}
+        .table-scroll-wrap::-webkit-scrollbar-corner{background:var(--input)}
+        .vtable{width:100%;border-collapse:collapse;min-width:1400px}
+        .vtable thead{position:sticky;top:0;z-index:2;background:var(--card)}
+        .vtable th{text-align:left;padding:10px 12px;font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;transition:all .2s}
+        .vtable th:hover{color:var(--accent);background:rgba(255,56,96,.05)}
+        .vtable th.sort-active{color:var(--accent);background:rgba(255,56,96,.08)}
+        .vtable th .arrow{font-size:.7rem;margin-left:4px;opacity:.4;transition:opacity .2s}
+        .vtable th.sort-active .arrow{opacity:1;color:var(--accent)}
+        .vtable td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);font-size:.83rem;vertical-align:middle}
+        .vtable tr:hover{background:rgba(255,255,255,.02)}
+        .vtable .thumb-sm{width:120px;height:68px;border-radius:6px;object-fit:cover;cursor:pointer;transition:transform .2s}
+        .vtable .thumb-sm:hover{transform:scale(1.05)}
+        .vtable .v-title{font-weight:500;max-width:280px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer;transition:color .2s}
+        .vtable .v-title:hover{color:var(--accent)}
+        .vtable .ch-name{color:var(--text2);font-size:.78rem}
+        .views-bar{display:flex;align-items:center;gap:8px}
+        .views-fill{height:6px;border-radius:3px;background:var(--grad);min-width:4px;transition:width .5s}
+        .stat{font-weight:700;font-variant-numeric:tabular-nums}
+        .stat.hot{color:var(--accent)}
+        .stat.warm{color:var(--yellow)}
+        .stat.good{color:var(--green)}
+        .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:700;text-transform:uppercase}
+        .tag.fire{background:rgba(255,56,96,.15);color:var(--accent)}
+        .tag.rising{background:rgba(245,158,11,.15);color:var(--yellow)}
+        .tag.steady{background:rgba(16,185,129,.15);color:var(--green)}
+
+        /* View Velocity */
+        .velocity{display:flex;align-items:center;gap:6px}
+        .vel-badge{padding:2px 8px;border-radius:4px;font-size:.7rem;font-weight:700}
+        .vel-viral{background:rgba(255,56,96,.2);color:#ff3860;animation:vPulse 1.5s infinite}
+        .vel-hot{background:rgba(255,140,0,.2);color:#ff8c00}
+        .vel-warm{background:rgba(245,158,11,.15);color:#f59e0b}
+        .vel-normal{background:rgba(100,100,130,.15);color:#8888aa}
+        @keyframes vPulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+        /* Outlier Score */
+        .outlier-bar{width:60px;height:8px;background:rgba(255,255,255,.06);border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:6px}
+        .outlier-fill{height:100%;border-radius:4px;transition:width .5s}
+        .outlier-fill.god{background:linear-gradient(90deg,#ff3860,#ff6b8a)}
+        .outlier-fill.great{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+        .outlier-fill.good{background:linear-gradient(90deg,#10b981,#34d399)}
+        .outlier-fill.avg{background:rgba(100,100,130,.3)}
+        .outlier-label{font-size:.7rem;font-weight:700}
+
+        /* Stats cards */
+        .stat-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+        .stat-card{background:var(--input);border:1px solid var(--border);border-radius:var(--r2);padding:16px;text-align:center}
+        .stat-card .num{font-size:1.5rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .stat-card .lbl{font-size:.75rem;color:var(--text2);margin-top:4px}
+
+        /* Keywords cloud */
+        .kw-cloud{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+        .kw-tag{padding:6px 14px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);border-radius:20px;font-size:.8rem;color:#a78bfa;cursor:pointer;transition:all .2s}
+        .kw-tag:hover{background:rgba(124,58,237,.2);transform:scale(1.05)}
+        .kw-count{font-size:.7rem;color:var(--muted);margin-left:4px}
+        .prog{display:none}.prog.v{display:block}
+        .prog-bar{width:100%;height:6px;background:var(--input);border-radius:3px;overflow:hidden;margin-top:8px}
+        .prog-fill{height:100%;background:var(--grad);border-radius:3px;transition:width .3s}
+        .prog-t{font-size:.8rem;color:var(--text2)}
+        @keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .fade-in{animation:su .5s ease}
+        .ft{text-align:center;color:var(--muted);font-size:.8rem;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+    </style>
+</head>
+<body>
+<div class="bg-g"></div>
+<div class="wrap">
+    <header class="hdr">
+        <div class="logo-i">🔥</div>
+        <h1>YouTube Trend Research</h1>
+        <p class="sub">Tìm video đang xu hướng, phân tích từ khóa hot & kênh ăn theo</p>
+        <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;flex-wrap:wrap;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="index.html" class="nav-link">📸 Thumbnail</a>
+                    <a href="yt-downloader.html" class="nav-link">⬇️ Tải Video</a>
+                    <a href="video-links.html" class="nav-link">🔗 Link</a>
+                    <a href="channel-analyzer.html" class="nav-link">🧬 DNA</a>
+                    <a href="thumbnail-analyzer.html" class="nav-link">🎨 AI Ảnh</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="music-check.html" class="nav-link">🎵 Nhạc</a>
+                    <a href="audio-separator.html" class="nav-link">🎚️ Tách nhạc</a>
+                    <a href="srt-maker.html" class="nav-link">📝 SRT</a>
+                    <a href="suno-prompt.html" class="nav-link">🎵 Suno</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="tiktok.html" class="nav-link">🎬 TikTok</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="card">
+        <div style="margin-bottom:14px">
+            <label>🔑 YouTube API Key</label>
+            <div class="iw"><span class="ic">🔑</span>
+                <input type="password" id="apiKey" placeholder="Dán API Key..." autocomplete="off">
+            </div>
+        </div>
+        <div class="row row4" style="margin-bottom:14px">
+            <div>
+                <label>Từ khóa tìm kiếm</label>
+                <div class="iw"><span class="ic">🔍</span>
+                    <input type="text" id="keyword" placeholder="Ví dụ: kids songs, cooking...">
+                </div>
+            </div>
+            <div>
+                <label>Thời gian</label>
+                <select id="timeRange">
+                    <option value="1">24 giờ qua</option>
+                    <option value="3" selected>3 ngày qua</option>
+                    <option value="7">1 tuần qua</option>
+                    <option value="14">2 tuần qua</option>
+                    <option value="30">1 tháng qua</option>
+                    <option value="90">3 tháng qua</option>
+                    <option value="180">6 tháng qua</option>
+                    <option value="365">1 năm qua</option>
+                    <option value="730">2 năm qua</option>
+                </select>
+            </div>
+            <div>
+                <label>Sắp xếp theo</label>
+                <select id="sortBy">
+                    <option value="viewCount" selected>Lượt xem</option>
+                    <option value="date">Mới nhất</option>
+                    <option value="relevance">Liên quan</option>
+                </select>
+            </div>
+            <div>
+                <label>Số lượng <span class="hint">(tối đa 200)</span></label>
+                <div class="iw"><span class="ic">📊</span>
+                    <input type="text" id="maxResults" value="50">
+                </div>
+            </div>
+        </div>
+        <div class="row row4" style="margin-bottom:14px">
+            <div>
+                <label>Lượt xem tối thiểu</label>
+                <div class="iw"><span class="ic">👁</span>
+                    <input type="text" id="minViews" placeholder="Ví dụ: 10000" value="1000">
+                </div>
+            </div>
+            <div>
+                <label>🔢 Subscribers kênh</label>
+                <select id="subFilter">
+                    <option value="" selected>Tất cả</option>
+                    <option value="0-1000">Micro (0 - 1K)</option>
+                    <option value="1000-10000">Small (1K - 10K)</option>
+                    <option value="1000-100000">Small-Med (1K - 100K)</option>
+                    <option value="10000-100000">Medium (10K - 100K)</option>
+                    <option value="100000-1000000">Large (100K - 1M)</option>
+                    <option value="1000000-">Mega (1M+)</option>
+                </select>
+            </div>
+            <div>
+                <label>Khu vực</label>
+                <select id="regionCode">
+                    <option value="">Toàn cầu</option>
+                    <option value="VN">Việt Nam</option>
+                    <option value="US">Mỹ</option>
+                    <option value="IN">Ấn Độ</option>
+                    <option value="ID">Indonesia</option>
+                    <option value="BR">Brazil</option>
+                    <option value="JP">Nhật Bản</option>
+                    <option value="KR">Hàn Quốc</option>
+                    <option value="GB">Anh</option>
+                </select>
+            </div>
+        </div>
+        <div class="acts">
+            <button class="btn btn-p" id="searchBtn" onclick="searchTrending()">🔥 Tìm xu hướng</button>
+            <button class="btn btn-g" id="exportBtn" onclick="exportCSV()" style="display:none">📥 Xuất CSV</button>
+        </div>
+        <div class="prog" id="prog">
+            <p class="prog-t" id="progT">Đang tìm...</p>
+            <div class="prog-bar"><div class="prog-fill" id="progF" style="width:0%"></div></div>
+        </div>
+    </section>
+
+    <section id="statsSection" style="display:none" class="fade-in">
+        <div class="stat-cards" id="statCards"></div>
+    </section>
+
+    <section class="card" id="kwSection" style="display:none">
+        <h3>🏷️ Từ khóa phổ biến trong tiêu đề</h3>
+        <div class="kw-cloud" id="kwCloud"></div>
+    </section>
+
+    <section class="card" id="channelSection" style="display:none">
+        <h3>📺 Kênh có nhiều video nhất (đang ăn theo xu hướng)</h3>
+        <div id="channelList" style="margin-top:12px"></div>
+    </section>
+
+    <section class="results" id="resultsSection" style="display:none">
+        <div class="card">
+            <h3>📊 Kết quả (<span id="resCnt">0</span> video) <span style="font-size:.75rem;color:var(--muted);font-weight:400">← kéo thanh cuộn ngang để xem thêm →</span></h3>
+            <div class="table-scroll-wrap" id="tableScrollWrap">
+            <table class="vtable" id="vtable">
+                <thead><tr>
+                    <th>#</th>
+                    <th>Thumbnail</th>
+                    <th onclick="sortTable('title')" id="th-title">Tiêu đề <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('duration')" id="th-duration">⏱ Dài <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('channel')" id="th-channel">Kênh <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('subs')" id="th-subs">Subs <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('views')" id="th-views">Lượt xem <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('vpd')" id="th-vpd">View/ngày <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('vph')" id="th-vph">📈 View/giờ <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('outlier')" id="th-outlier">🎯 Outlier <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('likes')" id="th-likes">Likes <span class="arrow">⇅</span></th>
+                    <th onclick="sortTable('date')" id="th-date">Đăng lúc (VN) <span class="arrow">⇅</span></th>
+                    <th>Trend</th>
+                    <th onclick="sortTable('relevance')" id="th-relevance">⚡ Rel <span class="arrow">⇅</span></th>
+                    <th>Tags</th>
+                </tr></thead>
+                <tbody id="vtbody"></tbody>
+            </table>
+            </div>
+        </div>
+    </section>
+
+    <footer class="ft">YouTube Trend Research Tool</footer>
+</div>
+<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+
+<script>
+let allResults = [];
+let currentSort = {key:'views',asc:false};
+const savedKey = localStorage.getItem('yt_api_key');
+if(savedKey) document.getElementById('apiKey').value = savedKey;
+
+function toast(m,t='success'){const e=document.getElementById('toast');document.getElementById('tI').textContent=t==='success'?'✅':'❌';document.getElementById('tM').textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),4000)}
+function fmtN(n){if(!n)return'0';n=parseInt(n);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toLocaleString()}
+function prog(t,p){document.getElementById('progT').textContent=t;document.getElementById('progF').style.width=p+'%'}
+function parseDur(iso){const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);if(!m)return 0;return(parseInt(m[1]||0))*3600+(parseInt(m[2]||0))*60+(parseInt(m[3]||0))}
+function toVN(iso){return new Date(iso).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+function toVNDate(iso){return new Date(iso).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'})}
+let channelCache = {};
+async function fetchChannelInfos(channelIds){
+    const unique=[...new Set(channelIds)].filter(id=>!channelCache[id]);
+    for(let i=0;i<unique.length;i+=50){
+        const batch=unique.slice(i,i+50);
+        try{
+            const d=await ytApi(`channels?part=snippet,statistics&id=${batch.join(',')}`);
+            if(d.items) d.items.forEach(ch=>{
+                channelCache[ch.id]={subs:parseInt(ch.statistics.subscriberCount||0),created:ch.snippet.publishedAt,name:ch.snippet.title};
+            });
+        }catch(e){}
+    }
+}
+
+async function ytApi(ep){
+    const k=document.getElementById('apiKey').value.trim();
+    if(!k)throw new Error('Nhập API Key!');
+    const r=await fetch(`https://www.googleapis.com/youtube/v3/${ep}&key=${k}`);
+    const d=await r.json();if(d.error)throw new Error(d.error.message);return d;
+}
+
+async function searchTrending(){
+    const kw=document.getElementById('keyword').value.trim();
+    if(!kw){toast('Nhập từ khóa!','error');return}
+    const key=document.getElementById('apiKey').value.trim();
+    if(!key){toast('Nhập API Key!','error');return}
+    localStorage.setItem('yt_api_key',key);
+
+    const days=parseInt(document.getElementById('timeRange').value);
+    const sort=document.getElementById('sortBy').value;
+    const maxR=Math.min(200,parseInt(document.getElementById('maxResults').value)||50);
+    const minViews=parseInt(document.getElementById('minViews').value)||0;
+    const region=document.getElementById('regionCode').value;
+    const subFilterVal=document.getElementById('subFilter').value;
+
+    const btn=document.getElementById('searchBtn');
+    btn.disabled=true;btn.innerHTML='<span class="spin"></span> Đang tìm...';
+    document.getElementById('prog').classList.add('v');
+    allResults=[];
+    detectedFormat=null;
+
+    const pubAfter=new Date(Date.now()-days*86400000).toISOString();
+
+    const queries = generateQueryVariations(kw);
+    const seenIds = new Set();
+
+    // ========== REUSABLE SEARCH ENGINE ==========
+    async function runSearchQueries(qList, opts){
+        const {label,progStart,progEnd,requireMatch,limitPerQ} = opts;
+        let fetched_total=0, _quota=false;
+        for(let qi=0;qi<qList.length&&allResults.length<opts.target&&!_quota;qi++){
+            const query=qList[qi];
+            let pageToken='',fetched=0,page=0;
+            const fLim=Math.min(limitPerQ||150,(opts.target-allResults.length)*2);
+            while(fetched<fLim&&allResults.length<opts.target&&!_quota){
+                const n=Math.min(50,fLim-fetched);
+                let ep=`search?part=snippet&q=${encodeURIComponent(query)}&type=video&order=${sort}&maxResults=${n}&publishedAfter=${pubAfter}`;
+                if(region)ep+=`&regionCode=${region}`;
+                if(pageToken)ep+=`&pageToken=${pageToken}`;
+                prog(`${label} "${query}" (${qi+1}/${qList.length}, p${++page})... ${allResults.length} video`,
+                    progStart+(qi/qList.length)*(progEnd-progStart));
+                let data;
+                try{data=await ytApi(ep)}catch(e){
+                    if(e.message&&(e.message.includes('quota')||e.message.includes('exceeded')||e.message.includes('403'))){
+                        _quota=true;toast(`⚠️ API Quota hết! ${allResults.length} video.`,'error');
+                    }break;
+                }
+                if(!data.items?.length)break;
+                const ids=data.items.map(i=>i.id.videoId).filter(id=>id&&!seenIds.has(id));
+                if(!ids.length){pageToken=data.nextPageToken||'';if(!pageToken)break;fetched+=data.items.length;continue;}
+                ids.forEach(id=>seenIds.add(id));
+                const details=await ytApi(`videos?part=statistics,contentDetails,snippet&id=${ids.join(',')}`);
+                if(details.items){
+                    const kwLower=kw.toLowerCase(),kwWords=kwLower.split(/\s+/).filter(w=>w.length>2);
+                    for(const v of details.items){
+                        const dur=parseDur(v.contentDetails.duration);
+                        const views=parseInt(v.statistics.viewCount||0);
+                        const pubDate=new Date(v.snippet.publishedAt);
+                        const ageD=Math.max(0.04,(Date.now()-pubDate.getTime())/86400000);
+                        const tags=(v.snippet.tags||[]).slice(0,15);
+                        const title=v.snippet.title;
+                        const description=(v.snippet.description||'').substring(0,500);
+                        const titleLower=title.toLowerCase(),tagsLower=tags.map(t=>t.toLowerCase()).join(' '),descLower=description.toLowerCase();
+                        const matchTitle=kwWords.some(w=>titleLower.includes(w));
+                        const matchTags=kwWords.some(w=>tagsLower.includes(w));
+                        const matchDesc=kwWords.some(w=>descLower.includes(w));
+                        const matchAny=matchTitle||matchTags||matchDesc;
+                        if(requireMatch&&!matchAny)continue;
+                        let relevance=matchAny?1:0;
+                        if(titleLower.includes(kwLower)||tagsLower.includes(kwLower))relevance+=10;
+                        kwWords.forEach(w=>{if(titleLower.includes(w))relevance+=3;if(tagsLower.includes(w))relevance+=2;if(descLower.includes(w))relevance+=1;});
+                        const qW=query.toLowerCase().split(/\s+/).filter(w=>w.length>2);
+                        if(qW.some(w=>titleLower.includes(w)||tagsLower.includes(w)))relevance+=2;
+                        allResults.push({id:v.id,title,tags,channel:v.snippet.channelTitle,channelId:v.snippet.channelId,
+                            views,likes:parseInt(v.statistics.likeCount||0),comments:parseInt(v.statistics.commentCount||0),
+                            duration:dur,publishedAt:v.snippet.publishedAt,ageHours:ageD*24,ageDays:ageD,
+                            vpd:Math.round(views/ageD),thumb:`https://img.youtube.com/vi/${v.id}/mqdefault.jpg`,
+                            relevance,matchTitle,matchTags,matchDesc,foundVia:label.includes('🧠')?`🧠 ${query}`:query});
+                    }
+                }
+                fetched+=data.items.length;fetched_total+=data.items.length;
+                pageToken=data.nextPageToken||'';if(!pageToken)break;
+                await new Promise(r=>setTimeout(r,80));
+            }
+            if(qi<qList.length-1)await new Promise(r=>setTimeout(r,200));
+        }
+        return {totalFetched:fetched_total,quotaExhausted:_quota};
+    }
+
+    try{
+        let totalFetched=0;
+        const targetResults=maxR*2;
+        let quotaExhausted=false;
+
+        // ========== PHASE 1: Original keyword queries ==========
+        const r1=await runSearchQueries(queries,{label:'🔍',progStart:0,progEnd:30,requireMatch:false,target:targetResults,limitPerQ:150});
+        totalFetched+=r1.totalFetched;quotaExhausted=r1.quotaExhausted;
+        // First query keeps all; subsequent require match — apply filter retroactively
+        // (already handled inside runSearchQueries via requireMatch per-query logic)
+        console.log(`🔍 Phase 1: ${allResults.length} videos from ${queries.length} queries`);
+
+        // ========== PHASE 2: SMART AI EXPANSION ==========
+        if(allResults.length>0 && allResults.length<targetResults && !quotaExhausted){
+            prog('🧠 AI đang phân tích nội dung video...',32);
+            const smartQ=generateSmartQueries(allResults,kw);
+            if(smartQ.length>0){
+                console.log('🧠 Smart AI Queries:',smartQ);
+                const r2=await runSearchQueries(smartQ,{label:'🧠 AI',progStart:35,progEnd:55,requireMatch:true,target:targetResults,limitPerQ:100});
+                totalFetched+=r2.totalFetched;
+                if(r2.quotaExhausted)quotaExhausted=true;
+                console.log(`🧠 Phase 2: +${r2.totalFetched} scanned, total ${allResults.length} videos`);
+            }
+        }
+
+        console.log(`✅ Search complete: ${allResults.length} videos, scanned ${totalFetched} total`);
+        queries.forEach((q,i)=>console.log(`  P1 Query ${i+1}: "${q}"`));
+
+        // ===== FORMAT CONSISTENCY FILTER =====
+        if(detectedFormat && allResults.length > 0) {
+            const formatLabels = {'2d_animation':'2D Animation/Cartoon','3d_animation':'3D Animation','live_action':'Live Action'};
+            prog(`🎨 Lọc format: ${formatLabels[detectedFormat]||detectedFormat}...`, 68);
+            const beforeFmt = allResults.length;
+            allResults = allResults.filter(v => videoMatchesFormat(v, detectedFormat));
+            const removedFmt = beforeFmt - allResults.length;
+            if(removedFmt > 0) {
+                console.log(`🎨 Format filter: removed ${removedFmt} non-${detectedFormat} videos`);
+                toast(`🎨 Đã loại ${removedFmt} video không khớp format (${formatLabels[detectedFormat]})`);
+            }
+        }
+
+        // YouTube creates "oardefault.jpg" (Original Aspect Ratio) thumbnails
+        // ONLY for Shorts/vertical videos. Regular videos return 404 for this URL.
+        if(allResults.length > 0) {
+            prog('📏 Kiểm tra khổ video (loại Shorts dọc)...', 72);
+            const beforeCount = allResults.length;
+            
+            const checkIsShort = (v) => {
+                return new Promise(resolve => {
+                    // Method 1: Try to load OAR thumbnail (only exists for Shorts)
+                    const oar = new Image();
+                    let done = false;
+                    
+                    oar.onload = () => {
+                        if(done) return; done = true;
+                        // OAR loaded = likely Shorts, but only mark if duration ≤ 90s
+                        v._isShort = (v.duration <= 90);
+                        console.log(`📱 ${v._isShort?'SHORT':'VERTICAL (kept)'}: "${v.title.substring(0,40)}" ${oar.naturalWidth}x${oar.naturalHeight} (${v.duration}s)`);
+                        resolve();
+                    };
+                    oar.onerror = () => {
+                        if(done) return; done = true;
+                        // OAR failed = regular video (no OAR thumbnail exists)
+                        v._isShort = false;
+                        console.log(`🖥️ REGULAR (no OAR): "${v.title.substring(0,40)}" (${v.duration}s)`);
+                        resolve();
+                    };
+                    
+                    // Timeout fallback (3 seconds)
+                    setTimeout(() => {
+                        if(done) return; done = true;
+                        v._isShort = (v.duration <= 60); // Fallback: assume short if <= 60s
+                        resolve();
+                    }, 3000);
+                    
+                    oar.src = `https://i.ytimg.com/vi/${v.id}/oardefault.jpg`;
+                });
+            };
+            
+            // Process in batches of 10
+            for(let i = 0; i < allResults.length; i += 10) {
+                const batch = allResults.slice(i, Math.min(i+10, allResults.length));
+                await Promise.all(batch.map(checkIsShort));
+                prog(`📏 Kiểm tra khổ video... ${Math.min(i+10, allResults.length)}/${allResults.length}`, 
+                    72 + (Math.min(i+10, allResults.length)/allResults.length)*8);
+            }
+            
+            allResults = allResults.filter(v => !v._isShort);
+            const removed = beforeCount - allResults.length;
+            if(removed > 0) {
+                console.log(`✅ Đã loại ${removed} Shorts`);
+                toast(`📱 Đã loại ${removed} video dọc (Shorts)`);
+            }
+        }
+
+        if(!allResults.length){
+            toast(`Không tìm thấy video nào! (${queries.length} queries, ${totalFetched} video quét). Thử thay đổi từ khóa hoặc tăng thời gian.`,'error');
+            return;
+        }
+
+        // Deduplicate by video ID
+        const uniqueMap = new Map();
+        allResults.forEach(v => { if(!uniqueMap.has(v.id)) uniqueMap.set(v.id, v); });
+        allResults = [...uniqueMap.values()];
+
+        // ===== SMART FALLBACK: Views filter =====
+        let fallbackMode = false;
+        let fallbackMsg = [];
+        if(minViews > 0) {
+            const strictFiltered = allResults.filter(v => v.views >= minViews);
+            if(strictFiltered.length > 0) {
+                allResults = strictFiltered;
+            } else {
+                fallbackMode = true;
+                fallbackMsg.push(`views < ${fmtN(minViews)}`);
+                allResults.sort((a,b) => (b.relevance - a.relevance) || (b.views - a.views));
+            }
+        }
+
+        // Trim to maxR
+        if(!fallbackMode) {
+            allResults.sort((a,b) => (b.relevance - a.relevance) || (b.vpd - a.vpd));
+        }
+        if(allResults.length > maxR) allResults = allResults.slice(0, maxR);
+
+        // Fetch channel info (subs, creation date)
+        prog('📊 Lấy thông tin kênh...',80);
+        await fetchChannelInfos(allResults.map(v=>v.channelId));
+        allResults.forEach(v=>{
+            const ch=channelCache[v.channelId]||{};
+            v.subs=ch.subs||0;
+            v.channelCreated=ch.created||'';
+            v.vph=Math.round(v.views/Math.max(1,v.ageHours));
+        });
+
+        // ===== SMART FALLBACK: Subscriber filter =====
+        if(subFilterVal){
+            const parts=subFilterVal.split('-');
+            const minSub=parseInt(parts[0])||0;
+            const maxSub=parts[1]?parseInt(parts[1]):Infinity;
+            const subFiltered=allResults.filter(v=>v.subs>=minSub&&v.subs<maxSub);
+            if(subFiltered.length > 0) {
+                allResults = subFiltered;
+            } else {
+                fallbackMode = true;
+                fallbackMsg.push(`subs ngoài ${subFilterVal}`);
+                allResults.sort((a,b) => (b.relevance - a.relevance) || (b.views - a.views));
+            }
+        }
+
+        // Calculate Outlier Score
+        prog('🎯 Tính Outlier Score...',92);
+        const chAvg={};
+        allResults.forEach(v=>{
+            if(!chAvg[v.channelId])chAvg[v.channelId]={totalVpd:0,count:0};
+            chAvg[v.channelId].totalVpd+=v.vpd;
+            chAvg[v.channelId].count++;
+        });
+        allResults.forEach(v=>{
+            if(v.subs>0){
+                v.outlierScore=Math.round((v.views/v.subs)*100)/100;
+            }else{
+                v.outlierScore=v.vpd>1000?5:v.vpd>500?3:1;
+            }
+        });
+
+        // Sort: fallback → relevance first; normal → views/day
+        if(fallbackMode) {
+            allResults.sort((a,b) => (b.relevance - a.relevance) || (b.views - a.views));
+        } else {
+            allResults.sort((a,b)=>b.vpd-a.vpd);
+        }
+        prog('✅ Hoàn tất!',100);
+
+        renderStats();renderKeywords();renderChannels();renderTable();
+        document.getElementById('exportBtn').style.display='inline-flex';
+        if(fallbackMode) {
+            toast(`⚠️ Không đủ điều kiện (${fallbackMsg.join(', ')}). Hiển thị ${allResults.length} video liên quan "${kw}" theo độ sát nhất! 🎯`,'error');
+        } else {
+            toast(`🎉 Tìm thấy ${allResults.length} video! (Quét ${totalFetched} video từ ${queries.length} queries)`);
+        }
+    }catch(e){
+        console.error(e);toast('Lỗi: '+e.message,'error');
+    }finally{
+        btn.disabled=false;btn.innerHTML='🔥 Tìm xu hướng';
+        document.getElementById('prog').classList.remove('v');
+    }
+}
+
+// ========== SMART QUERY EXPANSION ENGINE ==========
+function generateQueryVariations(keyword) {
+    const kw = keyword.trim();
+    const kwLow = kw.toLowerCase();
+    const words = kw.split(/\s+/).filter(w => w.length > 1);
+    const queries = [kw];
+    
+    const relatedPhrases = {
+        'kids songs': ['nursery rhymes', 'songs for kids', 'children songs', 'baby songs', 'toddler songs', 'kids music'],
+        'nursery rhymes': ['kids songs', 'baby songs', 'rhymes for kids', 'nursery songs', 'children rhymes'],
+        'baby songs': ['kids songs', 'nursery rhymes', 'lullaby', 'toddler songs', 'baby music'],
+        'kids cartoon': ['cartoon for kids', '3d animation', 'kids animation', 'children cartoon'],
+        'kids videos': ['videos for kids', 'children videos', 'toddler videos'],
+        'farm songs': ['old macdonald', 'animal songs', 'farm nursery rhymes'],
+        'animal songs': ['farm songs', 'animal sounds', 'zoo songs', 'animals for kids'],
+        'abc songs': ['alphabet songs', 'phonics songs', 'abc for kids', 'learn abc'],
+        'color songs': ['learn colors', 'colours for kids', 'rainbow songs'],
+        'counting songs': ['number songs', '123 songs', 'counting for kids'],
+        'lullaby': ['lullabies', 'sleep music', 'bedtime songs', 'baby lullaby'],
+        'cocomelon': ['kids songs cocomelon', 'nursery rhymes cocomelon'],
+        'wheels on the bus': ['wheels on the bus kids', 'bus song nursery'],
+    };
+    
+    let isKnownCategory = false;
+    if(relatedPhrases[kwLow]) {
+        isKnownCategory = true;
+        relatedPhrases[kwLow].forEach(r => queries.push(r));
+    }
+    if(!isKnownCategory) {
+        Object.keys(relatedPhrases).forEach(key => {
+            if(kwLow.includes(key) || key.includes(kwLow)) {
+                isKnownCategory = true;
+                relatedPhrases[key].slice(0, 3).forEach(r => {
+                    if(r.toLowerCase() !== kwLow) queries.push(r);
+                });
+            }
+        });
+    }
+    
+    queries.push(`"${kw}"`);
+    
+    if(words.length >= 2) {
+        queries.push(words.slice().reverse().join(' '));
+        // Partial combinations for multi-word: pairs of words
+        for(let i = 0; i < words.length; i++) {
+            for(let j = i+1; j < words.length; j++) {
+                const pair = words[i] + ' ' + words[j];
+                if(pair.toLowerCase() !== kwLow) queries.push(pair);
+            }
+        }
+    }
+    
+    const seen = new Set();
+    const unique = [];
+    queries.forEach(q => {
+        const normalized = q.toLowerCase().trim();
+        if(!seen.has(normalized) && normalized.length > 1) {
+            seen.add(normalized);
+            unique.push(q);
+        }
+    });
+    
+    return unique.slice(0, 8);
+}
+
+// ========== CONTENT FORMAT DETECTOR ==========
+// Detects visual format: 2d_animation, 3d_animation, live_action, mixed
+let detectedFormat = null; // Global so it can be used for filtering
+
+function detectContentFormat(results) {
+    if(!results.length) return null;
+    
+    const allTitles = results.map(v => v.title.toLowerCase()).join(' ');
+    const allTags = results.flatMap(v => (v.tags||[]).map(t => t.toLowerCase())).join(' ');
+    const allChannels = results.map(v => v.channel.toLowerCase()).join(' ');
+    const allText = allTitles + ' ' + allTags + ' ' + allChannels;
+
+    // Score each format
+    const scores = { '2d_animation': 0, '3d_animation': 0, 'live_action': 0 };
+
+    // 2D Animation indicators
+    const anim2d = /\b(cartoon|animated|animation|animate|2d|drawing|toon|comic)\b/gi;
+    const anim2dChannel = /\b(animated|animation|cartoon|toon|studio)\b/gi;
+    scores['2d_animation'] += (allTitles.match(anim2d)||[]).length * 3;
+    scores['2d_animation'] += (allTags.match(anim2d)||[]).length * 2;
+    scores['2d_animation'] += (allChannels.match(anim2dChannel)||[]).length * 4;
+    // Character-driven stories (typical of 2D animation channels)
+    if(/\b(papillon|dobermann|labrador|sheriff|paw patrol|bluey|cocomelon)\b/i.test(allText)) scores['2d_animation'] += 5;
+    if(/\b(funny|sad|story|wake up|don't|please|oh no|rescue|pregnant|baby)\b/i.test(allTitles)) scores['2d_animation'] += 2;
+
+    // 3D Animation indicators
+    const anim3d = /\b(3d|cgi|render|blender|unreal|minecraft|roblox|fnaf|skibidi)\b/gi;
+    scores['3d_animation'] += (allText.match(anim3d)||[]).length * 4;
+
+    // Live action indicators
+    const live = /\b(vlog|real life|real|irl|challenge|prank|mukbang|unboxing|review|react|reaction|gameplay|lets play|let's play|tutorial|how to|diy|cooking|recipe)\b/gi;
+    scores['live_action'] += (allText.match(live)||[]).length * 4;
+    // If no animation keywords at all, likely live action
+    if(scores['2d_animation'] === 0 && scores['3d_animation'] === 0) scores['live_action'] += 3;
+
+    // Determine dominant format
+    const sorted = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+    const top = sorted[0];
+    const second = sorted[1];
+    
+    // Only declare format if there's a clear winner (>= 2x the second)
+    let format = null;
+    if(top[1] > 0 && (second[1] === 0 || top[1] >= second[1] * 1.5)) {
+        format = top[0];
+    } else if(top[1] > 0) {
+        format = top[0]; // Still pick the highest, but less confident
+    }
+
+    console.log('🎨 Format Detection:', { scores, detected: format });
+    return format;
+}
+
+// Check if a single video matches the detected format
+function videoMatchesFormat(v, format) {
+    if(!format) return true; // No format detected = allow all
+    
+    const title = v.title.toLowerCase();
+    const tags = (v.tags||[]).map(t => t.toLowerCase()).join(' ');
+    const channel = v.channel.toLowerCase();
+    const text = title + ' ' + tags + ' ' + channel;
+
+    if(format === '2d_animation') {
+        // REJECT if clearly 3D
+        if(/\b(3d animation|3d cartoon|cgi|blender|minecraft|roblox|skibidi|fnaf)\b/.test(text)) return false;
+        // REJECT if clearly live action / real people
+        if(/\b(real life|irl|vlog|mukbang|unboxing|reaction|react|gameplay|lets play|let's play|tutorial|how to|diy)\b/.test(text)) return false;
+        // ACCEPT if has animation indicators or character-driven content
+        if(/\b(animat|cartoon|toon|2d|drawing|funny|story|sad|rescue|baby|kids|comic)\b/.test(text)) return true;
+        // ACCEPT if channel name suggests animation
+        if(/\b(animated|animation|cartoon|toon|studio|kids)\b/.test(channel)) return true;
+        // For ambiguous cases: check if it looks like entertainment/story content (typical of animation channels)
+        if(/\b(please|don't|wake up|oh no|help|save|protect|pregnant|family)\b/.test(title)) return true;
+        // Default: allow but with lower confidence (will be sorted by relevance anyway)
+        return true;
+    }
+    
+    if(format === '3d_animation') {
+        // REJECT 2D-specific
+        if(/\b(2d|hand drawn|cartoon network)\b/.test(text)) return false;
+        // REJECT live action
+        if(/\b(real life|irl|vlog|mukbang|unboxing|reaction|gameplay|tutorial)\b/.test(text)) return false;
+        return true;
+    }
+    
+    if(format === 'live_action') {
+        // REJECT animated content
+        if(/\b(animat|cartoon|3d|2d|toon|cgi)\b/.test(text)) return false;
+        return true;
+    }
+    
+    return true;
+}
+
+// ========== SMART AI QUERY GENERATOR ==========
+// Analyzes found videos' tags & titles to discover related entities and generate smart queries
+function generateSmartQueries(results, originalKeyword) {
+    if(!results.length) return [];
+    
+    const kwLower = originalKeyword.toLowerCase();
+    const kwWords = kwLower.split(/\s+/).filter(w => w.length > 2);
+    const stops = new Set(['the','a','an','and','or','is','in','on','to','for','of','with','at','by','from',
+        'i','my','me','you','your','we','it','its','this','that','do','does','did','will','would','can',
+        'could','not','no','but','if','so','very','just','also','all','any','more','most','other','some',
+        'only','then','now','here','there','when','where','how','what','which','who','why','don','please',
+        'oh','the','full','video','new','best','top','episode','part','compilation','official','hd','4k']);
+
+    // 0. Detect content FORMAT for consistency filtering
+    detectedFormat = detectContentFormat(results);
+    const formatKeyword = detectedFormat === '2d_animation' ? 'cartoon' :
+                          detectedFormat === '3d_animation' ? '3d animation' :
+                          detectedFormat === 'live_action' ? '' : '';
+
+    // 1. Extract ALL tags from found videos
+    const tagFreq = {};
+    results.forEach(v => {
+        (v.tags || []).forEach(tag => {
+            const t = tag.toLowerCase().trim();
+            if(t.length > 2 && t !== kwLower && !kwWords.every(w => t === w)) {
+                tagFreq[t] = (tagFreq[t] || 0) + 1;
+            }
+        });
+    });
+
+    // 2. Extract significant title words (entities: character names, themes)
+    const wordFreq = {};
+    results.forEach(v => {
+        const ws = v.title.toLowerCase().replace(/[^a-z0-9à-ỹ\s]/g, '').split(/\s+/)
+            .filter(w => w.length > 2 && !stops.has(w) && !kwWords.includes(w));
+        [...new Set(ws)].forEach(w => { wordFreq[w] = (wordFreq[w] || 0) + 1; });
+    });
+
+    // 3. Detect content themes from titles
+    const allTitles = results.map(v => v.title.toLowerCase()).join(' ');
+    const contentType = [];
+    if(/animat|cartoon|3d|2d/.test(allTitles)) contentType.push('animation');
+    if(/funny|comedy|humor|laugh/.test(allTitles)) contentType.push('funny');
+    if(/kids|children|baby|toddler/.test(allTitles)) contentType.push('kids');
+    if(/police|sheriff|cop|officer/.test(allTitles)) contentType.push('police');
+    if(/story|stories|sad|happy|ending/.test(allTitles)) contentType.push('story');
+    if(/rescue|save|help|protect/.test(allTitles)) contentType.push('rescue');
+    if(/dog|puppy|cat|kitten|animal/.test(allTitles)) contentType.push('animal');
+
+    // 4. Get top tags sorted by frequency
+    const topTags = Object.entries(tagFreq).sort((a,b) => b[1] - a[1]).slice(0, 8).map(([t]) => t);
+    // 5. Get top discovered words (character names, themes)
+    const topWords = Object.entries(wordFreq).sort((a,b) => b[1] - a[1]).slice(0, 6).map(([w]) => w);
+
+    // 6. Build smart queries WITH format keyword appended
+    const smartQueries = [];
+    
+    // a) Top tags as queries — append format keyword for consistency
+    topTags.slice(0, 5).forEach(tag => {
+        smartQueries.push(tag);
+        if(formatKeyword && !tag.includes(formatKeyword)) {
+            smartQueries.push(`${tag} ${formatKeyword}`);
+        }
+    });
+    
+    // b) Combine discovered entities with each other + format
+    if(topWords.length >= 2) {
+        const combo = topWords.slice(0, 3).join(' ');
+        smartQueries.push(combo);
+        if(formatKeyword) smartQueries.push(`${combo} ${formatKeyword}`);
+        smartQueries.push(topWords[0] + ' ' + topWords[1]);
+    }
+    
+    // c) Combine discovered entities with original keyword words
+    topWords.slice(0, 3).forEach(w => {
+        kwWords.forEach(k => {
+            if(w !== k) {
+                smartQueries.push(`${w} ${k}`);
+                if(formatKeyword) smartQueries.push(`${w} ${k} ${formatKeyword}`);
+            }
+        });
+    });
+    
+    // d) Combine discovered words with content type
+    if(contentType.length > 0 && topWords.length > 0) {
+        smartQueries.push(`${topWords[0]} ${contentType[0]}`);
+    }
+    
+    // e) Channel-based: search for channels that make this type of content
+    const channelFreq = {};
+    results.forEach(v => { channelFreq[v.channel] = (channelFreq[v.channel]||0) + 1; });
+    const topChannel = Object.entries(channelFreq).sort((a,b) => b[1] - a[1])[0];
+    if(topChannel && contentType.length > 0) {
+        smartQueries.push(`${topChannel[0]} ${contentType[0]}`);
+    }
+
+    // 7. Deduplicate
+    const seen = new Set();
+    seen.add(kwLower);
+    kwWords.forEach(w => seen.add(w));
+    const unique = [];
+    smartQueries.forEach(q => {
+        const norm = q.toLowerCase().trim();
+        if(!seen.has(norm) && norm.length > 3) {
+            seen.add(norm);
+            unique.push(q);
+        }
+    });
+
+    console.log('🧠 AI Analysis:', {
+        format: detectedFormat, formatKeyword,
+        contentType, topTags: topTags.slice(0,5), topWords: topWords.slice(0,5),
+        generatedQueries: unique.slice(0,12)
+    });
+    
+    return unique.slice(0, 12);
+}
+
+function renderStats(){
+    const s=document.getElementById('statsSection');s.style.display='block';
+    const totalViews=allResults.reduce((a,v)=>a+v.views,0);
+    const avgVpd=Math.round(allResults.reduce((a,v)=>a+v.vpd,0)/allResults.length);
+    const channels=new Set(allResults.map(v=>v.channelId)).size;
+    const maxVpd=allResults[0]?.vpd||0;
+    const maxVph=Math.max(...allResults.map(v=>v.vph||0));
+    const topOutlier=Math.max(...allResults.map(v=>v.outlierScore||0));
+    const avgSubs=allResults.length?Math.round(allResults.reduce((a,v)=>a+v.subs,0)/allResults.length):0;
+    document.getElementById('statCards').innerHTML=`
+        <div class="stat-card"><div class="num">${allResults.length}</div><div class="lbl">Video tìm thấy</div></div>
+        <div class="stat-card"><div class="num">${fmtN(totalViews)}</div><div class="lbl">Tổng lượt xem</div></div>
+        <div class="stat-card"><div class="num">${fmtN(avgVpd)}</div><div class="lbl">TB View/ngày</div></div>
+        <div class="stat-card"><div class="num">${fmtN(avgSubs)}</div><div class="lbl">TB Subscribers</div></div>
+        <div class="stat-card"><div class="num">${fmtN(maxVph)}</div><div class="lbl">📈 Max View/giờ</div></div>
+        <div class="stat-card"><div class="num">${topOutlier.toFixed(1)}x</div><div class="lbl">🎯 Top Outlier</div></div>
+        <div class="stat-card"><div class="num">${channels}</div><div class="lbl">Số kênh</div></div>
+        <div class="stat-card"><div class="num">${fmtN(maxVpd)}</div><div class="lbl">Max View/ngày</div></div>`;
+}
+
+function renderKeywords(){
+    const words={};const stopWords=new Set(['the','a','an','and','or','is','in','on','to','for','of','with','at','by','from','i','my','me','you','your','we','our','it','its','this','that','these','those','do','does','did','will','would','can','could','should','have','has','had','be','been','am','are','was','were','not','no','but','if','so','than','too','very','just','about','also','all','any','each','every','more','most','other','some','such','only','then','now','here','there','when','where','how','what','which','who','whom','why','de','la','le','les','des','du','un','une','et','en','est','que','qui','dans','pour','par','sur','avec','ce','se','ne','pas','son','sa','ses','dei','del']);
+    allResults.forEach(v=>{
+        v.title.toLowerCase().replace(/[^\w\sÀ-ỹ]/g,' ').split(/\s+/).filter(w=>w.length>2&&!stopWords.has(w)&&!/^\d+$/.test(w)).forEach(w=>{words[w]=(words[w]||0)+1});
+    });
+    const sorted=Object.entries(words).sort((a,b)=>b[1]-a[1]).slice(0,30);
+    const sec=document.getElementById('kwSection');sec.style.display='block';
+    document.getElementById('kwCloud').innerHTML=sorted.map(([w,c])=>
+        `<span class="kw-tag" onclick="document.getElementById('keyword').value='${w}'">${w}<span class="kw-count">(${c})</span></span>`
+    ).join('');
+}
+
+function renderChannels(){
+    const ch={};
+    allResults.forEach(v=>{if(!ch[v.channelId])ch[v.channelId]={name:v.channel,count:0,totalViews:0,totalVpd:0};ch[v.channelId].count++;ch[v.channelId].totalViews+=v.views;ch[v.channelId].totalVpd+=v.vpd});
+    const sorted=Object.values(ch).sort((a,b)=>b.count-a.count).slice(0,15);
+    const sec=document.getElementById('channelSection');sec.style.display='block';
+    document.getElementById('channelList').innerHTML=`<table class="vtable"><thead><tr><th>Kênh</th><th>Số video</th><th>Tổng views</th><th>TB View/ngày</th></tr></thead><tbody>${sorted.map(c=>
+        `<tr><td style="font-weight:600">${c.name}</td><td class="stat">${c.count}</td><td class="stat">${fmtN(c.totalViews)}</td><td class="stat">${fmtN(Math.round(c.totalVpd/c.count))}</td></tr>`
+    ).join('')}</tbody></table>`;
+}
+
+function renderTable(){
+    const sec=document.getElementById('resultsSection');sec.style.display='block';
+    document.getElementById('resCnt').textContent=allResults.length;
+    const maxV=Math.max(...allResults.map(v=>v.vpd));
+    const tbody=document.getElementById('vtbody');
+    const maxVph=Math.max(...allResults.map(v=>v.vph||1));
+    const maxOutlier=Math.max(...allResults.map(v=>v.outlierScore||1));
+    tbody.innerHTML=allResults.map((v,i)=>{
+        const pct=Math.round(v.vpd/maxV*100);
+        const trend=v.vpd>maxV*0.5?'fire':v.vpd>maxV*0.2?'rising':'steady';
+        const trendLabel=trend==='fire'?'🔥 HOT':trend==='rising'?'📈 Rising':'✓ Steady';
+        const vnTime=toVN(v.publishedAt);
+        const tagsHtml=v.tags?.length?v.tags.map(t=>`<span style="display:inline-block;padding:1px 6px;margin:1px;background:rgba(124,58,237,.12);border-radius:4px;font-size:.68rem;color:#a78bfa;white-space:nowrap">#${t}</span>`).join(''):'<span style="color:var(--muted);font-size:.7rem">—</span>';
+        // Format duration as mm:ss or hh:mm:ss
+        const durM=Math.floor(v.duration/60), durS=v.duration%60, durH=Math.floor(durM/60);
+        const durStr=durH>0?`${durH}:${String(durM%60).padStart(2,'0')}:${String(durS).padStart(2,'0')}`:`${durM}:${String(durS).padStart(2,'0')}`;
+        const durColor=v.duration<=60?'#ff3860':v.duration<=180?'#f59e0b':'var(--text2)';
+        // View Velocity badge
+        const vph=v.vph||0;
+        const velClass=vph>maxVph*0.5?'vel-viral':vph>maxVph*0.25?'vel-hot':vph>maxVph*0.1?'vel-warm':'vel-normal';
+        const velLabel=vph>maxVph*0.5?'⚡ VIRAL':vph>maxVph*0.25?'🔥 Hot':vph>maxVph*0.1?'📈 Warm':'—';
+        // Outlier Score
+        const os=v.outlierScore||0;
+        const osPct=Math.min(100,Math.round(os/Math.max(maxOutlier,1)*100));
+        const osClass=os>=10?'god':os>=3?'great':os>=1?'good':'avg';
+        const osLabel=os>=10?'🏆 GOD':os>=3?'⭐ Great':os>=1?'✅ Good':'—';
+        return `<tr>
+            <td>${i+1}</td>
+            <td><img class="thumb-sm" src="${v.thumb}" onclick="window.open('https://youtube.com/watch?v=${v.id}','_blank')" alt=""></td>
+            <td><div class="v-title" onclick="window.open('https://youtube.com/watch?v=${v.id}','_blank')">${v.title}</div><div style="margin-top:3px;display:flex;gap:3px;flex-wrap:wrap">${v.matchTitle?'<span style="display:inline-block;padding:1px 5px;background:rgba(16,185,129,.15);border-radius:3px;font-size:.6rem;font-weight:700;color:#10b981">Title ✓</span>':''}${v.matchTags?'<span style="display:inline-block;padding:1px 5px;background:rgba(124,58,237,.15);border-radius:3px;font-size:.6rem;font-weight:700;color:#a78bfa">Tags ✓</span>':''}${v.matchDesc?'<span style="display:inline-block;padding:1px 5px;background:rgba(59,130,246,.15);border-radius:3px;font-size:.6rem;font-weight:700;color:#60a5fa">Desc ✓</span>':''}</div></td>
+            <td style="white-space:nowrap;font-size:.8rem;font-weight:600;color:${durColor}">${durStr}</td>
+            <td><span class="ch-name">${v.channel}</span></td>
+            <td class="stat">${fmtN(v.subs||0)}</td>
+            <td class="stat">${fmtN(v.views)}</td>
+            <td><div class="views-bar"><span class="stat ${trend==='fire'?'hot':trend==='rising'?'warm':'good'}">${fmtN(v.vpd)}</span><div class="views-fill" style="width:${pct}px"></div></div></td>
+            <td><div class="velocity"><span class="stat" style="min-width:45px">${fmtN(vph)}</span><span class="vel-badge ${velClass}">${velLabel}</span></div></td>
+            <td><div style="display:flex;align-items:center;gap:4px"><div class="outlier-bar"><div class="outlier-fill ${osClass}" style="width:${osPct}%"></div></div><span class="outlier-label" style="color:${osClass==='god'?'#ff3860':osClass==='great'?'#f59e0b':osClass==='good'?'#10b981':'#555'}">${os.toFixed(1)}x</span></div><div style="font-size:.65rem;color:var(--muted)">${osLabel}</div></td>
+            <td class="stat">${fmtN(v.likes)}</td>
+            <td style="white-space:nowrap;font-size:.78rem">${vnTime}</td>
+            <td><span class="tag ${trend}">${trendLabel}</span></td>
+            <td class="stat" style="font-size:.75rem;color:${(v.relevance||0)>=10?'#ff3860':(v.relevance||0)>=5?'#f59e0b':'var(--text2)'}">${v.relevance||0}</td>
+            <td style="max-width:200px">${tagsHtml}</td>
+        </tr>`;
+    }).join('');
+}
+
+function sortTable(key){
+    const map={title:(a,b)=>a.title.localeCompare(b.title),channel:(a,b)=>a.channel.localeCompare(b.channel),views:(a,b)=>a.views-b.views,vpd:(a,b)=>a.vpd-b.vpd,vph:(a,b)=>(a.vph||0)-(b.vph||0),outlier:(a,b)=>(a.outlierScore||0)-(b.outlierScore||0),likes:(a,b)=>a.likes-b.likes,subs:(a,b)=>(a.subs||0)-(b.subs||0),date:(a,b)=>new Date(a.publishedAt)-new Date(b.publishedAt),relevance:(a,b)=>(a.relevance||0)-(b.relevance||0),duration:(a,b)=>a.duration-b.duration};
+    // First click on new column = descending (highest first)
+    // Second click on same column = toggle
+    if(currentSort.key===key){currentSort.asc=!currentSort.asc}else{currentSort.key=key;currentSort.asc=false}
+    const fn=map[key]||map.views;
+    allResults.sort((a,b)=>currentSort.asc?fn(a,b):-fn(a,b));
+    // Update header arrows
+    document.querySelectorAll('.vtable th').forEach(th=>{
+        th.classList.remove('sort-active');
+        const arrow=th.querySelector('.arrow');
+        if(arrow) arrow.textContent='⇅';
+    });
+    const activeH=document.getElementById('th-'+key);
+    if(activeH){
+        activeH.classList.add('sort-active');
+        const arrow=activeH.querySelector('.arrow');
+        if(arrow) arrow.textContent=currentSort.asc?'↑':'↓';
+    }
+    renderTable();
+    toast(`Sắp xếp: ${key} ${currentSort.asc?'↑ thấp→cao':'↓ cao→thấp'}`);
+}
+
+function exportCSV(){
+    const header='#,Title,Tags,Channel,Subscribers,Views,Views/Day,Views/Hour,Outlier Score,Likes,Comments,Duration(s),Published(VN),URL\n';
+    const rows=allResults.map((v,i)=>`${i+1},"${v.title.replace(/"/g,'""')}","${(v.tags||[]).join('; ')}","${v.channel}",${v.subs||0},${v.views},${v.vpd},${v.vph||0},${(v.outlierScore||0).toFixed(2)},${v.likes},${v.comments},${v.duration},"${toVN(v.publishedAt)}",https://youtube.com/watch?v=${v.id}`).join('\n');
+    const blob=new Blob(['\ufeff'+header+rows],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`trend_${document.getElementById('keyword').value.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+    toast('Đã xuất CSV!');
+}
+
+document.getElementById('keyword').addEventListener('keydown',e=>{if(e.key==='Enter')searchTrending()});
+document.getElementById('apiKey').addEventListener('change',()=>localStorage.setItem('yt_api_key',document.getElementById('apiKey').value.trim()));
+</script>
+</body>
+</html>

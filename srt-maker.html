@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRT Karaoke Maker - Tạo phụ đề tự động</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.18.0/dist/ort.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.19/dist/bundle.min.js"></script>
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0a0f;--card:#1a1a2e;--input:#16162a;--border:rgba(255,255,255,.06);--text:#f0f0f5;--text2:#8888aa;--muted:#555570;--accent:#ff3860;--grad:linear-gradient(135deg,#ff3860,#7c3aed);--green:#10b981;--yellow:#f59e0b;--r:16px;--r2:10px}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        .bg-g{position:fixed;inset:0;z-index:0;pointer-events:none}
+        .bg-g::before{content:'';position:absolute;width:600px;height:600px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(124,58,237,.08) 0%,transparent 70%);animation:fo 15s ease-in-out infinite}
+        .bg-g::after{content:'';position:absolute;width:500px;height:500px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,56,96,.08) 0%,transparent 70%);animation:fo 18s ease-in-out infinite reverse}
+        @keyframes fo{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-30px) scale(1.1)}66%{transform:translate(-30px,50px) scale(.9)}}
+        .wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:30px 24px 80px}
+        .hdr{text-align:center;margin-bottom:40px}
+        .logo-i{width:56px;height:56px;background:var(--grad);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;animation:pulse 3s infinite}
+        @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(255,56,96,.2)}50%{box-shadow:0 0 40px rgba(255,56,96,.4)}}
+        h1{font-size:2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sub{color:var(--text2);margin-top:6px;font-size:.9rem}
+        .nav-links{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+        .nav-link{color:var(--accent);text-decoration:none;font-size:.8rem;font-weight:600;padding:5px 12px;border:1px solid rgba(255,56,96,.3);border-radius:20px}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:20px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:var(--r2);font-family:'Inter',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s}
+        .btn-p{background:var(--grad);color:#fff}
+        .btn-p:hover{transform:translateY(-2px)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-g{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+        .btn-g:hover{transform:translateY(-2px)}
+        .btn-s{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+        .btn-s:hover{background:rgba(255,255,255,.1)}
+        .btn-sm{padding:8px 14px;font-size:.8rem}
+        .btn-warn{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+        .btn-warn:hover{transform:translateY(-2px)}
+        .spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+        .toast{position:fixed;bottom:30px;right:30px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;gap:10px;font-size:.85rem;transform:translateY(100px);opacity:0;transition:all .4s;max-width:400px}
+        .toast.show{transform:translateY(0);opacity:1}
+
+        .drop-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+        @media(max-width:640px){.drop-row{grid-template-columns:1fr}}
+        .drop-zone{border:2px dashed var(--border);border-radius:var(--r2);padding:30px 20px;text-align:center;cursor:pointer;transition:all .3s;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:rgba(255,56,96,.03)}
+        .drop-zone.loaded{border-color:var(--green);background:rgba(16,185,129,.03)}
+        .drop-zone .dz-icon{font-size:2.5rem;margin-bottom:8px}
+        .drop-zone .dz-text{font-size:.85rem;font-weight:600;margin-bottom:4px}
+        .drop-zone .dz-hint{font-size:.75rem;color:var(--muted)}
+        .drop-zone .dz-file{font-size:.8rem;color:var(--green);font-weight:600;margin-top:8px}
+        .drop-zone input{display:none}
+
+        .prog-bar{width:100%;height:8px;background:var(--input);border-radius:4px;overflow:hidden;margin:8px 0}
+        .prog-fill{height:100%;background:var(--grad);border-radius:4px;transition:width .3s}
+        .prog-t{font-size:.8rem;color:var(--text2)}
+
+        .settings{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0}
+        @media(max-width:640px){.settings{grid-template-columns:1fr}}
+        .settings label{font-size:.75rem;color:var(--text2);display:block;margin-bottom:4px}
+        .settings input,.settings select{width:100%;padding:8px 10px;background:var(--input);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem}
+
+        .preview-area{margin-top:16px}
+        .srt-preview{background:var(--input);border:1px solid var(--border);border-radius:var(--r2);padding:16px;max-height:400px;overflow-y:auto;font-family:'Courier New',monospace;font-size:.8rem;line-height:1.6;white-space:pre-wrap;color:var(--text2)}
+        .srt-line{padding:6px 8px;border-radius:4px;margin:2px 0;transition:background .2s}
+        .srt-line:hover{background:rgba(255,255,255,.03)}
+        .srt-line.active{background:rgba(255,56,96,.1);border-left:3px solid var(--accent)}
+        .srt-num{color:var(--accent);font-weight:700}
+        .srt-time{color:var(--yellow)}
+        .srt-text{color:var(--text)}
+
+        .info-box{padding:14px;border-radius:var(--r2);margin:12px 0;font-size:.83rem;line-height:1.5}
+        .info-box.blue{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#93bbfc}
+        .info-box.green{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:#6ee7b7}
+        .info-box.yellow{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#fcd34d}
+
+        .wave-container{position:relative;width:100%;height:100px;background:var(--input);border-radius:8px;margin:12px 0;overflow:hidden;cursor:crosshair}
+        .wave-container canvas{width:100%;height:100%}
+
+        .player-row{display:flex;align-items:center;gap:12px;margin:12px 0;flex-wrap:wrap}
+        .player-row video{max-width:300px;border-radius:8px;max-height:180px}
+        .lyric-display{flex:1;min-width:200px;padding:16px;background:var(--input);border-radius:var(--r2);min-height:100px}
+        .lyric-current{font-size:1.1rem;font-weight:700;color:var(--accent);text-align:center;line-height:1.6}
+        .lyric-next{font-size:.85rem;color:var(--muted);text-align:center;margin-top:8px}
+
+        .ft{text-align:center;color:var(--muted);font-size:.8rem;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+
+        /* Intro detection result */
+        .intro-result{padding:16px;border-radius:var(--r2);margin:16px 0;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.25)}
+        .intro-result h4{color:var(--yellow);font-size:.9rem;margin-bottom:8px}
+        .intro-result .intro-time{font-size:1.8rem;font-weight:900;color:var(--yellow);font-family:'Courier New',monospace}
+        .intro-result .intro-desc{font-size:.8rem;color:var(--text2);margin-top:6px}
+        .intro-result .intro-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+
+        /* Detection status */
+        .detect-status{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:var(--r2);font-size:.82rem;margin:10px 0}
+        .detect-status.scanning{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#93bbfc}
+        .detect-status.done{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:#6ee7b7}
+        .detect-status .spin-sm{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:currentColor;border-radius:50%;animation:sp .7s linear infinite}
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+<div class="bg-g"></div>
+<div class="wrap">
+    <header class="hdr">
+        <div class="logo-i">📝</div>
+        <h1>SRT Karaoke Maker</h1>
+        <p class="sub">Kéo video + lyrics → Tự động tạo phụ đề SRT khớp nhạc</p>
+        <div class="nav-links" style="flex-direction:row;gap:14px;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="index.html" class="nav-link">📸 Thumbnail</a>
+                    <a href="yt-downloader.html" class="nav-link">⬇️ Tải Video</a>
+                    <a href="trending.html" class="nav-link">🔥 Xu hướng</a>
+                    <a href="channel-analyzer.html" class="nav-link">🧬 DNA</a>
+                    <a href="thumbnail-analyzer.html" class="nav-link">🎨 AI Ảnh</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="music-check.html" class="nav-link">🎵 Nhạc</a>
+                    <a href="audio-separator.html" class="nav-link">🎚️ Tách nhạc</a>
+                    <a href="suno-prompt.html" class="nav-link">🎵 Suno</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="tiktok.html" class="nav-link">🎬 TikTok</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Step 1: Upload -->
+    <section class="card" id="uploadCard">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px">📁 Kéo thả file vào đây</h3>
+        <div class="drop-row">
+            <div class="drop-zone" id="videoDrop" onclick="document.getElementById('videoInput').click()">
+                <div class="dz-icon">🎬</div>
+                <div class="dz-text">Video / Audio</div>
+                <div class="dz-hint">MP4, MKV, WebM, MP3, WAV...</div>
+                <div class="dz-file" id="videoName"></div>
+                <input type="file" id="videoInput" accept="video/*,audio/*,.mp4,.mkv,.webm,.mp3,.wav,.m4a">
+            </div>
+            <div class="drop-zone" id="lyricsDrop" onclick="document.getElementById('lyricsInput').click()">
+                <div class="dz-icon">📄</div>
+                <div class="dz-text">Lyrics (Lời bài hát)</div>
+                <div class="dz-hint">TXT, DOCX, hoặc dán trực tiếp</div>
+                <div class="dz-file" id="lyricsName"></div>
+                <input type="file" id="lyricsInput" accept=".txt,.doc,.docx,.text,text/plain">
+            </div>
+        </div>
+
+        <details open style="margin-bottom:12px">
+            <summary style="cursor:pointer;font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:8px">📝 Hoặc dán lời bài hát trực tiếp</summary>
+            <textarea id="lyricsDirect" rows="6" placeholder="Dán lời bài hát vào đây... Mỗi dòng = 1 câu phụ đề" style="width:100%;padding:12px;background:var(--input);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;resize:vertical;outline:none"></textarea>
+        </details>
+
+        <div class="settings">
+            <div>
+                <label>Lời hát bắt đầu ở giây (tự detect)</label>
+                <input type="number" id="startOffset" value="0" min="0" step="0.1">
+            </div>
+            <div>
+                <label>Nhạc kết thúc ở giây (0=tự động)</label>
+                <input type="number" id="endOffset" value="0" min="0" step="0.1">
+            </div>
+            <div>
+                <label>Khoảng cách giữa câu (ms)</label>
+                <input type="number" id="gapMs" value="200" min="0" step="50">
+            </div>
+        </div>
+
+        <!-- Detection status -->
+        <div class="detect-status scanning" id="detectStatus" style="display:none">
+            <span class="spin-sm"></span>
+            <span id="detectStatusText">Đang phân tích tần số giọng hát...</span>
+        </div>
+
+        <!-- Intro detection result -->
+        <div class="intro-result" id="introResult" style="display:none">
+            <h4>🎯 Tự động phát hiện intro nhạc mở đầu</h4>
+            <div class="intro-time" id="introTimeDisplay">0.0s</div>
+            <div class="intro-desc" id="introDesc">Lời bài hát bắt đầu ở giây thứ 0</div>
+            <div class="intro-actions">
+                <button class="btn btn-warn btn-sm" onclick="redetectIntro()">🔄 Phát hiện lại</button>
+                <button class="btn btn-s btn-sm" onclick="playFromIntro()">▶ Nghe thử từ đây</button>
+                <button class="btn btn-s btn-sm" onclick="resetOffset()">↩ Đặt về 0</button>
+            </div>
+        </div>
+
+        <button class="btn btn-p" id="generateBtn" onclick="generateSRT()">🚀 Tự động tạo SRT</button>
+
+        <div id="progArea" style="display:none;margin-top:12px">
+            <p class="prog-t" id="progT">Đang xử lý...</p>
+            <div class="prog-bar"><div class="prog-fill" id="progF" style="width:0%"></div></div>
+        </div>
+    </section>
+
+    <!-- Waveform + Preview -->
+    <section class="card" id="previewCard" style="display:none">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:12px">🎵 Preview phụ đề khớp nhạc</h3>
+
+        <div class="wave-container" id="waveContainer">
+            <canvas id="waveCanvas"></canvas>
+        </div>
+
+        <div class="player-row">
+            <video id="videoPlayer" controls style="display:none"></video>
+            <audio id="audioPlayer" controls style="display:none"></audio>
+            <div class="lyric-display">
+                <div class="lyric-current" id="currentLyric">♪ Sẵn sàng...</div>
+                <div class="lyric-next" id="nextLyric"></div>
+            </div>
+        </div>
+
+        <div class="info-box green">
+            ✅ Bấm Play để xem preview phụ đề khớp nhạc. Nếu chưa khớp, chỉnh "Lời hát bắt đầu ở giây" rồi bấm lại "Tạo SRT".
+        </div>
+    </section>
+
+    <!-- SRT Output -->
+    <section class="card" id="srtCard" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <h3 style="font-size:1rem;font-weight:700">📋 File SRT (<span id="lineCount">0</span> dòng)</h3>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-g" onclick="downloadSRT()">📥 Tải SRT</button>
+                <button class="btn btn-s" onclick="copySRT()">📋 Copy</button>
+            </div>
+        </div>
+        <div class="srt-preview" id="srtPreview"></div>
+    </section>
+
+    <footer class="ft">SRT Karaoke Maker — Tạo phụ đề tự động khớp nhạc</footer>
+</div>
+<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+
+<script>
+let audioBuffer = null;
+let audioCtx = null;
+let lyrics = [];
+let srtContent = '';
+let srtEntries = [];
+let mediaUrl = null;
+let isVideo = false;
+let lastAnalysis = null;
+let audioDuration = 0;
+let vocalFilteredBuffer = null; // Filtered audio for vocal detection
+
+function toast(m,t='success'){const e=document.getElementById('toast');document.getElementById('tI').textContent=t==='success'?'✅':t==='info'?'ℹ️':'❌';document.getElementById('tM').textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),5000)}
+function prog(t,p){document.getElementById('progT').textContent=t;document.getElementById('progF').style.width=p+'%'}
+
+// === DRAG & DROP ===
+function setupDrop(zoneId, inputId, nameId, handler){
+    const zone=document.getElementById(zoneId);
+    const input=document.getElementById(inputId);
+    zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('drag')});
+    zone.addEventListener('dragleave',()=>zone.classList.remove('drag'));
+    zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('drag');if(e.dataTransfer.files.length)handler(e.dataTransfer.files[0],nameId,zone)});
+    input.addEventListener('change',()=>{if(input.files.length)handler(input.files[0],nameId,zone)});
+}
+
+setupDrop('videoDrop','videoInput','videoName',handleVideoFile);
+setupDrop('lyricsDrop','lyricsInput','lyricsName',handleLyricsFile);
+
+async function handleVideoFile(file,nameId,zone){
+    document.getElementById(nameId).textContent='✅ '+file.name;
+    zone.classList.add('loaded');
+    isVideo = file.type.startsWith('video');
+
+    mediaUrl = URL.createObjectURL(file);
+    if(isVideo){
+        document.getElementById('videoPlayer').src=mediaUrl;
+        document.getElementById('videoPlayer').style.display='block';
+        document.getElementById('audioPlayer').style.display='none';
+    } else {
+        document.getElementById('audioPlayer').src=mediaUrl;
+        document.getElementById('audioPlayer').style.display='block';
+        document.getElementById('videoPlayer').style.display='none';
+    }
+
+    // Decode audio
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    try{
+        const buf = await file.arrayBuffer();
+        audioBuffer = await audioCtx.decodeAudioData(buf);
+        audioDuration = audioBuffer.duration;
+
+        toast('Đã tải audio: '+Math.round(audioDuration)+'s — Đang phân tích giọng hát...', 'info');
+
+        // === AUTO-DETECT VOCAL START ===
+        showDetectStatus('Đang lọc tần số giọng hát (300Hz-3000Hz)...');
+        await autoDetectVocalStart();
+
+    }catch(e){
+        toast('Lỗi đọc audio: '+e.message,'error');
+    }
+}
+
+async function handleLyricsFile(file,nameId,zone){
+    document.getElementById(nameId).textContent='✅ '+file.name;
+    zone.classList.add('loaded');
+    let text = '';
+
+    const ext = file.name.toLowerCase().split('.').pop();
+    if(ext === 'docx' || ext === 'doc'){
+        try{
+            const zip = await JSZip.loadAsync(file);
+            const docXml = await zip.file('word/document.xml')?.async('string');
+            if(docXml){
+                const parser = new DOMParser();
+                const xml = parser.parseFromString(docXml,'text/xml');
+                const wps = xml.getElementsByTagName('w:p');
+                const lines = [];
+                for(const wp of wps){
+                    const texts = wp.getElementsByTagName('w:t');
+                    let line = '';
+                    for(const t of texts) line += t.textContent;
+                    if(line.trim()) lines.push(line.trim());
+                }
+                text = lines.join('\n');
+                toast(`Đã đọc file Word: ${lines.length} dòng`);
+            } else {
+                toast('File Word không hợp lệ!','error');return;
+            }
+        }catch(e){
+            toast('Lỗi đọc DOCX: '+e.message,'error');return;
+        }
+    } else {
+        text = await file.text();
+    }
+
+    document.getElementById('lyricsDirect').value = text;
+    parseLyrics(text);
+    toast(`Đã tải ${lyrics.length} dòng lyrics`);
+}
+
+function parseLyrics(text){
+    lyrics = text.split('\n')
+        .map(l=>l.trim())
+        .filter(l=>l.length>0 && !/^\[.*\]$/.test(l) && !/^#/.test(l));
+}
+
+// ============================
+// VOCAL DETECTION - SILERO VAD (AI Model)
+// Uses Silero Voice Activity Detection model via ONNX Runtime Web
+// This is a neural network specifically trained to detect human voice
+// It runs entirely in-browser via WebAssembly
+// Returns precise timestamps of speech/singing segments
+// ============================
+
+async function autoDetectVocalStart(){
+    if(!audioBuffer) return;
+    showDetectStatus('🧠 Đang tải model AI phát hiện giọng hát (Silero VAD)...');
+
+    try{
+        // Get mono audio data
+        const audioData = audioBuffer.getChannelData(0);
+        const sampleRate = audioBuffer.sampleRate;
+
+        // Initialize Silero VAD model (NonRealTimeVAD for offline processing)
+        showDetectStatus('🧠 Đang khởi tạo AI model...');
+        await new Promise(r => setTimeout(r, 50));
+
+        const vadInstance = await vad.NonRealTimeVAD.new({
+            positiveSpeechThreshold: 0.85,  // Very high = only trigger on clear human voice
+            negativeSpeechThreshold: 0.35,
+            minSpeechMs: 1000,           // Min 1s to count as voice (singing phrases are long)
+            preSpeechPadMs: 100,
+            redemptionMs: 300,
+        });
+
+        showDetectStatus('🎤 AI đang phân tích giọng hát trong audio...');
+        await new Promise(r => setTimeout(r, 50));
+
+        // Run VAD on the audio buffer
+        const speechSegments = [];
+        for await (const segment of vadInstance.run(audioData, sampleRate)){
+            // segment.start and segment.end are in milliseconds
+            speechSegments.push({
+                start: segment.start / 1000,  // Convert to seconds
+                end: segment.end / 1000
+            });
+
+            // Update status periodically
+            if(speechSegments.length % 5 === 0){
+                showDetectStatus(`🎤 Đã phát hiện ${speechSegments.length} đoạn giọng hát...`);
+            }
+        }
+
+        console.log('VAD detected speech segments:', speechSegments);
+
+        // Find the first REAL speech segment (= first vocal/singing)
+        // Strategy: find clusters of speech segments (real singing has many segments close together)
+        let vocalStart = 0;
+        if(speechSegments.length > 0){
+            // Filter: only keep segments longer than 1.5s (real singing phrases)
+            // Short segments might be percussive sounds or instrumental artifacts
+            const longSegments = speechSegments.filter(s => (s.end - s.start) > 1.5);
+            
+            if(longSegments.length > 0){
+                vocalStart = longSegments[0].start;
+            } else {
+                // If no long segments, look for clusters of short segments
+                // (rapid successive segments = singing with short notes)
+                for(let i = 0; i < speechSegments.length - 1; i++){
+                    // Two segments within 2s of each other = likely real vocals
+                    if(speechSegments[i+1].start - speechSegments[i].end < 2.0){
+                        vocalStart = speechSegments[i].start;
+                        break;
+                    }
+                }
+                if(vocalStart === 0 && speechSegments.length > 0){
+                    vocalStart = speechSegments[0].start;
+                }
+            }
+        }
+
+        // Round to 0.5s
+        const rounded = Math.round(Math.max(0, vocalStart) * 2) / 2;
+        document.getElementById('startOffset').value = rounded.toFixed(1);
+        showIntroResult(rounded);
+        hideDetectStatus();
+
+        lastAnalysis = analyzeAudio(audioBuffer);
+        // Store VAD segments for potential use in SRT generation
+        lastAnalysis.vadSegments = speechSegments;
+
+        console.log('AI Detection result:', {
+            totalSegments: speechSegments.length,
+            firstVocalAt: rounded,
+            allSegments: speechSegments.slice(0, 10)
+        });
+
+        if(rounded > 1){
+            toast(`🎯 AI phát hiện: Lời bắt đầu ở ${rounded.toFixed(1)}s (${speechSegments.length} đoạn vocal)`);
+        } else {
+            toast(`🎵 AI: Lời bài hát bắt đầu ngay từ đầu (${speechSegments.length} đoạn vocal)`);
+        }
+
+    }catch(e){
+        console.error('VAD error:', e);
+        hideDetectStatus();
+
+        // Fallback to basic energy analysis
+        toast('⚠️ Không tải được AI model — dùng phương pháp dự phòng...', 'info');
+        lastAnalysis = analyzeAudio(audioBuffer);
+        showIntroResult(0);
+    }
+}
+
+// === UI HELPERS ===
+function showDetectStatus(text){
+    const el = document.getElementById('detectStatus');
+    el.style.display = 'flex';
+    el.className = 'detect-status scanning';
+    document.getElementById('detectStatusText').textContent = text;
+}
+
+function hideDetectStatus(){
+    const el = document.getElementById('detectStatus');
+    el.style.display = 'none';
+}
+
+function showIntroResult(seconds){
+    const el = document.getElementById('introResult');
+    el.style.display = 'block';
+    document.getElementById('introTimeDisplay').textContent = seconds.toFixed(1) + 's';
+    if(seconds > 1){
+        document.getElementById('introDesc').textContent =
+            `Nhạc mở đầu: ${seconds.toFixed(1)}s → Lời bài hát bắt đầu ở ${fmtTime(seconds)}`;
+    } else {
+        document.getElementById('introDesc').textContent =
+            'Không phát hiện intro — Lời bài hát bắt đầu ngay từ đầu bài';
+    }
+}
+
+async function redetectIntro(){
+    if(!audioBuffer){toast('Tải audio trước!','error');return}
+    document.getElementById('startOffset').value = '0';
+    await autoDetectVocalStart();
+}
+
+function playFromIntro(){
+    const startSec = parseFloat(document.getElementById('startOffset').value) || 0;
+    const player = isVideo ? document.getElementById('videoPlayer') : document.getElementById('audioPlayer');
+    player.currentTime = Math.max(0, startSec - 1);
+    player.play();
+    toast(`▶ Phát từ ${fmtTimeShort(Math.max(0,startSec-1))}`, 'info');
+}
+
+function resetOffset(){
+    document.getElementById('startOffset').value = '0';
+    showIntroResult(0);
+    toast('Đã đặt về 0s');
+}
+
+// === AUDIO ANALYSIS (for waveform + SRT generation) ===
+function analyzeAudio(buffer){
+    const data = buffer.getChannelData(0);
+    const sampleRate = buffer.sampleRate;
+    const windowSize = Math.round(sampleRate * 0.05);
+    const hopSize = Math.round(windowSize / 2);
+    const energies = [];
+
+    for(let i=0; i<data.length-windowSize; i+=hopSize){
+        let sum=0;
+        for(let j=0;j<windowSize;j++) sum += data[i+j]*data[i+j];
+        energies.push({time:i/sampleRate, energy:Math.sqrt(sum/windowSize)});
+    }
+
+    const smoothed = [];
+    const smoothW = 5;
+    for(let i=0;i<energies.length;i++){
+        let sum=0,cnt=0;
+        for(let j=Math.max(0,i-smoothW);j<=Math.min(energies.length-1,i+smoothW);j++){sum+=energies[j].energy;cnt++}
+        smoothed.push({time:energies[i].time, energy:sum/cnt});
+    }
+
+    const maxE = Math.max(...smoothed.map(e=>e.energy));
+    const threshold = maxE * 0.15;
+    const segments = [];
+    let inSeg = false, segStart=0;
+
+    for(let i=0;i<smoothed.length;i++){
+        if(!inSeg && smoothed[i].energy>threshold){
+            inSeg=true;segStart=smoothed[i].time;
+        } else if(inSeg && (smoothed[i].energy<=threshold || i===smoothed.length-1)){
+            inSeg=false;
+            const segEnd=smoothed[i].time;
+            if(segEnd-segStart>0.3) segments.push({start:segStart,end:segEnd});
+        }
+    }
+
+    const onsets=[];
+    for(let i=1;i<smoothed.length;i++){
+        const diff = smoothed[i].energy - smoothed[i-1].energy;
+        if(diff > maxE*0.08 && smoothed[i].energy > threshold){
+            const t=smoothed[i].time;
+            if(onsets.length===0 || t-onsets[onsets.length-1]>0.5){
+                onsets.push(t);
+            }
+        }
+    }
+
+    return {energies:smoothed, segments, onsets, maxEnergy:maxE, threshold};
+}
+
+// === SRT GENERATION ===
+// Estimate syllable count for timing weight
+function estimateSyllables(text){
+    // English: count vowel groups
+    const vowelGroups = (text.toLowerCase().match(/[aeiouyàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]+/g)||[]).length;
+    // Fallback: at least 1 syllable per 3 characters
+    return Math.max(1, vowelGroups || Math.ceil(text.length / 3));
+}
+
+function generateSRT(){
+    const directText = document.getElementById('lyricsDirect').value.trim();
+    if(directText) parseLyrics(directText);
+    if(!lyrics.length){toast('Nhập lời bài hát!','error');return}
+    if(!audioBuffer){toast('Tải file video/audio trước!','error');return}
+
+    const btn=document.getElementById('generateBtn');
+    btn.disabled=true;btn.innerHTML='<span class="spin"></span> Đang phân tích...';
+    document.getElementById('progArea').style.display='block';
+    prog('Phân tích audio...',10);
+
+    setTimeout(()=>{
+        try{
+            const startOff = parseFloat(document.getElementById('startOffset').value)||0;
+            let endOff = parseFloat(document.getElementById('endOffset').value)||0;
+            const gapMs = parseInt(document.getElementById('gapMs').value)||200;
+            const gap = gapMs/1000;
+
+            if(endOff<=startOff) endOff = audioBuffer.duration;
+
+            prog('Phát hiện nhịp & onset...',30);
+            if(!lastAnalysis) lastAnalysis = analyzeAudio(audioBuffer);
+            const analysis = lastAnalysis;
+
+            prog('Đồng bộ lyrics (syllable-weighted)...',60);
+
+            const totalDur = endOff - startOff;
+            const numLines = lyrics.length;
+
+            // Calculate syllable weights for each line
+            const syllables = lyrics.map(l => estimateSyllables(l));
+            const totalSyllables = syllables.reduce((s,c) => s + c, 0);
+            const totalGapTime = (numLines - 1) * gap;
+            const availDur = totalDur - totalGapTime;
+
+            // Filter onsets after startOffset
+            let onsets = analysis.onsets.filter(t=>t>=startOff && t<=endOff);
+
+            srtEntries = [];
+
+            // Distribute time based on syllable count
+            let currentTime = startOff;
+            for(let i = 0; i < numLines; i++){
+                const weight = syllables[i] / totalSyllables;
+                const lineDur = availDur * weight;
+
+                let lineStart = currentTime;
+                let lineEnd = lineStart + lineDur;
+
+                // Try to snap start to nearest onset (within 0.5s)
+                const nearestOnset = onsets.find(o => Math.abs(o - lineStart) < 0.5 && o >= startOff);
+                if(nearestOnset !== undefined && i > 0){
+                    lineStart = nearestOnset;
+                    // Remove used onset
+                    onsets = onsets.filter(o => o !== nearestOnset);
+                }
+
+                lineEnd = lineStart + lineDur;
+
+                // Ensure we don't exceed endOff
+                lineEnd = Math.min(lineEnd, endOff);
+                if(i < numLines - 1) lineEnd = Math.min(lineEnd, lineStart + lineDur);
+
+                srtEntries.push({
+                    index: i+1,
+                    start: Math.max(startOff, lineStart),
+                    end: lineEnd,
+                    text: lyrics[i]
+                });
+
+                currentTime = lineEnd + gap;
+            }
+
+            // Ensure last entry reaches endOff
+            if(srtEntries.length > 0){
+                srtEntries[srtEntries.length-1].end = Math.min(endOff, srtEntries[srtEntries.length-1].end);
+            }
+
+            prog('Tạo file SRT...',90);
+
+            // Build SRT (CapCut compatible)
+            srtContent = srtEntries.map(e=>
+                `${e.index}\r\n${fmtTime(e.start)} --> ${fmtTime(e.end)}\r\n${e.text}\r\n`
+            ).join('\r\n');
+
+            renderSRTPreview();
+            drawWaveform(analysis);
+            setupLyricSync();
+
+            document.getElementById('previewCard').style.display='block';
+            document.getElementById('srtCard').style.display='block';
+            document.getElementById('lineCount').textContent=srtEntries.length;
+
+            prog('Hoàn tất!',100);
+            toast(`Đã tạo SRT: ${srtEntries.length} dòng — Bắt đầu từ ${fmtTime(startOff)}!`);
+
+        }catch(e){
+            console.error(e);
+            toast('Lỗi: '+e.message,'error');
+        }finally{
+            btn.disabled=false;btn.innerHTML='🚀 Tự động tạo SRT';
+            setTimeout(()=>document.getElementById('progArea').style.display='none',1500);
+        }
+    },100);
+}
+
+
+
+function fmtTime(sec){
+    const h=Math.floor(sec/3600);
+    const m=Math.floor((sec%3600)/60);
+    const s=Math.floor(sec%60);
+    const ms=Math.round((sec%1)*1000);
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${String(ms).padStart(3,'0')}`;
+}
+
+function fmtTimeShort(sec){
+    const m=Math.floor(sec/60);
+    const s=Math.floor(sec%60);
+    return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function renderSRTPreview(){
+    const container=document.getElementById('srtPreview');
+    container.innerHTML=srtEntries.map(e=>
+        `<div class="srt-line" id="srtLine${e.index}"><span class="srt-num">${e.index}</span>\n<span class="srt-time">${fmtTime(e.start)} --> ${fmtTime(e.end)}</span>\n<span class="srt-text">${e.text}</span></div>`
+    ).join('\n');
+}
+
+function drawWaveform(analysis){
+    const canvas=document.getElementById('waveCanvas');
+    const ctx=canvas.getContext('2d');
+    canvas.width=canvas.offsetWidth*2;
+    canvas.height=200;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    const energies=analysis.energies;
+    if(!energies.length)return;
+    const maxE=analysis.maxEnergy;
+    const dur=energies[energies.length-1].time;
+    const w=canvas.width;
+    const h=canvas.height;
+
+    // Draw energy waveform
+    ctx.beginPath();
+    ctx.strokeStyle='rgba(124,58,237,0.6)';
+    ctx.lineWidth=1.5;
+    for(let i=0;i<energies.length;i++){
+        const x=(energies[i].time/dur)*w;
+        const y=h-(energies[i].energy/maxE)*h*0.85;
+        if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();
+    const gradient=ctx.createLinearGradient(0,0,0,h);
+    gradient.addColorStop(0,'rgba(124,58,237,0.2)');
+    gradient.addColorStop(1,'rgba(124,58,237,0.02)');
+    ctx.fillStyle=gradient;
+    ctx.fill();
+
+    // Draw startOffset marker (yellow line)
+    const startOff = parseFloat(document.getElementById('startOffset').value) || 0;
+    if(startOff > 0){
+        const sx = (startOff/dur)*w;
+        // Shade intro region
+        ctx.fillStyle = 'rgba(245,158,11,0.06)';
+        ctx.fillRect(0, 0, sx, h);
+        // Line
+        ctx.strokeStyle='rgba(245,158,11,0.9)';
+        ctx.lineWidth=3;
+        ctx.setLineDash([]);
+        ctx.beginPath();ctx.moveTo(sx,0);ctx.lineTo(sx,h);ctx.stroke();
+        // Labels
+        ctx.fillStyle='rgba(245,158,11,0.9)';
+        ctx.font='bold 18px Inter';
+        ctx.textAlign='center';
+        ctx.fillText('▼', sx, 16);
+        ctx.font='11px Inter';
+        ctx.fillText('LỜI: '+startOff.toFixed(1)+'s', sx, h-4);
+    }
+
+    // Draw SRT entry markers
+    if(srtEntries.length > 0){
+        ctx.strokeStyle='rgba(255,56,96,0.4)';
+        ctx.lineWidth=1;
+        ctx.setLineDash([2,3]);
+        srtEntries.forEach(e=>{
+            const x=(e.start/dur)*w;
+            ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();
+        });
+        ctx.setLineDash([]);
+    }
+
+    // Threshold line
+    ctx.strokeStyle='rgba(245,158,11,0.2)';
+    ctx.setLineDash([4,4]);
+    const ty=h-(analysis.threshold/maxE)*h*0.85;
+    ctx.beginPath();ctx.moveTo(0,ty);ctx.lineTo(w,ty);ctx.stroke();
+    ctx.setLineDash([]);
+}
+
+function setupLyricSync(){
+    const player = isVideo ? document.getElementById('videoPlayer') : document.getElementById('audioPlayer');
+    player.removeEventListener('timeupdate', lyricSyncHandler);
+    player.addEventListener('timeupdate', lyricSyncHandler);
+}
+
+function lyricSyncHandler(){
+    const player = isVideo ? document.getElementById('videoPlayer') : document.getElementById('audioPlayer');
+    const t = player.currentTime;
+    let current = '♪ ...';
+    let next = '';
+    let activeIdx = -1;
+
+    for(let i=0;i<srtEntries.length;i++){
+        if(t>=srtEntries[i].start && t<=srtEntries[i].end){
+            current = srtEntries[i].text;
+            activeIdx = i;
+            if(i<srtEntries.length-1) next = srtEntries[i+1].text;
+            break;
+        }
+        if(t<srtEntries[i].start){
+            next = srtEntries[i].text;
+            current = '♪ ...';
+            break;
+        }
+    }
+    document.getElementById('currentLyric').textContent = current;
+    document.getElementById('nextLyric').textContent = next ? 'Tiếp: '+next : '';
+
+    document.querySelectorAll('.srt-line').forEach((el,idx)=>{
+        el.classList.toggle('active', idx === activeIdx);
+    });
+    if(activeIdx >= 0){
+        const activeLine = document.getElementById('srtLine'+(activeIdx+1));
+        if(activeLine) activeLine.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
+}
+
+function downloadSRT(){
+    if(!srtContent){toast('Chưa tạo SRT!','error');return}
+    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+    const encoder = new TextEncoder();
+    const content = encoder.encode(srtContent);
+    const combined = new Uint8Array(bom.length + content.length);
+    combined.set(bom, 0);
+    combined.set(content, bom.length);
+    const blob = new Blob([combined], {type:'application/x-subrip'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='karaoke_subtitles.srt';
+    a.click();
+    toast('Đã tải file SRT (UTF-8 BOM)!');
+}
+
+function copySRT(){
+    if(!srtContent){toast('Chưa tạo SRT!','error');return}
+    navigator.clipboard.writeText(srtContent).then(()=>toast('Đã copy SRT!')).catch(()=>toast('Lỗi copy','error'));
+}
+</script>
+</body>
+</html>

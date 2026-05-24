@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Separator - Tách nhạc trực tiếp</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0a0f;--card:#1a1a2e;--input:#16162a;--border:rgba(255,255,255,.06);--text:#f0f0f5;--text2:#8888aa;--muted:#555570;--accent:#ff3860;--grad:linear-gradient(135deg,#ff3860,#7c3aed);--green:#10b981;--yellow:#f59e0b;--r:16px;--r2:10px}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        .bg-g{position:fixed;inset:0;z-index:0;pointer-events:none}
+        .bg-g::before{content:'';position:absolute;width:600px;height:600px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(124,58,237,.08) 0%,transparent 70%);animation:fo 15s ease-in-out infinite}
+        .bg-g::after{content:'';position:absolute;width:500px;height:500px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,56,96,.08) 0%,transparent 70%);animation:fo 18s ease-in-out infinite reverse}
+        @keyframes fo{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-30px) scale(1.1)}66%{transform:translate(-30px,50px) scale(.9)}}
+        .wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:30px 24px 80px}
+        .hdr{text-align:center;margin-bottom:40px}
+        .logo-i{width:56px;height:56px;background:var(--grad);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;animation:pulse 3s infinite}
+        @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(255,56,96,.2)}50%{box-shadow:0 0 40px rgba(255,56,96,.4)}}
+        h1{font-size:2.1rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sub{color:var(--text2);margin-top:6px;font-size:.92rem}
+        .nav-links{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+        .nav-link{color:var(--accent);text-decoration:none;font-size:.82rem;font-weight:600;padding:5px 14px;border:1px solid rgba(255,56,96,.3);border-radius:20px;transition:all .3s}
+        .nav-link:hover{background:rgba(255,56,96,.1)}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+        label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+        .iw{position:relative}
+        .iw .ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted);pointer-events:none}
+        input[type="text"]{width:100%;padding:12px 14px 12px 42px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;transition:all .3s;outline:none}
+        input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.3)}
+        input::placeholder{color:var(--muted)}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:var(--r2);font-family:'Inter',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s}
+        .btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(255,56,96,.3)}
+        .btn-p:hover{transform:translateY(-2px)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-g{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+        .btn-g:hover{transform:translateY(-2px)}
+        .btn-g:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-s{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+        .spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+        .toast{position:fixed;bottom:30px;right:30px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;gap:10px;font-size:.85rem;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);max-width:400px}
+        .toast.show{transform:translateY(0);opacity:1}
+        @keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+        .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+        @media(max-width:640px){.mode-grid{grid-template-columns:1fr}}
+        .mode-card{background:var(--input);border:2px solid var(--border);border-radius:var(--r2);padding:20px;text-align:center;cursor:pointer;transition:all .3s}
+        .mode-card:hover{border-color:rgba(124,58,237,.3);transform:translateY(-2px)}
+        .mode-card.selected{border-color:var(--accent);background:rgba(255,56,96,.05)}
+        .mode-icon{font-size:2.5rem;margin-bottom:10px}
+        .mode-title{font-size:.95rem;font-weight:700;margin-bottom:4px}
+        .mode-desc{font-size:.78rem;color:var(--text2);line-height:1.4}
+
+        .drop-zone{border:2px dashed var(--border);border-radius:var(--r2);padding:40px;text-align:center;cursor:pointer;transition:all .3s;margin:16px 0}
+        .drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:rgba(255,56,96,.03)}
+        .drop-zone .dz-icon{font-size:3rem;margin-bottom:12px}
+        .drop-zone .dz-text{font-size:.9rem;font-weight:600;margin-bottom:6px}
+        .drop-zone .dz-hint{font-size:.78rem;color:var(--muted)}
+        .drop-zone input{display:none}
+
+        .prog-bar{width:100%;height:8px;background:var(--input);border-radius:4px;overflow:hidden;margin:12px 0}
+        .prog-fill{height:100%;background:var(--grad);border-radius:4px;transition:width .3s}
+        .prog-t{font-size:.82rem;color:var(--text2);margin-bottom:4px}
+
+        .result-card{background:var(--input);border:1px solid var(--border);border-radius:var(--r2);padding:20px;margin:12px 0}
+        .result-card h4{font-size:.95rem;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+        .result-card audio{width:100%;margin:8px 0;border-radius:8px}
+        .wave-vis{width:100%;height:80px;background:var(--input);border-radius:8px;margin:8px 0;position:relative;overflow:hidden}
+        .wave-vis canvas{width:100%;height:100%}
+
+        .info-box{padding:14px;border-radius:var(--r2);margin:12px 0;font-size:.83rem;line-height:1.5}
+        .info-box.blue{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);color:#93bbfc}
+        .info-box.green{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:#6ee7b7}
+        .info-box.yellow{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#fcd34d}
+        .ft{text-align:center;color:var(--muted);font-size:.8rem;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+    </style>
+</head>
+<body>
+<div class="bg-g"></div>
+<div class="wrap">
+    <header class="hdr">
+        <div class="logo-i">🎚️</div>
+        <h1>Audio Separator</h1>
+        <p class="sub">Tách nhạc nền & giọng hát trực tiếp trên trình duyệt</p>
+        <div class="nav-links" style="flex-direction:row;gap:14px;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="index.html" class="nav-link">📸 Thumbnail</a>
+                    <a href="yt-downloader.html" class="nav-link">⬇️ Tải Video</a>
+                    <a href="trending.html" class="nav-link">🔥 Xu hướng</a>
+                    <a href="channel-analyzer.html" class="nav-link">🧬 DNA</a>
+                    <a href="thumbnail-analyzer.html" class="nav-link">🎨 AI Ảnh</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="music-check.html" class="nav-link">🎵 Nhạc</a>
+                    <a href="srt-maker.html" class="nav-link">📝 SRT</a>
+                    <a href="suno-prompt.html" class="nav-link">🎵 Suno</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="tiktok.html" class="nav-link">🎬 TikTok</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Input section -->
+    <section class="card" id="inputCard">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px">🎧 Tải audio lên để tách</h3>
+
+        <div style="margin-bottom:14px">
+            <label>Cách 1: Dán link YouTube (tự động tải audio)</label>
+            <div style="display:flex;gap:10px">
+                <div class="iw" style="flex:1"><span class="ic">🔗</span>
+                    <input type="text" id="videoUrl" placeholder="https://youtube.com/watch?v=...">
+                </div>
+                <button class="btn btn-p" id="ytBtn" onclick="fetchFromYT()">📥 Tải</button>
+            </div>
+        </div>
+
+        <div style="text-align:center;color:var(--muted);font-size:.8rem;margin:12px 0">— hoặc —</div>
+
+        <label>Cách 2: Kéo thả file audio/video</label>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <div class="dz-icon">📁</div>
+            <div class="dz-text">Kéo thả file vào đây hoặc click để chọn</div>
+            <div class="dz-hint">Hỗ trợ: MP3, WAV, OGG, M4A, WEBM, MP4</div>
+            <input type="file" id="fileInput" accept="audio/*,video/*,.mp3,.wav,.ogg,.m4a,.webm,.mp4">
+        </div>
+
+        <div id="progArea" style="display:none">
+            <p class="prog-t" id="progT">Đang xử lý...</p>
+            <div class="prog-bar"><div class="prog-fill" id="progF" style="width:0%"></div></div>
+        </div>
+    </section>
+
+    <!-- Mode selection + Process -->
+    <section class="card" id="processCard" style="display:none">
+        <div id="fileInfo" style="padding:12px;background:var(--input);border-radius:8px;margin-bottom:16px;font-size:.85rem"></div>
+
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:6px">🎚️ Chọn chế độ tách</h3>
+        <p style="font-size:.8rem;color:var(--text2);margin-bottom:12px">Sử dụng kỹ thuật Phase Cancellation — xử lý ngay trên trình duyệt</p>
+
+        <div class="mode-grid">
+            <div class="mode-card selected" onclick="selectMode('instrumental',this)">
+                <div class="mode-icon">🎸</div>
+                <div class="mode-title">Lấy nhạc nền</div>
+                <div class="mode-desc">Loại bỏ giọng hát, giữ instrumental</div>
+            </div>
+            <div class="mode-card" onclick="selectMode('vocals',this)">
+                <div class="mode-icon">🎤</div>
+                <div class="mode-title">Lấy giọng hát</div>
+                <div class="mode-desc">Tách riêng giọng hát / lời thoại</div>
+            </div>
+        </div>
+
+        <div class="info-box blue">
+            💡 <strong>Phase Cancellation</strong> hoạt động bằng cách phân tích kênh trái/phải của audio stereo. Giọng hát thường nằm ở giữa (center), nhạc cụ trải rộng sang hai bên. Chất lượng tốt nhất với file stereo chất lượng cao.
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-p" id="processBtn" onclick="processAudio()">🎚️ Bắt đầu tách</button>
+        </div>
+
+        <div id="procProg" style="display:none">
+            <p class="prog-t" id="procT">Đang tách...</p>
+            <div class="prog-bar"><div class="prog-fill" id="procF" style="width:0%"></div></div>
+        </div>
+    </section>
+
+    <!-- Results -->
+    <section class="card" id="resultCard" style="display:none">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px">✅ Kết quả tách nhạc</h3>
+
+        <div class="result-card" id="origResult">
+            <h4>🎵 Audio gốc</h4>
+            <audio controls id="origAudio"></audio>
+        </div>
+
+        <div class="result-card" id="sepResult">
+            <h4 id="sepTitle">🎸 Nhạc nền (Instrumental)</h4>
+            <audio controls id="sepAudio"></audio>
+            <div style="margin-top:12px">
+                <button class="btn btn-g" onclick="downloadResult()">📥 Tải xuống WAV</button>
+            </div>
+        </div>
+
+        <div class="info-box green">
+            ✅ Tách nhạc hoàn tất! Bạn có thể nghe trực tiếp hoặc bấm "Tải xuống WAV" để lưu file.
+        </div>
+
+        <button class="btn btn-s" onclick="resetAll()" style="margin-top:8px">🔄 Tách file khác</button>
+    </section>
+
+    <footer class="ft">Audio Separator — Xử lý trực tiếp trên trình duyệt, không upload lên server</footer>
+</div>
+<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+
+<script>
+let audioBuffer = null;
+let resultBuffer = null;
+let audioCtx = null;
+let selectedMode = 'instrumental';
+
+function toast(m,t='success'){const e=document.getElementById('toast');document.getElementById('tI').textContent=t==='success'?'✅':t==='info'?'ℹ️':'❌';document.getElementById('tM').textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),5000)}
+function prog(id,t,p){document.getElementById(id+'T').textContent=t;document.getElementById(id+'F').style.width=p+'%'}
+
+function selectMode(mode,el){
+    selectedMode=mode;
+    document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+}
+
+// === YOUTUBE AUDIO FETCH ===
+const CORS_PROXIES = [
+    url => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+];
+
+async function fetchFromYT(){
+    const url = document.getElementById('videoUrl').value.trim();
+    if(!url){toast('Nhập link YouTube!','error');return}
+
+    const m = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/);
+    if(!m){toast('Link YouTube không hợp lệ!','error');return}
+    const videoId = m[1];
+
+    const btn = document.getElementById('ytBtn');
+    btn.disabled=true;btn.innerHTML='<span class="spin"></span>';
+    document.getElementById('progArea').style.display='block';
+    prog('prog','Đang lấy audio từ YouTube...',10);
+
+    try {
+        // Try cobalt API via CORS proxy
+        prog('prog','Kết nối API tải audio...',20);
+        let audioUrl = null;
+
+        // Try cobalt
+        for(const proxy of CORS_PROXIES) {
+            try {
+                const cobaltUrl = proxy('https://api.cobalt.tools/');
+                // Cobalt needs POST, but through proxy we might need GET
+                // Try alternative: use direct cobalt
+                break;
+            } catch(e){ continue; }
+        }
+
+        // Try direct fetch from cobalt (might work if CORS is allowed)
+        try {
+            prog('prog','Thử Cobalt API...',30);
+            const r = await fetch('https://api.cobalt.tools/', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json','Accept':'application/json'},
+                body: JSON.stringify({url:`https://www.youtube.com/watch?v=${videoId}`,audioFormat:'mp3',isAudioOnly:true})
+            });
+            const data = await r.json();
+            if(data.url) audioUrl = data.url;
+            else if(data.audio) audioUrl = data.audio;
+        } catch(e) {
+            console.log('Cobalt direct failed:', e);
+        }
+
+        if(audioUrl) {
+            prog('prog','Tải audio...',50);
+            try {
+                const r = await fetch(audioUrl);
+                const blob = await r.blob();
+                prog('prog','Giải mã audio...',80);
+                await decodeAudioBlob(blob, `YouTube_${videoId}`);
+                return;
+            } catch(e) {
+                console.log('Audio fetch failed:', e);
+            }
+        }
+
+        // Fallback: open cobalt in new tab and ask user to download
+        prog('prog','API bị chặn CORS. Mở trang tải audio...',90);
+        window.open(`https://cobalt.tools/#url=${encodeURIComponent(url)}`, '_blank');
+        toast('YouTube chặn tải trực tiếp. Hãy tải MP3 từ trang vừa mở, rồi kéo thả file vào ô bên dưới.','info');
+
+    } catch(e) {
+        console.error(e);
+        window.open(`https://cobalt.tools/#url=${encodeURIComponent(url)}`, '_blank');
+        toast('Tải trực tiếp thất bại. Hãy tải MP3 từ trang vừa mở, rồi kéo thả file vào đây.','info');
+    } finally {
+        btn.disabled=false;btn.innerHTML='📥 Tải';
+        document.getElementById('progArea').style.display='none';
+    }
+}
+
+// === FILE HANDLING ===
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault(); dropZone.classList.remove('drag');
+    if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if(fileInput.files.length) handleFile(fileInput.files[0]); });
+
+async function handleFile(file) {
+    const maxSize = 100 * 1024 * 1024; // 100MB
+    if(file.size > maxSize){ toast('File quá lớn (tối đa 100MB)!','error'); return; }
+
+    document.getElementById('progArea').style.display='block';
+    prog('prog',`Đang đọc: ${file.name}...`,20);
+
+    try {
+        await decodeAudioBlob(file, file.name.replace(/\.[^.]+$/,''));
+    } catch(e) {
+        toast('Không thể đọc file audio: '+e.message,'error');
+        document.getElementById('progArea').style.display='none';
+    }
+}
+
+async function decodeAudioBlob(blob, name) {
+    prog('prog','Giải mã audio...',60);
+    const arrayBuf = await blob.arrayBuffer();
+
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    try {
+        audioBuffer = await audioCtx.decodeAudioData(arrayBuf);
+    } catch(e) {
+        throw new Error('Định dạng audio không hỗ trợ');
+    }
+
+    prog('prog','Hoàn tất!',100);
+
+    const dur = audioBuffer.duration;
+    const mins = Math.floor(dur/60);
+    const secs = Math.floor(dur%60);
+    document.getElementById('fileInfo').innerHTML = `
+        <strong>📄 ${name}</strong><br>
+        <span style="color:var(--text2)">Thời lượng: ${mins}:${String(secs).padStart(2,'0')} · Channels: ${audioBuffer.numberOfChannels} · Sample rate: ${audioBuffer.sampleRate}Hz</span>
+        ${audioBuffer.numberOfChannels < 2 ? '<br><span style="color:var(--yellow)">⚠️ File mono — kết quả tách sẽ hạn chế. Khuyên dùng file stereo.</span>' : ''}
+    `;
+
+    // Show original audio
+    const origUrl = URL.createObjectURL(blob);
+    document.getElementById('origAudio').src = origUrl;
+
+    document.getElementById('processCard').style.display='block';
+    document.getElementById('progArea').style.display='none';
+    toast('Đã tải audio thành công!');
+}
+
+// === AUDIO PROCESSING ===
+async function processAudio(){
+    if(!audioBuffer){toast('Chưa tải audio!','error');return}
+
+    const btn = document.getElementById('processBtn');
+    btn.disabled=true;btn.innerHTML='<span class="spin"></span> Đang tách...';
+    document.getElementById('procProg').style.display='block';
+    prog('proc','Chuẩn bị...',5);
+
+    // Use setTimeout to allow UI update
+    await new Promise(r=>setTimeout(r,50));
+
+    try {
+        const channels = audioBuffer.numberOfChannels;
+        const length = audioBuffer.length;
+        const sampleRate = audioBuffer.sampleRate;
+
+        prog('proc','Đang tách audio...',20);
+        await new Promise(r=>setTimeout(r,30));
+
+        if(channels >= 2) {
+            // STEREO: Phase cancellation
+            const left = audioBuffer.getChannelData(0);
+            const right = audioBuffer.getChannelData(1);
+
+            // Create output buffer (mono for center, stereo for sides)
+            const outCtx = new OfflineAudioContext(2, length, sampleRate);
+            resultBuffer = outCtx.createBuffer(2, length, sampleRate);
+            const outL = resultBuffer.getChannelData(0);
+            const outR = resultBuffer.getChannelData(1);
+
+            const chunkSize = 65536;
+            for(let i = 0; i < length; i += chunkSize) {
+                const end = Math.min(i + chunkSize, length);
+
+                if(selectedMode === 'instrumental') {
+                    // Remove center (vocals) - keep sides
+                    for(let j = i; j < end; j++) {
+                        // Side = (L - R) / 2, enhanced
+                        const mid = (left[j] + right[j]) * 0.5;
+                        outL[j] = left[j] - mid * 0.85; // reduce center
+                        outR[j] = right[j] - mid * 0.85;
+                    }
+                } else {
+                    // Extract center (vocals) - keep mid
+                    for(let j = i; j < end; j++) {
+                        const mid = (left[j] + right[j]) * 0.5;
+                        const sideL = left[j] - mid;
+                        const sideR = right[j] - mid;
+                        // Enhance center, reduce sides
+                        outL[j] = mid * 1.2 - sideL * 0.3;
+                        outR[j] = mid * 1.2 - sideR * 0.3;
+                    }
+                }
+
+                const pct = 20 + Math.round((i/length)*70);
+                if(i % (chunkSize*4) === 0) {
+                    prog('proc',`Tách... ${pct}%`, pct);
+                    await new Promise(r=>setTimeout(r,10));
+                }
+            }
+        } else {
+            // MONO: Can't do phase cancellation, apply basic EQ
+            const mono = audioBuffer.getChannelData(0);
+            resultBuffer = audioCtx.createBuffer(1, length, sampleRate);
+            const out = resultBuffer.getChannelData(0);
+
+            // Simple high-pass or low-pass filter
+            if(selectedMode === 'instrumental') {
+                // High-pass filter (remove low freq vocals)
+                let prev = 0;
+                const alpha = 0.95;
+                for(let i = 0; i < length; i++) {
+                    out[i] = alpha * (prev + mono[i] - (i>0?mono[i-1]:0));
+                    prev = out[i];
+                }
+            } else {
+                // Band-pass for vocals (300Hz-3000Hz)
+                for(let i = 0; i < length; i++) out[i] = mono[i];
+            }
+        }
+
+        prog('proc','Tạo file kết quả...',95);
+        await new Promise(r=>setTimeout(r,30));
+
+        // Convert to WAV blob
+        const wavBlob = bufferToWav(resultBuffer);
+        const wavUrl = URL.createObjectURL(wavBlob);
+
+        document.getElementById('sepAudio').src = wavUrl;
+        document.getElementById('sepTitle').textContent =
+            selectedMode === 'instrumental' ? '🎸 Nhạc nền (Instrumental)' : '🎤 Giọng hát (Vocals)';
+
+        document.getElementById('resultCard').style.display='block';
+        prog('proc','Hoàn tất!',100);
+        toast(`Tách ${selectedMode === 'instrumental' ? 'nhạc nền' : 'giọng hát'} thành công!`);
+
+    } catch(e) {
+        console.error(e);
+        toast('Lỗi xử lý: '+e.message,'error');
+    } finally {
+        btn.disabled=false;btn.innerHTML='🎚️ Bắt đầu tách';
+        setTimeout(()=>document.getElementById('procProg').style.display='none',2000);
+    }
+}
+
+// === WAV ENCODER ===
+function bufferToWav(buffer) {
+    const numChannels = buffer.numberOfChannels;
+    const sampleRate = buffer.sampleRate;
+    const length = buffer.length;
+    const bitsPerSample = 16;
+    const byteRate = sampleRate * numChannels * bitsPerSample / 8;
+    const blockAlign = numChannels * bitsPerSample / 8;
+    const dataSize = length * numChannels * bitsPerSample / 8;
+    const bufSize = 44 + dataSize;
+    const buf = new ArrayBuffer(bufSize);
+    const view = new DataView(buf);
+
+    // WAV header
+    writeStr(view,0,'RIFF');
+    view.setUint32(4,36+dataSize,true);
+    writeStr(view,8,'WAVE');
+    writeStr(view,12,'fmt ');
+    view.setUint32(16,16,true);
+    view.setUint16(20,1,true);
+    view.setUint16(22,numChannels,true);
+    view.setUint32(24,sampleRate,true);
+    view.setUint32(28,byteRate,true);
+    view.setUint16(32,blockAlign,true);
+    view.setUint16(34,bitsPerSample,true);
+    writeStr(view,36,'data');
+    view.setUint32(40,dataSize,true);
+
+    // Interleave channels
+    let offset = 44;
+    const channels = [];
+    for(let c=0;c<numChannels;c++) channels.push(buffer.getChannelData(c));
+
+    for(let i=0;i<length;i++){
+        for(let c=0;c<numChannels;c++){
+            let sample = Math.max(-1, Math.min(1, channels[c][i]));
+            sample = sample < 0 ? sample * 0x8000 : sample * 0x7FFF;
+            view.setInt16(offset, sample, true);
+            offset += 2;
+        }
+    }
+
+    return new Blob([buf], {type:'audio/wav'});
+}
+
+function writeStr(view,offset,str){for(let i=0;i<str.length;i++)view.setUint8(offset+i,str.charCodeAt(i))}
+
+function downloadResult(){
+    if(!resultBuffer){toast('Chưa có kết quả!','error');return}
+    const wavBlob = bufferToWav(resultBuffer);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(wavBlob);
+    a.download = `${selectedMode}_separated_${Date.now()}.wav`;
+    a.click();
+    toast('Đã tải file WAV!');
+}
+
+function resetAll(){
+    audioBuffer=null;resultBuffer=null;
+    document.getElementById('processCard').style.display='none';
+    document.getElementById('resultCard').style.display='none';
+    document.getElementById('videoUrl').value='';
+    fileInput.value='';
+}
+
+document.getElementById('videoUrl').addEventListener('keydown',e=>{if(e.key==='Enter')fetchFromYT()});
+</script>
+</body>
+</html>

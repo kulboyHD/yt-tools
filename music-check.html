@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Music Checker - Kiểm tra nhạc nền</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{--bg:#0a0a0f;--card:#1a1a2e;--input:#16162a;--border:rgba(255,255,255,.06);--text:#f0f0f5;--text2:#8888aa;--muted:#555570;--accent:#ff3860;--grad:linear-gradient(135deg,#ff3860,#7c3aed);--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--r:16px;--r2:10px}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        .bg-g{position:fixed;inset:0;z-index:0;pointer-events:none}
+        .bg-g::before{content:'';position:absolute;width:600px;height:600px;top:-200px;left:-100px;background:radial-gradient(circle,rgba(124,58,237,.08) 0%,transparent 70%);animation:fo 15s ease-in-out infinite}
+        .bg-g::after{content:'';position:absolute;width:500px;height:500px;bottom:-150px;right:-100px;background:radial-gradient(circle,rgba(255,56,96,.08) 0%,transparent 70%);animation:fo 18s ease-in-out infinite reverse}
+        @keyframes fo{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-30px) scale(1.1)}66%{transform:translate(-30px,50px) scale(.9)}}
+        .wrap{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:30px 24px 80px}
+        .hdr{text-align:center;margin-bottom:40px}
+        .logo-i{width:56px;height:56px;background:var(--grad);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:12px;animation:pulse 3s infinite}
+        @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(255,56,96,.2)}50%{box-shadow:0 0 40px rgba(255,56,96,.4)}}
+        h1{font-size:2.2rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .sub{color:var(--text2);margin-top:6px;font-size:.95rem}
+        .nav-links{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+        .nav-link{color:var(--accent);text-decoration:none;font-size:.82rem;font-weight:600;padding:5px 14px;border:1px solid rgba(255,56,96,.3);border-radius:20px;transition:all .3s}
+        .nav-link:hover{background:rgba(255,56,96,.1)}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin-bottom:24px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+        label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em}
+        .iw{position:relative}
+        .iw .ic{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;color:var(--muted);pointer-events:none}
+        input[type="text"],input[type="password"]{width:100%;padding:12px 14px 12px 42px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;transition:all .3s;outline:none}
+        input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.3)}
+        input::placeholder{color:var(--muted)}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;border:none;border-radius:var(--r2);font-family:'Inter',sans-serif;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .3s}
+        .btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(255,56,96,.3)}
+        .btn-p:hover{transform:translateY(-2px)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .spin{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+        .toast{position:fixed;bottom:30px;right:30px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px 20px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;gap:10px;font-size:.85rem;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);max-width:400px}
+        .toast.show{transform:translateY(0);opacity:1}
+        @keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Video preview */
+        .vid-preview{display:none;animation:su .5s ease}
+        .vid-preview.v{display:flex;gap:20px;align-items:flex-start}
+        .vid-thumb{width:220px;border-radius:10px;flex-shrink:0;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+        .vid-info h3{font-size:1.1rem;font-weight:700;margin-bottom:8px;line-height:1.4}
+        .vid-meta{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
+        .vid-meta span{font-size:.8rem;color:var(--text2)}
+        .vid-meta strong{color:var(--text)}
+
+        /* Results */
+        .result-sec{display:none;animation:su .5s ease}
+        .result-sec.v{display:block}
+        .section-title{font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+        /* Music cards */
+        .music-card{background:var(--input);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:12px;transition:all .3s}
+        .music-card:hover{border-color:rgba(124,58,237,.3)}
+        .mc-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+        .mc-title{font-size:.95rem;font-weight:600}
+        .mc-artist{font-size:.85rem;color:var(--text2);margin-top:4px}
+        .mc-details{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+        .mc-tag{padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:600;text-transform:uppercase}
+        .mc-tag.free{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+        .mc-tag.licensed{background:rgba(245,158,11,.12);color:var(--yellow);border:1px solid rgba(245,158,11,.2)}
+        .mc-tag.copyright{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.2)}
+        .mc-tag.info{background:rgba(124,58,237,.1);color:#a78bfa;border:1px solid rgba(124,58,237,.2)}
+
+        /* License status */
+        .license-box{padding:20px;border-radius:var(--r2);margin-bottom:16px}
+        .license-box.safe{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2)}
+        .license-box.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)}
+        .license-box.danger{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)}
+        .license-icon{font-size:2rem;margin-bottom:8px}
+        .license-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+        .license-desc{font-size:.85rem;color:var(--text2);line-height:1.6}
+
+        /* Description parser */
+        .desc-music{background:var(--input);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:12px}
+        .desc-music .label{font-size:.72rem;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:8px}
+        .desc-line{font-size:.85rem;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.03);line-height:1.5}
+        .desc-line:last-child{border-bottom:none}
+        .highlight{background:rgba(255,56,96,.15);color:var(--accent);padding:1px 4px;border-radius:3px}
+
+        /* Search links */
+        .search-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+        .search-link{padding:6px 14px;background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2);border-radius:8px;color:#a78bfa;text-decoration:none;font-size:.8rem;font-weight:600;transition:all .2s}
+        .search-link:hover{background:rgba(124,58,237,.15);transform:translateY(-1px)}
+
+        .desc-raw{margin-top:16px;padding:16px;background:var(--input);border:1px solid var(--border);border-radius:var(--r2);font-size:.8rem;color:var(--text2);line-height:1.7;max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+        .ft{text-align:center;color:var(--muted);font-size:.8rem;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+        @media(max-width:768px){h1{font-size:1.8rem}.vid-preview.v{flex-direction:column}.vid-thumb{width:100%}}
+    </style>
+</head>
+<body>
+<div class="bg-g"></div>
+<div class="wrap">
+    <header class="hdr">
+        <div class="logo-i">🎵</div>
+        <h1>YouTube Music Checker</h1>
+        <p class="sub">Kiểm tra nhạc nền video — Nguồn gốc & Bản quyền</p>
+        <div class="nav-links" style="flex-direction:row;gap:14px;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="index.html" class="nav-link">📸 Thumbnail</a>
+                    <a href="yt-downloader.html" class="nav-link">⬇️ Tải Video</a>
+                    <a href="trending.html" class="nav-link">🔥 Xu hướng</a>
+                    <a href="channel-analyzer.html" class="nav-link">🧬 DNA</a>
+                    <a href="thumbnail-analyzer.html" class="nav-link">🎨 AI Ảnh</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="audio-separator.html" class="nav-link">🎚️ Tách nhạc</a>
+                    <a href="srt-maker.html" class="nav-link">📝 SRT</a>
+                    <a href="suno-prompt.html" class="nav-link">🎵 Suno</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="tiktok.html" class="nav-link">🎬 TikTok</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="card">
+        <div style="margin-bottom:14px">
+            <label>🔑 YouTube API Key</label>
+            <div class="iw"><span class="ic">🔑</span>
+                <input type="password" id="apiKey" placeholder="Dán API Key..." autocomplete="off">
+            </div>
+        </div>
+        <div style="margin-bottom:16px">
+            <label>Link video YouTube</label>
+            <div class="iw"><span class="ic">🔗</span>
+                <input type="text" id="videoUrl" placeholder="Dán link video YouTube vào đây...">
+            </div>
+        </div>
+        <button class="btn btn-p" id="checkBtn" onclick="checkMusic()">🎵 Kiểm tra nhạc nền</button>
+    </section>
+
+    <section class="card vid-preview" id="vidPreview">
+        <img class="vid-thumb" id="vidThumb" src="" alt="">
+        <div class="vid-info">
+            <h3 id="vidTitle"></h3>
+            <div style="font-size:.85rem;color:var(--text2)" id="vidChannel"></div>
+            <div class="vid-meta">
+                <span>👁 <strong id="vidViews">0</strong></span>
+                <span>👍 <strong id="vidLikes">0</strong></span>
+                <span>📅 <strong id="vidDate"></strong></span>
+                <span>⏱ <strong id="vidDur"></strong></span>
+            </div>
+        </div>
+    </section>
+
+    <section class="result-sec" id="licenseSection">
+        <div class="section-title">📋 Trạng thái bản quyền</div>
+        <div id="licenseBox"></div>
+    </section>
+
+    <section class="result-sec" id="musicSection">
+        <div class="card">
+            <div class="section-title">🎶 Nhạc được phát hiện trong video</div>
+            <div id="musicList"></div>
+            <div id="searchSection" style="display:none;margin-top:16px">
+                <div class="section-title" style="font-size:.85rem">🔎 Tìm kiếm thêm trên các nền tảng</div>
+                <div class="search-links" id="searchLinks"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="result-sec" id="descSection">
+        <div class="card">
+            <div class="section-title">📝 Mô tả video (phân tích)</div>
+            <div id="descAnalysis"></div>
+            <details style="margin-top:12px">
+                <summary style="cursor:pointer;color:var(--text2);font-size:.82rem;font-weight:600">📄 Xem toàn bộ mô tả gốc</summary>
+                <div class="desc-raw" id="descRaw"></div>
+            </details>
+        </div>
+    </section>
+
+    <footer class="ft">YouTube Music Checker Tool</footer>
+</div>
+<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+
+<script>
+const savedKey = localStorage.getItem('yt_api_key');
+if(savedKey) document.getElementById('apiKey').value = savedKey;
+
+function toast(m,t='success'){const e=document.getElementById('toast');document.getElementById('tI').textContent=t==='success'?'✅':'❌';document.getElementById('tM').textContent=m;e.className=`toast ${t} show`;setTimeout(()=>e.classList.remove('show'),4000)}
+function fmtN(n){if(!n)return'0';n=parseInt(n);if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toLocaleString()}
+function parseDur(iso){const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);if(!m)return'0:00';const h=parseInt(m[1]||0),mi=parseInt(m[2]||0),s=parseInt(m[3]||0);return h>0?`${h}:${String(mi).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${mi}:${String(s).padStart(2,'0')}`}
+function toVN(iso){return new Date(iso).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'})}
+
+async function ytApi(ep){
+    const k=document.getElementById('apiKey').value.trim();
+    if(!k)throw new Error('Nhập API Key!');
+    const r=await fetch(`https://www.googleapis.com/youtube/v3/${ep}&key=${k}`);
+    const d=await r.json();if(d.error)throw new Error(d.error.message);return d;
+}
+
+function extractVideoId(url){
+    url=url.trim();
+    const patterns=[
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+        /^([a-zA-Z0-9_-]{11})$/
+    ];
+    for(const p of patterns){const m=url.match(p);if(m)return m[1]}
+    return null;
+}
+
+// Music detection patterns in description
+const MUSIC_PATTERNS = [
+    /(?:🎵|🎶|♫|♪|🎤|🎧)\s*(.+)/gi,
+    /(?:music|song|track|nhạc|bài hát)\s*[:：]\s*(.+)/gi,
+    /(?:artist|singer|ca sĩ|nghệ sĩ)\s*[:：]\s*(.+)/gi,
+    /(?:album)\s*[:：]\s*(.+)/gi,
+    /(?:composer|sáng tác|tác giả)\s*[:：]\s*(.+)/gi,
+    /(?:licensed?|license|giấy phép)\s*[:：]\s*(.+)/gi,
+    /(?:provided by|cung cấp bởi)\s*[:：]?\s*(.+)/gi,
+    /(?:courtesy of)\s*[:：]?\s*(.+)/gi,
+    /(?:background music|nhạc nền)\s*[:：]\s*(.+)/gi,
+    /(?:credits?|tín dụng)\s*[:：]\s*(.+)/gi,
+    /(?:audio library|thư viện âm thanh)\s*[:：]?\s*(.+)/gi,
+];
+
+const FREE_MUSIC_SOURCES = [
+    'youtube audio library','audio library','no copyright','royalty free','royalty-free',
+    'free music','creative commons','cc by','ncs','nocopyrightsounds',
+    'free download','free to use','copyright free','bensound','incompetech',
+    'kevin macleod','epidemic sound free','artlist','uppbeat'
+];
+
+const COPYRIGHT_INDICATORS = [
+    '©','(c)','℗','all rights reserved','licensed to youtube',
+    'provided to youtube','auto-generated by youtube','official audio',
+    'official video','official music video','vevo','℗ & © '
+];
+
+function analyzeDescription(desc){
+    if(!desc) return {musicLines:[],isFree:false,isCopyrighted:false,detectedSongs:[],source:''};
+    const lower = desc.toLowerCase();
+    const musicLines = [];
+    const detectedSongs = [];
+    let isFree = false;
+    let isCopyrighted = false;
+    let source = '';
+
+    // Check free music indicators
+    for(const src of FREE_MUSIC_SOURCES){
+        if(lower.includes(src)){isFree=true;source=src;break}
+    }
+
+    // Check copyright indicators
+    for(const ind of COPYRIGHT_INDICATORS){
+        if(lower.includes(ind.toLowerCase())){isCopyrighted=true;break}
+    }
+
+    // Extract music lines
+    const lines = desc.split('\n');
+    for(const line of lines){
+        const trimmed = line.trim();
+        if(!trimmed) continue;
+        for(const pat of MUSIC_PATTERNS){
+            pat.lastIndex=0;
+            if(pat.test(trimmed)){
+                musicLines.push(trimmed);
+                break;
+            }
+        }
+        // Check for "Song - Artist" or "Artist - Song" patterns
+        if(/^[\w\sÀ-ỹ]+\s*[-–—]\s*[\w\sÀ-ỹ]+$/i.test(trimmed) && (lower.includes('music') || lower.includes('song') || lower.includes('nhạc'))){
+            if(!musicLines.includes(trimmed)) musicLines.push(trimmed);
+        }
+    }
+
+    // Try to extract song titles
+    const songPatterns = [
+        /(?:song|track|bài)\s*[:：]\s*["""]?([^"""\n]+)/gi,
+        /(?:music)\s*[:：]\s*["""]?([^"""\n]+)/gi,
+    ];
+    for(const pat of songPatterns){
+        pat.lastIndex=0;
+        let m;while((m=pat.exec(desc))!==null){detectedSongs.push(m[1].trim())}
+    }
+
+    return {musicLines, isFree, isCopyrighted, detectedSongs, source};
+}
+
+async function checkMusic(){
+    const url = document.getElementById('videoUrl').value.trim();
+    if(!url){toast('Nhập link video!','error');return}
+    const key = document.getElementById('apiKey').value.trim();
+    if(!key){toast('Nhập API Key!','error');return}
+    localStorage.setItem('yt_api_key',key);
+
+    const videoId = extractVideoId(url);
+    if(!videoId){toast('Link video không hợp lệ!','error');return}
+
+    const btn = document.getElementById('checkBtn');
+    btn.disabled=true;btn.innerHTML='<span class="spin"></span> Đang kiểm tra...';
+
+    // Hide previous results
+    ['vidPreview','licenseSection','musicSection','descSection'].forEach(id=>
+        document.getElementById(id).classList.remove('v'));
+
+    try{
+        // Fetch video details
+        const data = await ytApi(`videos?part=snippet,contentDetails,statistics,topicDetails,status&id=${videoId}`);
+        if(!data.items?.length) throw new Error('Không tìm thấy video');
+        const v = data.items[0];
+
+        // Show video preview
+        document.getElementById('vidThumb').src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+        document.getElementById('vidTitle').textContent = v.snippet.title;
+        document.getElementById('vidChannel').textContent = '📺 ' + v.snippet.channelTitle;
+        document.getElementById('vidViews').textContent = fmtN(v.statistics.viewCount);
+        document.getElementById('vidLikes').textContent = fmtN(v.statistics.likeCount);
+        document.getElementById('vidDate').textContent = toVN(v.snippet.publishedAt);
+        document.getElementById('vidDur').textContent = parseDur(v.contentDetails.duration);
+        document.getElementById('vidPreview').classList.add('v');
+
+        // Analyze
+        const desc = v.snippet.description || '';
+        const analysis = analyzeDescription(desc);
+        const isLicensed = v.contentDetails.licensedContent;
+        const topics = v.topicDetails?.topicCategories || [];
+        const isMusicCategory = v.snippet.categoryId === '10'; // Music category
+        const tags = v.snippet.tags || [];
+        const hasMusicTopic = topics.some(t => t.includes('Music') || t.includes('music'));
+
+        // === LICENSE STATUS ===
+        let licenseHtml = '';
+        if(analysis.isFree && !isLicensed){
+            licenseHtml = `<div class="license-box safe">
+                <div class="license-icon">✅</div>
+                <div class="license-title">Có vẻ an toàn — Nhạc miễn phí bản quyền</div>
+                <div class="license-desc">Phát hiện nguồn nhạc miễn phí: <strong>${analysis.source}</strong><br>
+                Tuy nhiên, hãy luôn kiểm tra kỹ điều khoản sử dụng của nguồn nhạc.</div>
+            </div>`;
+        } else if(isLicensed || analysis.isCopyrighted){
+            licenseHtml = `<div class="license-box danger">
+                <div class="license-icon">⚠️</div>
+                <div class="license-title">Cảnh báo — Video chứa nội dung có bản quyền</div>
+                <div class="license-desc">${isLicensed?'YouTube xác nhận video chứa nội dung được cấp phép (licensed content).':''}
+                ${analysis.isCopyrighted?'<br>Phát hiện dấu hiệu bản quyền trong mô tả video.':''}
+                <br><br>⚠️ Sử dụng nhạc này có thể bị claim bản quyền hoặc demonetize.</div>
+            </div>`;
+        } else {
+            licenseHtml = `<div class="license-box warn">
+                <div class="license-icon">❓</div>
+                <div class="license-title">Không rõ — Cần kiểm tra thêm</div>
+                <div class="license-desc">Không tìm thấy thông tin bản quyền rõ ràng trong mô tả video.<br>
+                Khuyên bạn kiểm tra trực tiếp bằng các link bên dưới hoặc thử tải lên YouTube Studio để kiểm tra Content ID.</div>
+            </div>`;
+        }
+        document.getElementById('licenseBox').innerHTML = licenseHtml;
+        document.getElementById('licenseSection').classList.add('v');
+
+        // === MUSIC DETECTED ===
+        let musicHtml = '';
+
+        // From description analysis
+        if(analysis.musicLines.length > 0){
+            musicHtml += `<div class="desc-music"><div class="label">🎵 Thông tin nhạc từ mô tả</div>`;
+            analysis.musicLines.forEach(l => {
+                // Highlight music keywords
+                let hl = l.replace(/(music|song|track|artist|nhạc|bài hát|ca sĩ|album|composer|sáng tác|provided by|courtesy of|licensed)/gi,
+                    '<span class="highlight">$1</span>');
+                musicHtml += `<div class="desc-line">${hl}</div>`;
+            });
+            musicHtml += `</div>`;
+        }
+
+        // Topic & category info
+        if(isMusicCategory || hasMusicTopic){
+            musicHtml += `<div class="music-card"><div class="mc-header"><div><div class="mc-title">📂 Phân loại video</div></div></div><div class="mc-details">`;
+            if(isMusicCategory) musicHtml += `<span class="mc-tag copyright">Thể loại: Âm nhạc</span>`;
+            if(hasMusicTopic) musicHtml += `<span class="mc-tag info">Chủ đề liên quan: Music</span>`;
+            topics.forEach(t => {
+                const name = t.split('/').pop().replace(/_/g,' ');
+                musicHtml += `<span class="mc-tag info">${name}</span>`;
+            });
+            musicHtml += `</div></div>`;
+        }
+
+        // Tags related to music
+        const musicTags = tags.filter(t => /music|song|nhạc|beat|remix|cover|karaoke|instrumental|soundtrack|ost/i.test(t));
+        if(musicTags.length > 0){
+            musicHtml += `<div class="music-card"><div class="mc-title">🏷️ Tags liên quan đến nhạc</div><div class="mc-details">`;
+            musicTags.forEach(t => musicHtml += `<span class="mc-tag info">#${t}</span>`);
+            musicHtml += `</div></div>`;
+        }
+
+        // License info
+        musicHtml += `<div class="music-card"><div class="mc-title">📋 Thông tin giấy phép</div><div class="mc-details">`;
+        musicHtml += `<span class="mc-tag ${isLicensed?'copyright':'free'}">Licensed Content: ${isLicensed?'Có':'Không'}</span>`;
+        musicHtml += `<span class="mc-tag info">License: ${v.status.license==='creativeCommon'?'Creative Commons':'YouTube Standard'}</span>`;
+        if(v.contentDetails.contentRating?.ytRating) musicHtml += `<span class="mc-tag warn">Content Rating: ${v.contentDetails.contentRating.ytRating}</span>`;
+        musicHtml += `</div></div>`;
+
+        if(!musicHtml) musicHtml = '<p style="color:var(--muted)">Không tìm thấy thông tin nhạc trong video này.</p>';
+
+        document.getElementById('musicList').innerHTML = musicHtml;
+
+        // Search links
+        const searchQuery = encodeURIComponent(v.snippet.title + ' background music');
+        const songQuery = analysis.detectedSongs.length > 0
+            ? encodeURIComponent(analysis.detectedSongs[0])
+            : searchQuery;
+
+        document.getElementById('searchLinks').innerHTML = `
+            <a href="https://www.google.com/search?q=${songQuery}+copyright+free" target="_blank" class="search-link">🔍 Google</a>
+            <a href="https://www.youtube.com/audiolibrary" target="_blank" class="search-link">📚 YouTube Audio Library</a>
+            <a href="https://search.creativecommons.org/search?q=${songQuery}" target="_blank" class="search-link">🆓 Creative Commons</a>
+            <a href="https://www.shazam.com/" target="_blank" class="search-link">🎤 Shazam (App)</a>
+            <a href="https://audd.io/" target="_blank" class="search-link">🔊 AudD (Nhận dạng nhạc)</a>
+            <a href="https://www.google.com/search?q=${searchQuery}+site:reddit.com" target="_blank" class="search-link">💬 Reddit</a>
+        `;
+        document.getElementById('searchSection').style.display='block';
+        document.getElementById('musicSection').classList.add('v');
+
+        // === DESCRIPTION ===
+        const descHtml = analyzeDescriptionDetailed(desc);
+        document.getElementById('descAnalysis').innerHTML = descHtml;
+        document.getElementById('descRaw').textContent = desc || '(Không có mô tả)';
+        document.getElementById('descSection').classList.add('v');
+
+        toast('Kiểm tra hoàn tất!');
+    }catch(e){
+        console.error(e);toast('Lỗi: '+e.message,'error');
+    }finally{
+        btn.disabled=false;btn.innerHTML='🎵 Kiểm tra nhạc nền';
+    }
+}
+
+function analyzeDescriptionDetailed(desc){
+    if(!desc) return '<p style="color:var(--muted)">Video không có mô tả.</p>';
+    const sections = [];
+    const lines = desc.split('\n');
+    let currentSection = [];
+
+    // Look for music-related sections
+    const musicKeywords = /music|song|track|audio|sound|nhạc|âm thanh|bài hát|credit|license|giấy phép/i;
+    let inMusicSection = false;
+
+    for(const line of lines){
+        const trimmed = line.trim();
+        if(!trimmed) {inMusicSection=false; continue}
+        if(musicKeywords.test(trimmed)){
+            inMusicSection = true;
+            currentSection.push(`<div class="desc-line"><strong style="color:var(--accent)">${trimmed}</strong></div>`);
+        } else if(inMusicSection){
+            currentSection.push(`<div class="desc-line">${trimmed}</div>`);
+        }
+    }
+
+    if(currentSection.length > 0){
+        return `<div class="desc-music"><div class="label">🎵 Phần liên quan đến nhạc trong mô tả</div>${currentSection.join('')}</div>`;
+    }
+    return '<p style="color:var(--muted);font-size:.85rem">Không tìm thấy phần liên quan đến nhạc trong mô tả. Hãy kiểm tra mô tả gốc bên dưới.</p>';
+}
+
+document.getElementById('videoUrl').addEventListener('keydown',e=>{if(e.key==='Enter')checkMusic()});
+document.getElementById('apiKey').addEventListener('change',()=>localStorage.setItem('yt_api_key',document.getElementById('apiKey').value.trim()));
+</script>
+</body>
+</html>

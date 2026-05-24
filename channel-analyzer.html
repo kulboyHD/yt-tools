@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Channel DNA Analyzer - Giải mã DNA kênh YouTube</title>
+    <meta name="description" content="Phân tích toàn diện kênh YouTube: giải mã DNA, trending keywords, công thức thành công, tối ưu CTR">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#06060f;--card:rgba(18,18,35,0.85);--card2:rgba(24,24,48,0.9);
+            --input:#0e0e22;--border:rgba(255,255,255,.06);
+            --text:#f0f0f5;--text2:#9898bb;--muted:#555575;
+            --accent:#6366f1;--accent2:#8b5cf6;--accent3:#a78bfa;
+            --grad:linear-gradient(135deg,#6366f1,#8b5cf6,#a78bfa);
+            --grad2:linear-gradient(135deg,#ec4899,#f43f5e);
+            --grad3:linear-gradient(135deg,#10b981,#14b8a6);
+            --green:#10b981;--red:#f43f5e;--yellow:#f59e0b;--blue:#3b82f6;
+            --r:18px;--r2:12px;--r3:8px;
+            --glass:rgba(255,255,255,.03);
+            --shadow:0 20px 60px rgba(0,0,0,.5);
+        }
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.6}
+        .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+        .bg-orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:.15;animation:float 20s ease-in-out infinite}
+        .bg-orb:nth-child(1){width:600px;height:600px;top:-200px;right:-100px;background:#6366f1;animation-delay:0s}
+        .bg-orb:nth-child(2){width:500px;height:500px;bottom:-150px;left:-100px;background:#ec4899;animation-delay:-7s}
+        .bg-orb:nth-child(3){width:400px;height:400px;top:40%;left:30%;background:#8b5cf6;animation-delay:-14s}
+        @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(60px,-40px) scale(1.1)}66%{transform:translate(-40px,60px) scale(.9)}}
+        .bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:50px 50px}
+        .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 20px 100px}
+
+        /* Header */
+        .hdr{text-align:center;margin-bottom:48px}
+        .logo-wrap{display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;background:var(--grad);border-radius:20px;margin-bottom:20px;font-size:36px;box-shadow:0 0 30px rgba(99,102,241,.3),0 0 60px rgba(99,102,241,.15);animation:logoPulse 3s ease-in-out infinite}
+        @keyframes logoPulse{0%,100%{box-shadow:0 0 30px rgba(99,102,241,.3)}50%{box-shadow:0 0 50px rgba(99,102,241,.5),0 0 80px rgba(139,92,246,.2)}}
+        h1{font-size:2.8rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.03em;line-height:1.2}
+        .sub{font-size:1.1rem;color:var(--text2);margin-top:10px}
+        .nav-links{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+        .nav-links a{color:var(--accent3);text-decoration:none;font-size:.8rem;font-weight:600;padding:5px 14px;border:1px solid rgba(139,92,246,.25);border-radius:20px;transition:all .3s}
+        .nav-links a:hover{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.5)}
+
+        /* Cards */
+        .card{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r);padding:32px;margin-bottom:24px;box-shadow:var(--shadow);transition:all .3s}
+        .card-glow{position:relative;overflow:hidden}
+
+        /* Labels & Inputs */
+        label{display:block;font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+        .hint{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.78rem}
+        .iw{position:relative}
+        .iw .ic{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--muted);pointer-events:none}
+        input[type="text"],input[type="password"]{width:100%;padding:14px 16px 14px 48px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;transition:all .3s;outline:none}
+        input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.2)}
+        input::placeholder{color:var(--muted)}
+        select{width:100%;padding:12px 14px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;cursor:pointer}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        @media(max-width:640px){.row{grid-template-columns:1fr}}
+
+        /* Buttons */
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border:none;border-radius:var(--r2);font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+        .btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.3)}
+        .btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.4)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-s{background:var(--glass);color:var(--text);border:1px solid var(--border)}
+        .btn-s:hover{background:rgba(255,255,255,.08)}
+        .acts{display:flex;gap:12px;flex-wrap:wrap}
+        .spin{display:inline-block;width:20px;height:20px;border:2.5px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+
+        /* Channel Info */
+        .ch-card{display:none;animation:slideUp .5s ease}
+        .ch-card.v{display:block}
+        @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        .ch-top{display:flex;align-items:center;gap:24px;margin-bottom:24px}
+        .ch-av-wrap{position:relative;flex-shrink:0}
+        .ch-av-wrap::before{content:'';position:absolute;inset:-4px;border-radius:50%;background:var(--grad);z-index:0}
+        .ch-av{width:80px;height:80px;border-radius:50%;object-fit:cover;position:relative;z-index:1}
+        .ch-name{font-size:1.5rem;font-weight:800}
+        .ch-desc{font-size:.85rem;color:var(--text2);margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .ch-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:20px}
+        .stat-box{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:16px;text-align:center;transition:all .3s}
+        .stat-box:hover{border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.05)}
+        .stat-num{font-size:1.5rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .stat-label{font-size:.72rem;color:var(--text2);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+
+        /* Progress */
+        .prog{display:none;animation:slideUp .4s ease}
+        .prog.v{display:block}
+        .prog-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+        .prog-t{font-size:.9rem;font-weight:500;color:var(--text2)}
+        .prog-p{font-size:1.1rem;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .prog-bar{width:100%;height:6px;background:var(--input);border-radius:3px;overflow:hidden}
+        .prog-fill{height:100%;width:0%;background:var(--grad);border-radius:3px;transition:width .3s}
+
+        /* Analysis sections */
+        .analysis{display:none;animation:slideUp .6s ease}
+        .analysis.v{display:block}
+        .section{margin-bottom:24px}
+        .sec-title{display:flex;align-items:center;gap:10px;font-size:1.1rem;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+        .sec-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .sec-icon.purple{background:rgba(99,102,241,.15)}
+        .sec-icon.pink{background:rgba(236,72,153,.15)}
+        .sec-icon.green{background:rgba(16,185,129,.15)}
+        .sec-icon.yellow{background:rgba(245,158,11,.15)}
+        .sec-icon.blue{background:rgba(59,130,246,.15)}
+
+        /* Bar Charts */
+        .chart-wrap{margin-bottom:16px}
+        .chart-title{font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em}
+        .hbar{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+        .hbar-label{width:60px;font-size:.78rem;color:var(--text2);text-align:right;flex-shrink:0}
+        .hbar-track{flex:1;height:24px;background:var(--input);border-radius:4px;overflow:hidden;position:relative}
+        .hbar-fill{height:100%;border-radius:4px;transition:width .8s ease;display:flex;align-items:center;padding-left:8px;font-size:.7rem;font-weight:700;color:#fff;min-width:fit-content}
+        .hbar-fill.grad1{background:var(--grad)}
+        .hbar-fill.grad2{background:var(--grad2)}
+        .hbar-fill.grad3{background:var(--grad3)}
+        .hbar-val{font-size:.78rem;color:var(--text2);width:36px;text-align:right;flex-shrink:0}
+
+        /* Tags */
+        .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+        .tag{display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:20px;font-size:.8rem;transition:all .2s;cursor:default}
+        .tag-purple{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:var(--accent3)}
+        .tag-pink{background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.2);color:#f472b6}
+        .tag-green{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#34d399}
+        .tag:hover{transform:translateY(-1px)}
+
+        /* Mini stat cards */
+        .mini-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+        .mini-stat{background:var(--glass);border:1px solid var(--border);border-radius:var(--r3);padding:14px;text-align:center}
+        .mini-stat .ms-val{font-size:1.3rem;font-weight:800;margin-bottom:2px}
+        .mini-stat .ms-label{font-size:.72rem;color:var(--text2)}
+        .ms-purple{color:var(--accent3)}
+        .ms-green{color:var(--green)}
+        .ms-pink{color:#f472b6}
+        .ms-yellow{color:var(--yellow)}
+        .ms-blue{color:var(--blue)}
+
+        /* Video cards */
+        .vid-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+        .vid-card{display:flex;gap:12px;padding:14px;background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);transition:all .3s}
+        .vid-card:hover{border-color:rgba(99,102,241,.2);transform:translateY(-2px)}
+        .vid-thumb{width:140px;min-width:140px;aspect-ratio:16/9;border-radius:var(--r3);overflow:hidden;background:var(--input)}
+        .vid-thumb img{width:100%;height:100%;object-fit:cover}
+        .vid-info{flex:1;min-width:0}
+        .vid-title{font-size:.85rem;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:6px}
+        .vid-meta{font-size:.78rem;color:var(--text2)}
+        .vid-views{color:var(--green);font-weight:600}
+
+        /* Data table */
+        .data-table{width:100%;border-collapse:collapse;font-size:.82rem}
+        .data-table th{text-align:left;padding:10px 12px;background:rgba(99,102,241,.08);color:var(--accent3);font-weight:600;border-bottom:1px solid var(--border)}
+        .data-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+        .data-table tr:hover td{background:rgba(99,102,241,.03)}
+
+        /* Copy buttons */
+        .copy-wrap{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+        .copy-btn{background:var(--glass);border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:var(--r3);font-family:'Inter',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+        .copy-btn:hover{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.3);color:var(--text)}
+
+        /* AI Report */
+        .ai-report{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:24px;font-size:.9rem;line-height:1.8;color:var(--text);white-space:pre-wrap;word-wrap:break-word}
+        .ai-report h2{font-size:1.15rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        .ai-report h2:first-child{margin-top:0}
+        .ai-report h3{font-size:1rem;font-weight:700;color:var(--accent3);margin:20px 0 10px}
+        .ai-report h4{font-size:.95rem;font-weight:600;color:var(--text);margin:16px 0 8px}
+        .ai-report ul,.ai-report ol{margin:8px 0;padding-left:20px}
+        .ai-report li{margin:4px 0;color:var(--text2)}
+        .ai-report strong{color:var(--text);font-weight:700}
+        .ai-report em{color:var(--accent3);font-style:italic}
+        .ai-report code{background:rgba(99,102,241,.12);color:var(--accent3);padding:2px 6px;border-radius:4px;font-size:.85rem}
+        .ai-report blockquote{border-left:3px solid var(--accent);padding:12px 16px;margin:12px 0;background:rgba(99,102,241,.05);border-radius:0 8px 8px 0;color:var(--text2)}
+        .ai-report table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.82rem}
+        .ai-report table th{background:rgba(99,102,241,.1);color:var(--accent3);padding:8px;text-align:left;font-weight:600;border:1px solid var(--border)}
+        .ai-report table td{padding:8px;border:1px solid var(--border);color:var(--text2)}
+        .ai-report hr{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+        /* Toast */
+        .toast{position:fixed;bottom:30px;right:30px;background:var(--card2);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r2);padding:16px 24px;box-shadow:0 20px 60px rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;gap:10px;font-size:.9rem;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);max-width:420px}
+        .toast.show{transform:translateY(0);opacity:1}
+        .toast.error{border-color:rgba(244,63,94,.3)}
+        .toast.success{border-color:rgba(16,185,129,.3)}
+
+        /* API Help */
+        .api-help{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:var(--r2);padding:16px 20px;margin-top:10px;font-size:.83rem;line-height:1.7;color:var(--text2)}
+        .api-help summary{cursor:pointer;color:var(--accent3);font-weight:600;font-size:.85rem}
+        .api-help ol{margin-top:10px;padding-left:20px}
+        .api-help a{color:var(--accent);text-decoration:none}
+        .gemini-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+
+        .ft{text-align:center;color:var(--muted);font-size:.8rem;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+        @media(max-width:768px){
+            h1{font-size:1.8rem}.card{padding:20px}
+            .ch-top{flex-direction:column;text-align:center}
+            .vid-grid{grid-template-columns:1fr}
+            .vid-card{flex-direction:column}.vid-thumb{width:100%}
+        }
+        .fade-in{animation:fadeIn .6s ease forwards}
+
+        textarea{width:100%;padding:16px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.6;resize:vertical;outline:none;transition:border-color .3s}
+        textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+        textarea::placeholder{color:var(--muted)}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    </style>
+</head>
+<body>
+<div class="bg-canvas"><div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div></div>
+<div class="bg-grid"></div>
+
+<div class="wrap">
+    <header class="hdr">
+        <div class="logo-wrap">🧬</div>
+        <h1>YouTube Channel DNA Analyzer</h1>
+        <p class="sub">Giải mã DNA kênh YouTube • Bóc tách bản chất • Công thức thành công</p>
+        <div class="nav-links" style="flex-direction:row;gap:14px;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="index.html">📸 Thumbnail</a>
+                    <a href="yt-downloader.html">⬇️ Tải Video</a>
+                    <a href="trending.html">🔥 Xu hướng</a>
+                    <a href="video-links.html">🔗 Link</a>
+                    <a href="thumbnail-analyzer.html">🎨 AI Ảnh</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="music-check.html">🎵 Nhạc</a>
+                    <a href="srt-maker.html">📝 SRT</a>
+                    <a href="suno-prompt.html">🎵 Suno</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="tiktok.html">🎬 TikTok</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Setup Card -->
+    <section class="card card-glow" id="setupCard">
+        <div style="margin-bottom:20px">
+            <label>🔑 YouTube API Key <span class="hint">(bắt buộc)</span></label>
+            <div class="iw">
+                <span class="ic">🔑</span>
+                <input type="password" id="apiKeyInput" placeholder="Dán YouTube API Key..." autocomplete="off">
+            </div>
+        </div>
+
+        <div class="gemini-section">
+            <label>🤖 Gemini API Key <span class="hint">(TÙY CHỌN - để trống = dùng Gemini Ultra Web)</span></label>
+            <div class="iw">
+                <span class="ic">🤖</span>
+                <input type="password" id="geminiKeyInput" placeholder="Để trống nếu bạn muốn dùng Gemini Ultra Web (tài khoản trả phí)" autocomplete="off">
+            </div>
+            <div style="margin-top:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(236,72,153,.08),rgba(139,92,246,.08));border:1px solid rgba(236,72,153,.2);border-radius:10px">
+                <div style="font-size:.85rem;font-weight:700;color:#f472b6;margin-bottom:6px">💎 Có tài khoản Gemini Ultra? Không cần API Key!</div>
+                <div style="font-size:.8rem;color:var(--text2);line-height:1.6">
+                    Để trống ô API Key → Tool sẽ tự <strong>copy prompt + mở Gemini Ultra</strong> cho bạn.<br>
+                    Bạn chỉ cần <strong>paste (Ctrl+V)</strong> vào Gemini → nhận phân tích chất lượng Ultra! 🚀<br>
+                    <span style="color:var(--green)">✅ Không rate limit • ✅ Chất lượng cao nhất • ✅ Miễn phí với gói Ultra</span>
+                </div>
+            </div>
+            <details class="api-help" style="margin-top:10px">
+                <summary>🔑 Hoặc: Dùng API Key miễn phí (tự động, nhiều key)</summary>
+                <ol>
+                    <li>Vào <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a> → Create API Key</li>
+                    <li>Đăng nhập bằng <strong>nhiều tài khoản Google khác nhau</strong>, mỗi account tạo 1 key</li>
+                    <li>Dán tất cả key vào ô trên, <strong>cách nhau bằng dấu phẩy</strong></li>
+                </ol>
+            </details>
+        </div>
+
+        <hr style="border:none;border-top:1px solid var(--border);margin:24px 0">
+
+        <div style="margin-bottom:20px">
+            <label>🔗 URL Kênh / Playlist / Podcast <span class="hint">(hỗ trợ tất cả)</span></label>
+            <div class="iw">
+                <span class="ic">🔗</span>
+                <input type="text" id="channelInput" placeholder="URL kênh, @handle, hoặc link playlist/podcast">
+            </div>
+            <div style="margin-top:6px;font-size:.75rem;color:var(--muted);line-height:1.5">
+                📌 Kênh: youtube.com/@MrBeast &nbsp;•&nbsp; 📌 Playlist: youtube.com/playlist?list=PL... &nbsp;•&nbsp; 📌 Podcast: link playlist của podcast
+            </div>
+        </div>
+
+        <div class="row" style="margin-bottom:20px">
+            <div>
+                <label>📊 Số video phân tích <span class="hint">(để trống = cả kênh)</span></label>
+                <div class="iw">
+                    <span class="ic">📊</span>
+                    <input type="text" id="maxVideosInput" placeholder="VD: 10, 20... (trống = tất cả)">
+                </div>
+            </div>
+            <div>
+                <label>🌐 Ngôn ngữ</label>
+                <select id="langSelect">
+                    <option value="vi" selected>🇻🇳 Tiếng Việt</option>
+                    <option value="en">🇺🇸 English</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="acts">
+            <button class="btn btn-p" id="analyzeBtn" onclick="startAnalysis()">
+                <span>🧬</span> Giải mã DNA kênh
+            </button>
+        </div>
+    </section>
+
+    <!-- Channel Info -->
+    <section class="card ch-card" id="chCard">
+        <div class="ch-top">
+            <div class="ch-av-wrap"><img class="ch-av" id="chAv" src="" alt=""></div>
+            <div style="flex:1;min-width:0">
+                <div class="ch-name" id="chName"></div>
+                <div class="ch-desc" id="chDesc"></div>
+            </div>
+        </div>
+        <div class="ch-stats" id="chStats"></div>
+    </section>
+
+    <!-- Progress -->
+    <section class="card prog" id="progSec">
+        <div class="prog-h">
+            <span class="prog-t" id="progT">Đang tải...</span>
+            <span class="prog-p" id="progP">0%</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="progF"></div></div>
+    </section>
+
+    <!-- Analysis Results -->
+    <section class="analysis" id="analysisSec">
+        <div class="copy-wrap">
+            <button class="copy-btn" onclick="copyReport()">📋 Copy báo cáo</button>
+            <button class="copy-btn" onclick="exportTxt()">📄 Xuất .txt</button>
+            <button class="copy-btn" onclick="reAnalyze()">🔄 Phân tích lại</button>
+        </div>
+
+        <!-- 1. Overview Stats -->
+        <div class="card section" id="overviewSec">
+            <div class="sec-title"><div class="sec-icon blue">📊</div><span>Tổng quan hiệu suất kênh</span></div>
+            <div class="mini-stats" id="overviewStats"></div>
+        </div>
+
+        <!-- 2. Upload Time Chart (VN Timezone) -->
+        <div class="card section" id="timeSec">
+            <div class="sec-title"><div class="sec-icon yellow">⏰</div><span>Thời gian đăng video (Giờ Việt Nam UTC+7)</span></div>
+            <div class="chart-wrap">
+                <div class="chart-title">📅 Phân bố theo ngày trong tuần</div>
+                <div id="dayChart"></div>
+            </div>
+            <div class="chart-wrap" style="margin-top:20px">
+                <div class="chart-title">🕐 Phân bố theo giờ (Giờ Việt Nam)</div>
+                <div id="hourChart"></div>
+            </div>
+        </div>
+
+        <!-- 3. Keywords -->
+        <div class="card section" id="kwSec">
+            <div class="sec-title"><div class="sec-icon green">🔑</div><span>Từ khóa phổ biến trong tiêu đề</span></div>
+            <div id="kwTags"></div>
+        </div>
+
+        <!-- 4. Duration Distribution -->
+        <div class="card section" id="durSec">
+            <div class="sec-title"><div class="sec-icon pink">🎬</div><span>Phân bố thời lượng video</span></div>
+            <div id="durChart"></div>
+        </div>
+
+        <!-- 5. Title Patterns -->
+        <div class="card section" id="titleSec">
+            <div class="sec-title"><div class="sec-icon purple">✍️</div><span>Pattern tiêu đề</span></div>
+            <div class="mini-stats" id="titleStats"></div>
+        </div>
+
+        <!-- 6. Top Videos -->
+        <div class="card section">
+            <div class="sec-title"><div class="sec-icon pink">🏆</div><span>Top 10 Video nổi bật nhất</span></div>
+            <div class="vid-grid" id="topVideosGrid"></div>
+        </div>
+
+        <!-- 7. All Videos Table -->
+        <div class="card section">
+            <div class="sec-title"><div class="sec-icon blue">📋</div><span>Danh sách tất cả video đã phân tích</span></div>
+            <div style="overflow-x:auto">
+                <table class="data-table" id="allVideosTable">
+                    <thead><tr><th>#</th><th>Tiêu đề</th><th>Views</th><th>Likes</th><th>Thời lượng</th><th>Đăng lúc (VN)</th></tr></thead>
+                    <tbody id="allVideosTbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 8. AI Deep Analysis -->
+        <div class="card section" id="aiReportSec">
+            <div class="sec-title"><div class="sec-icon purple">🧬</div><span>Phân tích DNA kênh bởi AI</span></div>
+            <!-- Ultra Web Mode -->
+            <div id="ultraWebMode" style="display:none">
+                <div style="padding:20px;background:linear-gradient(135deg,rgba(236,72,153,.06),rgba(139,92,246,.06));border:1px solid rgba(236,72,153,.15);border-radius:12px;margin-bottom:16px;text-align:center">
+                    <div style="font-size:2rem;margin-bottom:8px">💎</div>
+                    <div style="font-size:1.1rem;font-weight:700;color:#f472b6;margin-bottom:8px">Chế độ Gemini Ultra Web</div>
+                    <div style="font-size:.85rem;color:var(--text2);margin-bottom:16px;line-height:1.6">Prompt phân tích đã được <strong>copy vào clipboard</strong>.<br>Click nút bên dưới để mở Gemini → <strong>Paste (Ctrl+V)</strong> → Nhận phân tích Ultra!</div>
+                    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                        <button class="btn btn-p" onclick="openGeminiUltra()" style="background:linear-gradient(135deg,#ec4899,#8b5cf6)">💎 Mở Gemini Ultra</button>
+                        <button class="btn btn-s" onclick="copyPromptOnly()">📋 Copy lại prompt</button>
+                    </div>
+                    <div style="margin-top:16px;font-size:.82rem;color:var(--muted)">Sau khi nhận phân tích từ Gemini, copy kết quả và paste vào ô bên dưới:</div>
+                </div>
+                <textarea id="ultraPasteArea" placeholder="Paste kết quả từ Gemini Ultra vào đây...&#10;&#10;Sau đó nhấn nút 'Hiển thị báo cáo' bên dưới." style="min-height:150px"></textarea>
+                <div style="margin-top:10px;display:flex;gap:10px">
+                    <button class="btn btn-p" onclick="renderPastedReport()">📊 Hiển thị báo cáo</button>
+                    <button class="btn btn-s" onclick="openGeminiUltra()">💎 Mở lại Gemini</button>
+                </div>
+            </div>
+            <!-- API Mode Report -->
+            <div class="ai-report" id="aiReport"></div>
+        </div>
+    </section>
+
+    <footer class="ft">YouTube Channel DNA Analyzer • YouTube Data API + Gemini AI</footer>
+</div>
+
+<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+// ===== STATE =====
+let loading = false, channelData = null, videosData = [], rawReport = '', analysisCache = null;
+
+// Load saved keys
+const sk1 = localStorage.getItem('yt_api_key');
+const sk2 = localStorage.getItem('gemini_keys_multi');
+if (sk1) document.getElementById('apiKeyInput').value = sk1;
+if (sk2) document.getElementById('geminiKeyInput').value = sk2;
+
+// ===== UTILS =====
+function toast(msg, type='success') {
+    const t = document.getElementById('toast');
+    document.getElementById('tI').textContent = type==='success'?'✅':type==='error'?'❌':'ℹ️';
+    document.getElementById('tM').textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 4000);
+}
+function fmtNum(n) { if(!n)return'0';n=parseInt(n);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toLocaleString('vi-VN'); }
+function fmtFull(n) { if(!n)return'0';return parseInt(n).toLocaleString('vi-VN'); }
+function prog(text,pct){document.getElementById('progT').textContent=text;document.getElementById('progP').textContent=Math.round(pct)+'%';document.getElementById('progF').style.width=pct+'%'}
+function parseDur(iso){const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);if(!m)return 0;return(parseInt(m[1]||0))*3600+(parseInt(m[2]||0))*60+(parseInt(m[3]||0))}
+function fmtDur(s){const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;return h>0?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${m}:${String(sec).padStart(2,'0')}`}
+function fmtDateVN(isoStr){if(!isoStr)return'';return new Date(isoStr).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})}
+function fmtDateShort(isoStr){if(!isoStr)return'';return new Date(isoStr).toLocaleDateString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric'})}
+function getHourVN(isoStr){return parseInt(new Date(isoStr).toLocaleString('en-US',{timeZone:'Asia/Ho_Chi_Minh',hour:'numeric',hour12:false}))}
+function getDayVN(isoStr){const days=['CN','T2','T3','T4','T5','T6','T7'];const d=new Date(isoStr);const vnDay=new Date(d.toLocaleString('en-US',{timeZone:'Asia/Ho_Chi_Minh'}));return days[vnDay.getDay()]}
+function getDayFull(isoStr){const days=['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7'];const d=new Date(isoStr);const vnDay=new Date(d.toLocaleString('en-US',{timeZone:'Asia/Ho_Chi_Minh'}));return days[vnDay.getDay()]}
+
+// ===== YouTube API =====
+async function ytApi(endpoint){
+    const key=document.getElementById('apiKeyInput').value.trim();
+    if(!key)throw new Error('Chưa nhập YouTube API Key!');
+    const r=await fetch(`https://www.googleapis.com/youtube/v3/${endpoint}&key=${key}`);
+    const d=await r.json();if(d.error)throw new Error(d.error.message);return d;
+}
+
+async function resolveChannel(input){
+    input=input.trim();
+    if(input.startsWith('http')){try{const u=new URL(input),p=u.pathname;const cm=p.match(/\/channel\/(UC[\w-]+)/);if(cm)return cm[1];const hm=p.match(/\/@([\w.-]+)/);if(hm){const d=await ytApi(`channels?part=id&forHandle=${encodeURIComponent(hm[1])}`);if(d.items?.length)return d.items[0].id}const um=p.match(/\/(c|user)\/([\w.-]+)/);if(um){const d=await ytApi(`channels?part=id&forUsername=${encodeURIComponent(um[2])}`);if(d.items?.length)return d.items[0].id}}catch(e){if(e.message.includes('API'))throw e}}
+    if(input.startsWith('@'))input=input.slice(1);
+    if(/^UC[\w-]{22}$/.test(input))return input;
+    try{const d=await ytApi(`channels?part=id&forHandle=${encodeURIComponent(input)}`);if(d.items?.length)return d.items[0].id}catch(e){}
+    const s=await ytApi(`search?part=snippet&type=channel&q=${encodeURIComponent(input)}&maxResults=1`);
+    if(s.items?.length)return s.items[0].snippet.channelId;
+    throw new Error('Không tìm thấy kênh');
+}
+
+// ===== PLAYLIST DETECTION =====
+function extractPlaylistId(input){
+    if(!input)return null;
+    // Direct playlist URL: youtube.com/playlist?list=PLxxxxx
+    try{
+        const u=new URL(input);
+        const listId=u.searchParams.get('list');
+        if(listId&&listId.startsWith('PL'))return listId;
+        if(listId)return listId; // other list types like OL, FL, etc.
+    }catch(e){}
+    // Raw playlist ID
+    if(/^PL[\w-]+$/.test(input))return input;
+    return null;
+}
+
+async function fetchPlaylistInfo(playlistId){
+    const info=await ytApi(`playlists?part=snippet,contentDetails&id=${playlistId}`);
+    if(!info.items?.length)throw new Error('Không tìm thấy playlist');
+    return info.items[0];
+}
+
+async function fetchChannelData(channelId){
+    const info=await ytApi(`channels?part=snippet,statistics,contentDetails,brandingSettings,topicDetails&id=${channelId}`);
+    if(!info.items?.length)throw new Error('Không tìm thấy kênh');return info.items[0];
+}
+
+async function fetchVideosFromPlaylist(playlistId, maxVids){
+    let videos=[],pageToken='',page=0;
+    while(videos.length<maxVids){
+        let url=`playlistItems?part=snippet&playlistId=${playlistId}&maxResults=50`;
+        if(pageToken)url+=`&pageToken=${pageToken}`;
+        const data=await ytApi(url);if(!data.items?.length)break;
+        const batch=data.items.filter(item=>item.snippet.resourceId.videoId).map(item=>({videoId:item.snippet.resourceId.videoId,title:item.snippet.title,publishedAt:item.snippet.publishedAt,description:item.snippet.description,thumbnails:item.snippet.thumbnails}));
+        const ids=batch.map(v=>v.videoId).filter(id=>id);
+        for(let i=0;i<ids.length;i+=50){
+            const b=ids.slice(i,i+50);
+            const det=await ytApi(`videos?part=contentDetails,statistics&id=${b.join(',')}`);
+            if(det.items)for(const item of det.items){const vid=batch.find(v=>v.videoId===item.id);if(vid){vid.duration=parseDur(item.contentDetails.duration);vid.viewCount=parseInt(item.statistics?.viewCount||0);vid.likeCount=parseInt(item.statistics?.likeCount||0);vid.commentCount=parseInt(item.statistics?.commentCount||0)}}
+        }
+        for(const v of batch){if(v.duration&&v.duration>0){videos.push(v);if(videos.length>=maxVids)break}}
+        page++;prog(`Tải video trang ${page} (${videos.length}/${maxVids>9999?'all':maxVids})`,15+(Math.min(videos.length,maxVids)/Math.max(maxVids,1))*35);
+        pageToken=data.nextPageToken||'';if(!pageToken)break;
+        await new Promise(r=>setTimeout(r,100));
+    }
+    return videos;
+}
+
+async function fetchAllVideos(channelId, maxVids){
+    const ch=await ytApi(`channels?part=contentDetails&id=${channelId}`);
+    const uploadsId=ch.items[0].contentDetails.relatedPlaylists.uploads;
+    return fetchVideosFromPlaylist(uploadsId, maxVids);
+}
+
+// ===== DATA ANALYSIS =====
+function analyzeLocally(channel, videos){
+    const stats=channel.statistics,snippet=channel.snippet;
+    const sorted=[...videos].sort((a,b)=>b.viewCount-a.viewCount);
+    const top10=sorted.slice(0,10);
+    const totalViews=videos.reduce((s,v)=>s+v.viewCount,0);
+    const totalLikes=videos.reduce((s,v)=>s+v.likeCount,0);
+    const totalComments=videos.reduce((s,v)=>s+v.commentCount,0);
+    const avgViews=Math.round(totalViews/videos.length);
+    const avgLikes=Math.round(totalLikes/videos.length);
+    const avgComments=Math.round(totalComments/videos.length);
+    const avgDuration=Math.round(videos.reduce((s,v)=>s+v.duration,0)/videos.length);
+    const engRate=((totalLikes+totalComments)/totalViews*100).toFixed(2);
+
+    // Hour distribution (VN timezone)
+    const hourDist={};
+    for(let h=0;h<24;h++)hourDist[h]=0;
+    videos.forEach(v=>{const h=getHourVN(v.publishedAt);hourDist[h]=(hourDist[h]||0)+1});
+
+    // Day distribution (VN timezone)  
+    const dayOrder=['T2','T3','T4','T5','T6','T7','CN'];
+    const dayDist={};dayOrder.forEach(d=>dayDist[d]=0);
+    videos.forEach(v=>{const d=getDayVN(v.publishedAt);dayDist[d]=(dayDist[d]||0)+1});
+
+    // Duration distribution
+    const durDist={'< 5 phút':0,'5-10 phút':0,'10-20 phút':0,'20-40 phút':0,'> 40 phút':0};
+    videos.forEach(v=>{const m=v.duration/60;if(m<5)durDist['< 5 phút']++;else if(m<10)durDist['5-10 phút']++;else if(m<20)durDist['10-20 phút']++;else if(m<40)durDist['20-40 phút']++;else durDist['> 40 phút']++});
+
+    // Title words
+    const titleWords={};
+    videos.forEach(v=>{v.title.toLowerCase().replace(/[^\w\sÀ-ỹ]/g,'').split(/\s+/).filter(w=>w.length>2).forEach(w=>{titleWords[w]=(titleWords[w]||0)+1})});
+    const topWords=Object.entries(titleWords).sort((a,b)=>b[1]-a[1]).slice(0,25);
+
+    // Title patterns
+    const avgTitleLen=Math.round(videos.reduce((s,v)=>s+v.title.length,0)/videos.length);
+    const withNumbers=videos.filter(v=>/\d/.test(v.title)).length;
+    const withEmoji=videos.filter(v=>/[\u{1F300}-\u{1FAFF}]/u.test(v.title)).length;
+    const withQuestion=videos.filter(v=>/\?/.test(v.title)).length;
+    const withCaps=videos.filter(v=>(v.title.match(/[A-Z]/g)||[]).length>v.title.length*0.3).length;
+
+    // Monthly uploads
+    const monthly={};
+    videos.forEach(v=>{const k=v.publishedAt.substring(0,7);if(!monthly[k])monthly[k]={count:0,views:0};monthly[k].count++;monthly[k].views+=v.viewCount});
+
+    // Best upload hour
+    const bestHour=Object.entries(hourDist).sort((a,b)=>b[1]-a[1])[0];
+    const bestDay=Object.entries(dayDist).sort((a,b)=>b[1]-a[1])[0];
+
+    // Channel age
+    const ageMonths=Math.round((Date.now()-new Date(snippet.publishedAt).getTime())/(1000*60*60*24*30));
+
+    return {
+        channel:{name:snippet.title,description:snippet.description,country:snippet.country,createdAt:snippet.publishedAt,ageMonths,ageYears:(ageMonths/12).toFixed(1),subs:parseInt(stats.subscriberCount||0),totalViews:parseInt(stats.viewCount||0),totalVideos:parseInt(stats.videoCount||0),keywords:channel.brandingSettings?.channel?.keywords||'',topics:channel.topicDetails?.topicCategories||[]},
+        videos:{analyzed:videos.length,totalViews,totalLikes,totalComments,avgViews,avgLikes,avgComments,avgDuration,engRate,viral:videos.filter(v=>v.viewCount>avgViews*3).length,aboveAvg:videos.filter(v=>v.viewCount>avgViews).length},
+        top10,hourDist,dayDist,durDist,topWords,
+        titlePatterns:{avgTitleLen,withNumbers,withEmoji,withQuestion,withCaps,total:videos.length},
+        monthly,bestHour,bestDay,
+        allVideos:videos.map(v=>({title:v.title,views:v.viewCount,likes:v.likeCount,comments:v.commentCount,duration:fmtDur(v.duration),durationSec:v.duration,publishedAt:v.publishedAt,description:v.description?.substring(0,150)}))
+    };
+}
+
+// ===== RENDER DATA SECTIONS =====
+function renderDataSections(data){
+    // 1. Overview stats
+    const subs=data.channel.subs;
+    const viewSubRatio=(data.channel.totalViews/subs).toFixed(0);
+    document.getElementById('overviewStats').innerHTML=`
+        <div class="mini-stat"><div class="ms-val ms-purple">${fmtNum(data.videos.avgViews)}</div><div class="ms-label">TB Views/Video</div></div>
+        <div class="mini-stat"><div class="ms-val ms-green">${fmtNum(data.videos.avgLikes)}</div><div class="ms-label">TB Likes/Video</div></div>
+        <div class="mini-stat"><div class="ms-val ms-pink">${fmtNum(data.videos.avgComments)}</div><div class="ms-label">TB Comments/Video</div></div>
+        <div class="mini-stat"><div class="ms-val ms-yellow">${data.videos.engRate}%</div><div class="ms-label">Engagement Rate</div></div>
+        <div class="mini-stat"><div class="ms-val ms-blue">${fmtDur(data.videos.avgDuration)}</div><div class="ms-label">TB Thời lượng</div></div>
+        <div class="mini-stat"><div class="ms-val ms-purple">${viewSubRatio}</div><div class="ms-label">Views/Subscriber</div></div>
+        <div class="mini-stat"><div class="ms-val ms-green">${data.videos.viral}</div><div class="ms-label">Video Viral (>3x TB)</div></div>
+        <div class="mini-stat"><div class="ms-val ms-pink">${data.channel.ageYears} năm</div><div class="ms-label">Tuổi kênh</div></div>
+    `;
+
+    // 2. Day chart
+    const dayMax=Math.max(...Object.values(data.dayDist));
+    document.getElementById('dayChart').innerHTML=Object.entries(data.dayDist).map(([day,count])=>{
+        const pct=dayMax>0?(count/dayMax*100):0;
+        const isBest=day===data.bestDay[0];
+        return `<div class="hbar"><span class="hbar-label">${day}</span><div class="hbar-track"><div class="hbar-fill ${isBest?'grad2':'grad1'}" style="width:${pct}%">${count>0?count:''}</div></div><span class="hbar-val">${count}</span></div>`;
+    }).join('');
+
+    // 3. Hour chart
+    const hourMax=Math.max(...Object.values(data.hourDist));
+    const hours=Object.entries(data.hourDist).sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
+    document.getElementById('hourChart').innerHTML=hours.map(([h,count])=>{
+        const pct=hourMax>0?(count/hourMax*100):0;
+        const isBest=parseInt(h)===parseInt(data.bestHour[0]);
+        const label=`${String(h).padStart(2,'0')}:00`;
+        return `<div class="hbar"><span class="hbar-label">${label}</span><div class="hbar-track"><div class="hbar-fill ${isBest?'grad2':count>0?'grad1':'grad3'}" style="width:${pct}%">${count>0?count:''}</div></div><span class="hbar-val">${count}</span></div>`;
+    }).join('')+`<div style="margin-top:12px;padding:10px 14px;background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.15);border-radius:8px;font-size:.85rem;color:#f472b6">🔥 <strong>Giờ đăng nhiều nhất:</strong> ${String(data.bestHour[0]).padStart(2,'0')}:00 (${data.bestHour[1]} video) • <strong>Ngày đăng nhiều nhất:</strong> ${data.bestDay[0]} (${data.bestDay[1]} video)</div>`;
+
+    // 4. Keywords
+    document.getElementById('kwTags').innerHTML=`<div class="tags">${data.topWords.map(([w,c],i)=>{
+        const cls=i<5?'tag-pink':i<12?'tag-purple':'tag-green';
+        return `<span class="tag ${cls}">${w} <small style="opacity:.6">(${c})</small></span>`;
+    }).join('')}</div>${data.channel.keywords?`<div style="margin-top:16px"><div class="chart-title">🏷️ Keywords kênh (từ cài đặt YouTube)</div><div class="tags">${data.channel.keywords.split(/[,\"]+/).filter(k=>k.trim()).map(k=>`<span class="tag tag-green">${k.trim()}</span>`).join('')}</div></div>`:''}`;
+
+    // 5. Duration chart
+    const durMax=Math.max(...Object.values(data.durDist));
+    document.getElementById('durChart').innerHTML=Object.entries(data.durDist).map(([label,count])=>{
+        const pct=durMax>0?(count/durMax*100):0;
+        return `<div class="hbar"><span class="hbar-label" style="width:80px">${label}</span><div class="hbar-track"><div class="hbar-fill grad3" style="width:${pct}%">${count>0?count:''}</div></div><span class="hbar-val">${count}</span></div>`;
+    }).join('');
+
+    // 6. Title patterns
+    const tp=data.titlePatterns;
+    document.getElementById('titleStats').innerHTML=`
+        <div class="mini-stat"><div class="ms-val ms-purple">${tp.avgTitleLen}</div><div class="ms-label">TB ký tự tiêu đề</div></div>
+        <div class="mini-stat"><div class="ms-val ms-green">${Math.round(tp.withNumbers/tp.total*100)}%</div><div class="ms-label">Có số (${tp.withNumbers}/${tp.total})</div></div>
+        <div class="mini-stat"><div class="ms-val ms-pink">${Math.round(tp.withEmoji/tp.total*100)}%</div><div class="ms-label">Có emoji (${tp.withEmoji}/${tp.total})</div></div>
+        <div class="mini-stat"><div class="ms-val ms-yellow">${Math.round(tp.withQuestion/tp.total*100)}%</div><div class="ms-label">Dạng câu hỏi (${tp.withQuestion}/${tp.total})</div></div>
+        <div class="mini-stat"><div class="ms-val ms-blue">${Math.round(tp.withCaps/tp.total*100)}%</div><div class="ms-label">VIẾT HOA nhiều (${tp.withCaps}/${tp.total})</div></div>
+    `;
+
+    // 7. Top videos
+    const grid=document.getElementById('topVideosGrid');grid.innerHTML='';
+    data.top10.forEach((v,i)=>{
+        const thumb=v.thumbnails?.medium?.url||`https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`;
+        const c=document.createElement('div');c.className='vid-card fade-in';c.style.animationDelay=`${i*.08}s`;
+        c.innerHTML=`<div class="vid-thumb"><a href="https://youtube.com/watch?v=${v.videoId}" target="_blank"><img src="${thumb}" loading="lazy"></a></div><div class="vid-info"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="background:var(--grad);color:#fff;font-weight:800;font-size:.7rem;padding:2px 8px;border-radius:4px">#${i+1}</span></div><div class="vid-title">${v.title}</div><div class="vid-meta"><span class="vid-views">👁 ${fmtNum(v.viewCount)}</span> • 👍 ${fmtNum(v.likeCount)} • 💬 ${fmtNum(v.commentCount)}</div><div class="vid-meta" style="margin-top:4px">⏱ ${fmtDur(v.duration)} • 📅 ${fmtDateVN(v.publishedAt)}</div></div>`;
+        grid.appendChild(c);
+    });
+
+    // 8. All videos table
+    const tbody=document.getElementById('allVideosTbody');tbody.innerHTML='';
+    videosData.forEach((v,i)=>{
+        tbody.innerHTML+=`<tr><td>${i+1}</td><td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.title}</td><td>${fmtNum(v.viewCount)}</td><td>${fmtNum(v.likeCount)}</td><td>${fmtDur(v.duration)}</td><td style="white-space:nowrap">${fmtDateVN(v.publishedAt)}</td></tr>`;
+    });
+}
+
+// ===== GEMINI AI (Multi-key rotation + Multi-model fallback) =====
+const MODELS=[
+    {id:'gemini-2.0-flash',name:'2.0 Flash',tokens:16000},
+    {id:'gemini-2.0-flash-lite',name:'2.0 Flash Lite',tokens:12000},
+    {id:'gemini-1.5-flash-8b',name:'1.5 Flash 8B',tokens:12000},
+];
+
+function getGeminiKeys(){
+    const raw=document.getElementById('geminiKeyInput').value.trim();
+    return raw.split(/[,;\s]+/).map(k=>k.trim()).filter(k=>k.length>10);
+}
+
+async function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+async function tryGemini(modelId, tokens, prompt, key){
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelId}:streamGenerateContent?alt=sse&key=${key}`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,topP:0.9,maxOutputTokens:tokens}})
+    });
+    if(!r.ok){const e=await r.json().catch(()=>null);const msg=e?.error?.message||r.statusText;const isRL=r.status===429||msg.toLowerCase().includes('quota')||msg.toLowerCase().includes('rate');throw{message:msg,isRateLimit:isRL}}
+    return r;
+}
+
+async function analyzeWithGemini(data, lang){
+    const keys=getGeminiKeys();
+    if(!keys.length)throw new Error('Chưa nhập Gemini API Key!');
+    localStorage.setItem('gemini_keys_multi',document.getElementById('geminiKeyInput').value.trim());
+
+    const prompt=buildGeminiPrompt(data,lang);
+
+    let lastErr=null;
+    // Try each key → each model
+    for(let ki=0;ki<keys.length;ki++){
+        const key=keys[ki];
+        for(let mi=0;mi<MODELS.length;mi++){
+            const model=MODELS[mi];
+            for(let retry=0;retry<3;retry++){
+                try{
+                    const label=keys.length>1?`Key${ki+1}/${model.name}`:`${model.name}`;
+                    prog(`🤖 ${label}${retry>0?` (lần ${retry+1})`:''}...`,65);
+                    toast(`Thử ${label}...`,'info');
+                    const r=await tryGemini(model.id,model.tokens,prompt,key);
+                    toast(`✅ ${label} OK!`);
+                    return r;
+                }catch(e){
+                    lastErr=e;
+                    if(e.isRateLimit&&retry<2){
+                        const delay=[5,15,30][retry];
+                        for(let i=delay;i>0;i--){prog(`⏳ Rate limit - đợi ${i}s...`,65);await sleep(1000)}
+                    }else if(e.isRateLimit){break}
+                    else{break}
+                }
+            }
+        }
+    }
+    throw new Error(`Tất cả key/model đều bị rate limit. Thêm key mới hoặc đợi 1-2 phút.\n${lastErr?.message||''}`);
+}
+
+// ===== STREAM RENDERING =====
+async function streamToReport(response){
+    const el=document.getElementById('aiReport');el.innerHTML='';rawReport='';
+    const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='';
+    while(true){
+        const{done,value}=await reader.read();if(done)break;
+        buffer+=decoder.decode(value,{stream:true});
+        const lines=buffer.split('\n');buffer=lines.pop()||'';
+        for(const line of lines){
+            if(line.startsWith('data: ')){
+                const json=line.slice(6).trim();if(json==='[DONE]')continue;
+                try{const d=JSON.parse(json);const t=d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+                if(t){rawReport+=t;try{el.innerHTML=marked.parse(rawReport)}catch(e){el.textContent=rawReport}el.scrollTop=el.scrollHeight}}catch(e){}
+            }
+        }
+    }
+    try{el.innerHTML=marked.parse(rawReport)}catch(e){el.textContent=rawReport}
+}
+
+// ===== MAIN =====
+async function startAnalysis(){
+    if(loading)return;loading=true;
+    const btn=document.getElementById('analyzeBtn');btn.disabled=true;btn.innerHTML='<span class="spin"></span> Đang phân tích...';
+    const ytKey=document.getElementById('apiKeyInput').value.trim();
+    const geminiKeys=getGeminiKeys();
+    const input=document.getElementById('channelInput').value.trim();
+    const maxVidsRaw=document.getElementById('maxVideosInput').value.trim();
+    const maxVids=maxVidsRaw?parseInt(maxVidsRaw):99999; // empty = all videos
+    const lang=document.getElementById('langSelect').value;
+    const useUltraWeb=!geminiKeys.length; // No API keys = use Ultra Web mode
+
+    if(!ytKey){toast('Nhập YouTube API Key!','error');resetBtn();return}
+    if(!input){toast('Nhập URL kênh!','error');resetBtn();return}
+
+    localStorage.setItem('yt_api_key',ytKey);
+    if(geminiKeys.length) localStorage.setItem('gemini_keys_multi',document.getElementById('geminiKeyInput').value.trim());
+
+    document.getElementById('chCard').classList.remove('v');
+    document.getElementById('analysisSec').classList.remove('v');
+    document.getElementById('progSec').classList.add('v');
+    document.getElementById('ultraWebMode').style.display='none';
+    document.getElementById('aiReport').style.display='block';
+
+    try{
+        const playlistId=extractPlaylistId(input);
+        let isPlaylistMode=!!playlistId;
+
+        if(isPlaylistMode){
+            // === PLAYLIST / PODCAST MODE ===
+            prog('🎧 Tải thông tin playlist...',5);
+            const plInfo=await fetchPlaylistInfo(playlistId);
+            const plSnippet=plInfo.snippet;
+            const plChannelId=plSnippet.channelId;
+            const videoCount=plInfo.contentDetails.itemCount;
+
+            // Try to get channel data
+            prog('📡 Tải thông tin kênh...',10);
+            try{
+                channelData=await fetchChannelData(plChannelId);
+            }catch(e){
+                // Create minimal channel data if can't fetch
+                channelData={snippet:{title:plSnippet.channelTitle,description:plSnippet.description,publishedAt:plSnippet.publishedAt,thumbnails:plSnippet.thumbnails,country:''},statistics:{subscriberCount:'0',viewCount:'0',videoCount:String(videoCount)},brandingSettings:{channel:{keywords:''}},topicDetails:{topicCategories:[]}};
+            }
+
+            const snippet=channelData.snippet,stats=channelData.statistics;
+            document.getElementById('chAv').src=plSnippet.thumbnails?.medium?.url||snippet.thumbnails?.medium?.url||'';
+            document.getElementById('chName').textContent=`🎧 ${plSnippet.title}`;
+            document.getElementById('chDesc').textContent=`Playlist bởi ${plSnippet.channelTitle} • ${videoCount} video • ${plSnippet.description?.substring(0,150)||''}`;
+            document.getElementById('chStats').innerHTML=`
+                <div class="stat-box"><div class="stat-num">${fmtNum(stats.subscriberCount)}</div><div class="stat-label">Subscribers</div></div>
+                <div class="stat-box"><div class="stat-num">${fmtNum(stats.viewCount)}</div><div class="stat-label">Tổng Views kênh</div></div>
+                <div class="stat-box"><div class="stat-num">${videoCount}</div><div class="stat-label">Video trong PL</div></div>
+                <div class="stat-box" style="border-color:rgba(236,72,153,.2)"><div class="stat-num" style="background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent">🎧</div><div class="stat-label">Playlist Mode</div></div>`;
+            document.getElementById('chCard').classList.add('v');
+
+            prog('📥 Tải video từ playlist...',15);
+            videosData=await fetchVideosFromPlaylist(playlistId,maxVids);
+            if(!videosData.length){toast('Playlist không có video!','error');resetBtn();return}
+
+        } else {
+            // === CHANNEL MODE ===
+            prog('🔍 Tìm kênh...',5);
+            const channelId=await resolveChannel(input);
+            prog('📡 Tải thông tin kênh...',10);
+            channelData=await fetchChannelData(channelId);
+            const snippet=channelData.snippet,stats=channelData.statistics;
+            document.getElementById('chAv').src=snippet.thumbnails?.medium?.url||'';
+            document.getElementById('chName').textContent=snippet.title;
+            document.getElementById('chDesc').textContent=snippet.description?.substring(0,200)||'';
+            document.getElementById('chStats').innerHTML=`
+                <div class="stat-box"><div class="stat-num">${fmtNum(stats.subscriberCount)}</div><div class="stat-label">Subscribers</div></div>
+                <div class="stat-box"><div class="stat-num">${fmtNum(stats.viewCount)}</div><div class="stat-label">Tổng Views</div></div>
+                <div class="stat-box"><div class="stat-num">${fmtNum(stats.videoCount)}</div><div class="stat-label">Videos</div></div>
+                <div class="stat-box"><div class="stat-num">${(parseInt(stats.viewCount)/Math.max(parseInt(stats.subscriberCount),1)).toFixed(0)}</div><div class="stat-label">Views/Sub</div></div>`;
+            document.getElementById('chCard').classList.add('v');
+
+            prog('📥 Tải video...',15);
+            videosData=await fetchAllVideos(channelId,maxVids);
+            if(!videosData.length){toast('Không có video!','error');resetBtn();return}
+        }
+
+        prog('📊 Phân tích dữ liệu...',55);
+        analysisCache=analyzeLocally(channelData,videosData);
+
+        prog('📈 Hiển thị biểu đồ...',58);
+        document.getElementById('analysisSec').classList.add('v');
+        renderDataSections(analysisCache);
+        document.getElementById('analysisSec').scrollIntoView({behavior:'smooth',block:'start'});
+
+        if(useUltraWeb){
+            // Ultra Web mode: copy prompt + show UI
+            prog('💎 Chuẩn bị prompt cho Gemini Ultra...',90);
+            cachedPrompt=buildGeminiPrompt(analysisCache,lang);
+            await navigator.clipboard.writeText(cachedPrompt).catch(()=>{});
+            document.getElementById('ultraWebMode').style.display='block';
+            document.getElementById('aiReport').style.display='none';
+            prog('✅ Prompt đã copy! Đang mở Gemini Ultra...',100);
+            toast('💎 Prompt đã copy! Đang mở Gemini Ultra...','success');
+            setTimeout(()=>window.open('https://gemini.google.com/app','_blank'),800);
+        } else {
+            // API mode
+            prog('🤖 AI phân tích sâu...',65);
+            try{
+                const stream=await analyzeWithGemini(analysisCache,lang);
+                prog('🧬 Giải mã DNA...',70);
+                await streamToReport(stream);
+                prog('✅ Hoàn tất!',100);
+                toast(`Phân tích hoàn tất: ${snippet.title}!`);
+            }catch(apiErr){
+                // API failed → fallback to Ultra Web
+                console.warn('API failed, switching to Ultra Web:',apiErr);
+                cachedPrompt=buildGeminiPrompt(analysisCache,lang);
+                await navigator.clipboard.writeText(cachedPrompt).catch(()=>{});
+                document.getElementById('ultraWebMode').style.display='block';
+                document.getElementById('aiReport').style.display='none';
+                prog('💎 API bị limit → Đang mở Gemini Ultra...',100);
+                toast('⚠️ API bị limit → Đã copy prompt, đang mở Gemini Ultra!','info');
+                setTimeout(()=>window.open('https://gemini.google.com/app','_blank'),800);
+            }
+        }
+    }catch(e){console.error(e);toast('Lỗi: '+e.message,'error')}
+    finally{resetBtn();setTimeout(()=>document.getElementById('progSec').classList.remove('v'),3000)}
+}
+
+function resetBtn(){loading=false;const b=document.getElementById('analyzeBtn');b.disabled=false;b.innerHTML='<span>🧬</span> Giải mã DNA kênh'}
+
+function copyReport(){
+    if(!rawReport){toast('Chưa có báo cáo!','error');return}
+    navigator.clipboard.writeText(rawReport).then(()=>toast('Đã copy!')).catch(()=>{const t=document.createElement('textarea');t.value=rawReport;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);toast('Đã copy!')});
+}
+function exportTxt(){
+    if(!rawReport){toast('Chưa có báo cáo!','error');return}
+    const name=channelData?.snippet?.title?.replace(/[^\w\sÀ-ỹ-]/g,'')||'channel';
+    const blob=new Blob([rawReport],{type:'text/plain;charset=utf-8'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`DNA_${name}_${new Date().toISOString().slice(0,10)}.txt`;a.click();URL.revokeObjectURL(a.href);toast('Đã xuất!');
+}
+function reAnalyze(){document.getElementById('analysisSec').classList.remove('v');window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>startAnalysis(),500)}
+
+// ===== GEMINI ULTRA WEB MODE =====
+let cachedPrompt='';
+
+function buildGeminiPrompt(data,lang){
+    const langText=lang==='vi'?'tiếng Việt':'English';
+    return `Bạn là chuyên gia phân tích YouTube. Phân tích TOÀN DIỆN kênh YouTube dưới đây, trả lời bằng ${langText}.
+
+## KÊNH: ${data.channel.name}
+- Mô tả: ${data.channel.description?.substring(0,400)}
+- Quốc gia: ${data.channel.country||'?'} | Tuổi: ${data.channel.ageYears} năm | Subs: ${fmtFull(data.channel.subs)} | Tổng views: ${fmtFull(data.channel.totalViews)} | Tổng video: ${data.channel.totalVideos}
+- Keywords: ${data.channel.keywords}
+
+## THỐNG KÊ ${data.videos.analyzed} VIDEO:
+- TB views: ${fmtFull(data.videos.avgViews)} | TB likes: ${fmtFull(data.videos.avgLikes)} | TB comments: ${fmtFull(data.videos.avgComments)}
+- Thời lượng TB: ${fmtDur(data.videos.avgDuration)} | Engagement: ${data.videos.engRate}% | Viral (>3x TB): ${data.videos.viral}
+
+## GIỜ ĐĂNG (VN): ${Object.entries(data.hourDist).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([h,c])=>`${h}h(${c})`).join(', ')}
+## NGÀY ĐĂNG: ${Object.entries(data.dayDist).sort((a,b)=>b[1]-a[1]).map(([d,c])=>`${d}(${c})`).join(', ')}
+## THỜI LƯỢNG: ${Object.entries(data.durDist).map(([k,v])=>`${k}:${v}`).join(', ')}
+## TỪ KHÓA HOT: ${data.topWords.slice(0,15).map(([w,c])=>`${w}(${c})`).join(', ')}
+## TITLE PATTERN: TB ${data.titlePatterns.avgTitleLen} ký tự, có số ${data.titlePatterns.withNumbers}/${data.titlePatterns.total}, emoji ${data.titlePatterns.withEmoji}/${data.titlePatterns.total}, câu hỏi ${data.titlePatterns.withQuestion}/${data.titlePatterns.total}
+
+## TOP 10 VIDEO:
+${data.top10.map((v,i)=>`${i+1}. "${v.title}" - ${fmtFull(v.viewCount)} views, ${fmtDur(v.duration)}`).join('\n')}
+
+## TẤT CẢ VIDEO:
+${data.allVideos.map(v=>`"${v.title}"|${fmtNum(v.views)}|${v.duration}|${fmtDateShort(v.publishedAt)}`).join('\n')}
+
+---
+HÃY PHÂN TÍCH CHI TIẾT:
+## 1. 🧬 GIẢI MÃ DNA KÊNH (thể loại, niche, USP, target audience, tâm lý khán giả)
+## 2. 📊 PHÂN TÍCH DỮ LIỆU (sức khỏe, view/sub ratio, xu hướng, benchmark, bất thường)
+## 3. 🔥 TỪ KHÓA & XU HƯỚNG (hot keywords, tăng trưởng, gợi ý 15 từ khóa, trending chưa khai thác)
+## 4. ⏰ CHIẾN LƯỢC THỜI GIAN (giờ VN tối ưu, ngày, tần suất)
+## 5. 🎬 FORMAT VIDEO (format hiệu quả, thời lượng tối ưu, gợi ý mới)
+## 6. 🏆 CÔNG THỨC THÀNH CÔNG (phân tích 5 top video, pattern, hook)
+## 7. ✍️ TỐI ƯU CTR (5 công thức tiêu đề, viết lại 5 tiêu đề, power words)
+## 8. 📈 HÀNH TRÌNH TỪ 0 (giai đoạn phát triển, breakout moment, chiến lược)
+## 9. 🎯 CÔNG THỨC ÁP DỤNG NGAY (10 bài học, lịch đăng 1 tháng, template, checklist)
+
+Dùng Markdown. THỰC CHIẾN, CỤ THỂ, RÕ RÀNG.`;
+}
+
+function openGeminiUltra(){
+    if(cachedPrompt){
+        navigator.clipboard.writeText(cachedPrompt).then(()=>toast('📋 Prompt đã copy! Paste (Ctrl+V) vào Gemini.','success')).catch(()=>{});
+    }
+    window.open('https://gemini.google.com/app','_blank');
+}
+
+function copyPromptOnly(){
+    if(!cachedPrompt&&analysisCache){
+        cachedPrompt=buildGeminiPrompt(analysisCache,document.getElementById('langSelect').value);
+    }
+    if(cachedPrompt){
+        navigator.clipboard.writeText(cachedPrompt).then(()=>toast('📋 Đã copy prompt!','success')).catch(()=>{});
+    }else{toast('Chưa có dữ liệu. Hãy phân tích kênh trước.','error')}
+}
+
+function renderPastedReport(){
+    const text=document.getElementById('ultraPasteArea').value.trim();
+    if(!text){toast('Chưa paste kết quả từ Gemini!','error');return}
+    rawReport=text;
+    const el=document.getElementById('aiReport');
+    el.style.display='block';
+    try{el.innerHTML=marked.parse(text)}catch(e){el.textContent=text}
+    document.getElementById('ultraWebMode').style.display='none';
+    el.scrollIntoView({behavior:'smooth',block:'start'});
+    toast('✅ Báo cáo đã hiển thị!','success');
+}
+
+// Events
+document.getElementById('channelInput').addEventListener('keydown',e=>{if(e.key==='Enter')startAnalysis()});
+document.getElementById('apiKeyInput').addEventListener('change',()=>localStorage.setItem('yt_api_key',document.getElementById('apiKeyInput').value.trim()));
+document.getElementById('geminiKeyInput').addEventListener('change',()=>localStorage.setItem('gemini_keys_multi',document.getElementById('geminiKeyInput').value.trim()));
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+# Local server files (not needed on web)
+*.ps1
+*.bat
+*.vbs
+downloads/

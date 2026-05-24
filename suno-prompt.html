@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suno AI Prompt Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#0a0a0f;--card:#1a1a2e;--input:#16162a;
+            --border:rgba(255,255,255,.06);--text:#f0f0f5;--text2:#8888aa;--muted:#555570;
+            --accent:#ff3860;--grad:linear-gradient(135deg,#ff3860,#7c3aed);
+            --green:#10b981;--r:16px;--r2:10px;
+            --suno:linear-gradient(135deg,#f59e0b,#ef4444);
+        }
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+        .bg-g{position:fixed;inset:0;z-index:0;pointer-events:none}
+        .bg-g::before{content:'';position:absolute;width:600px;height:600px;top:-200px;right:-100px;background:radial-gradient(circle,rgba(245,158,11,.08) 0%,transparent 70%);animation:fo 15s ease-in-out infinite}
+        .bg-g::after{content:'';position:absolute;width:500px;height:500px;bottom:-150px;left:-100px;background:radial-gradient(circle,rgba(239,68,68,.08) 0%,transparent 70%);animation:fo 18s ease-in-out infinite reverse}
+        @keyframes fo{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(50px,-30px) scale(1.1)}66%{transform:translate(-30px,50px) scale(.9)}}
+        .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 24px 80px}
+        .hdr{text-align:center;margin-bottom:48px}
+        .logo-i{width:56px;height:56px;background:var(--suno);border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 0 20px rgba(245,158,11,.3);animation:pulse 3s ease-in-out infinite;margin-bottom:16px}
+        @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(245,158,11,.2)}50%{box-shadow:0 0 40px rgba(245,158,11,.4)}}
+        h1{font-size:2.4rem;font-weight:800;background:var(--suno);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-.02em}
+        .sub{font-size:1.05rem;color:var(--text2);margin-top:8px}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:32px;margin-bottom:28px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+        label{display:block;font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+        .hint{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.8rem}
+        .iw{position:relative}
+        .iw .ic{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--muted);pointer-events:none}
+        input[type="text"],input[type="password"]{width:100%;padding:14px 16px 14px 48px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;transition:all .3s;outline:none}
+        input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.3)}
+        input::placeholder{color:var(--muted)}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border:none;border-radius:var(--r2);font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .3s}
+        .btn-p{background:var(--suno);color:#fff;box-shadow:0 4px 20px rgba(245,158,11,.3)}
+        .btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(245,158,11,.4)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-g{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 4px 20px rgba(16,185,129,.3)}
+        .btn-g:hover{transform:translateY(-2px)}
+        .btn-s{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+        .btn-s:hover{background:rgba(255,255,255,.1)}
+        .acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+        .spin{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+        @keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Drop zone */
+        .drop-zone{border:2.5px dashed rgba(245,158,11,.3);border-radius:var(--r);padding:60px 40px;text-align:center;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+        .drop-zone:hover,.drop-zone.drag{border-color:rgba(245,158,11,.6);background:rgba(245,158,11,.03)}
+        .drop-zone.drag{transform:scale(1.01);box-shadow:0 0 40px rgba(245,158,11,.1)}
+        .drop-zone .dz-icon{font-size:56px;margin-bottom:16px;display:block}
+        .drop-zone .dz-text{font-size:1.1rem;font-weight:600;color:var(--text)}
+        .drop-zone .dz-hint{font-size:.85rem;color:var(--muted);margin-top:8px}
+        .drop-zone input{display:none}
+        .drop-zone.has-file{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.03)}
+
+        /* Video preview */
+        .vid-preview{display:none;animation:su .4s ease}
+        .vid-preview.v{display:block}
+        .vid-player{width:100%;max-height:400px;border-radius:var(--r2);background:#000;margin-bottom:16px}
+        .vid-meta{display:flex;gap:20px;flex-wrap:wrap;font-size:.85rem;color:var(--text2)}
+        .vid-meta strong{color:var(--text)}
+
+        /* Frames */
+        .frames-sec{display:none;animation:su .4s ease}
+        .frames-sec.v{display:block}
+        .frames-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:12px}
+        .frame-card{border-radius:8px;overflow:hidden;border:1px solid var(--border);position:relative}
+        .frame-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+        .frame-card .frame-time{position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.75);color:#fff;font-size:.7rem;padding:2px 6px;border-radius:4px;font-weight:600}
+
+        /* API Key */
+        .api-help{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:var(--r2);padding:16px 20px;margin-top:16px;font-size:.83rem;line-height:1.7;color:var(--text2)}
+        .api-help summary{cursor:pointer;color:#f59e0b;font-weight:600;font-size:.85rem}
+        .api-help ol{margin-top:10px;padding-left:20px}
+        .api-help a{color:var(--accent);text-decoration:none}
+        .api-help a:hover{text-decoration:underline}
+
+        /* Analysis */
+        .analysis-sec{display:none;animation:su .5s ease}
+        .analysis-sec.v{display:block}
+        .scene-text{width:100%;min-height:120px;padding:16px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text2);font-family:'Inter',sans-serif;font-size:.88rem;line-height:1.7;resize:vertical;outline:none}
+        .scene-text:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.15)}
+
+        /* Suno prompt output */
+        .prompt-sec{display:none;animation:su .5s ease}
+        .prompt-sec.v{display:block}
+        .prompt-box{position:relative}
+        .prompt-output{width:100%;min-height:200px;padding:20px;background:linear-gradient(135deg,rgba(245,158,11,.06),rgba(239,68,68,.06));border:2px solid rgba(245,158,11,.25);border-radius:var(--r2);color:#fbbf24;font-family:'JetBrains Mono','Fira Code','Consolas',monospace;font-size:.9rem;line-height:1.8;resize:vertical;outline:none}
+        .prompt-output:focus{border-color:rgba(245,158,11,.5);box-shadow:0 0 0 3px rgba(245,158,11,.15)}
+        .prompt-label{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+        .prompt-label h3{font-size:1.1rem;font-weight:700}
+        .prompt-label .badge{padding:3px 10px;background:var(--suno);border-radius:12px;font-size:.7rem;font-weight:700;color:#fff}
+        .copy-hint{position:absolute;top:12px;right:12px;padding:4px 10px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:6px;font-size:.72rem;color:var(--green);font-weight:600;pointer-events:none;opacity:0;transition:opacity .3s}
+        .copy-hint.show{opacity:1}
+
+        /* Progress */
+        .prog-mini{display:flex;align-items:center;gap:12px;padding:14px 0}
+        .prog-mini .spin{width:16px;height:16px}
+        .prog-mini span{font-size:.88rem;color:var(--text2)}
+
+        /* Toast */
+        .toast{position:fixed;bottom:30px;right:30px;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px 24px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;gap:10px;font-size:.9rem;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);max-width:420px}
+        .toast.show{transform:translateY(0);opacity:1}
+        .toast.error{border-color:rgba(255,56,96,.3)}
+        .toast.success{border-color:rgba(16,185,129,.3)}
+
+        .ft{text-align:center;color:var(--muted);font-size:.8rem;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+        @media(max-width:768px){h1{font-size:1.8rem}.card{padding:20px}.drop-zone{padding:30px 20px}}
+
+        select{width:100%;padding:10px 14px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;cursor:pointer}
+        select:focus{border-color:var(--accent)}
+        .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        @media(max-width:640px){.row2{grid-template-columns:1fr}}
+        textarea.desc-input{width:100%;min-height:80px;padding:14px 16px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.6;transition:all .3s;outline:none;resize:vertical}
+        textarea.desc-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,56,96,.15)}
+        textarea.desc-input::placeholder{color:var(--muted)}
+    </style>
+</head>
+<body>
+<div class="bg-g"></div>
+<div class="wrap">
+    <header class="hdr">
+        <div class="logo-i">🎵</div>
+        <h1>Suno AI Prompt Generator</h1>
+        <p class="sub">Kéo video vào → AI phân tích → Tạo prompt nhạc nền cho Suno</p>
+        <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;flex-wrap:wrap;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="index.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">📸 Thumbnail</a>
+                    <a href="yt-downloader.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">⬇️ Tải Video</a>
+                    <a href="trending.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🔥 Xu hướng</a>
+                    <a href="video-links.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🔗 Link</a>
+                    <a href="channel-analyzer.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🧬 DNA</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="music-check.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎵 Nhạc</a>
+                    <a href="audio-separator.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎚️ Tách nhạc</a>
+                    <a href="srt-maker.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">📝 SRT</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="tiktok.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎬 TikTok</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Step 1: API Key & Model -->
+    <section class="card">
+        <label>🔑 Gemini API Key</label>
+        <div class="iw">
+            <span class="ic">🔑</span>
+            <input type="password" id="geminiKey" placeholder="Dán Gemini API Key vào đây..." autocomplete="off">
+        </div>
+
+        <div style="margin-top:16px">
+            <label>⚙️ Chế độ sử dụng</label>
+            <div class="row2">
+                <div>
+                    <select id="geminiModel" onchange="onModelChange()">
+                        <option value="free">🆓 Miễn phí — gemini-1.5-flash (giới hạn 15 req/phút)</option>
+                        <option value="paid">💳 Dùng Credits — gemini-2.0-flash (nhanh, chất lượng cao)</option>
+                        <option value="pro">💎 Pro Credits — gemini-1.5-pro (chính xác nhất)</option>
+                    </select>
+                </div>
+                <div>
+                    <select id="frameQuality">
+                        <option value="low">⚡ Nhanh — 3 frames, nhẹ</option>
+                        <option value="high">🌟 Chất lượng — 6 frames, chi tiết</option>
+                    </select>
+                </div>
+            </div>
+            <div id="modelNote" style="margin-top:8px;padding:8px 12px;background:rgba(255,255,255,.04);border-radius:6px;font-size:.8rem;color:var(--green)">💡 Chế độ miễn phí: 15 req/phút. Nếu bạn có credits, chọn "💳 Dùng Credits" để không bị giới hạn.</div>
+        </div>
+
+        <details class="api-help">
+            <summary>📖 Hướng dẫn lấy API Key</summary>
+            <ol>
+                <li>Truy cập <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio → API Keys</a></li>
+                <li>Đăng nhập bằng tài khoản Google</li>
+                <li>Click <strong>"Create API Key"</strong> → <strong>chọn project có billing</strong> (nếu dùng credits) → Copy key</li>
+                <li>Dán key vào ô trên. Key được lưu tự động.</li>
+            </ol>
+            <div style="margin:8px 0;padding:8px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:6px;font-size:.8rem;color:#f59e0b">⚠️ <strong>Quan trọng:</strong> Để dùng credits, khi "Create API Key" phải chọn đúng project đã bật billing. Nếu chọn project chưa có billing sẽ dùng free tier.</div>
+        </details>
+    </section>
+
+    <!-- Step 2: Video Upload -->
+    <section class="card">
+        <label>📁 Kéo video vào đây</label>
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+            <input type="file" id="fileInput" accept="video/*">
+            <span class="dz-icon">🎬</span>
+            <div class="dz-text">Kéo thả video hoặc click để chọn file</div>
+            <div class="dz-hint">Hỗ trợ: MP4, MOV, AVI, WEBM — Video đã chỉnh sửa, chưa có nhạc nền</div>
+        </div>
+
+        <!-- Video preview -->
+        <div class="vid-preview" id="vidPreview">
+            <video class="vid-player" id="videoPlayer" controls></video>
+            <div class="vid-meta" id="vidMeta"></div>
+        </div>
+    </section>
+
+    <!-- Step 3: Options -->
+    <section class="card" id="optionsSec" style="display:none">
+        <h3 style="margin-bottom:20px;font-size:1rem">⚙️ Tuỳ chỉnh prompt</h3>
+        <div style="margin-bottom:16px">
+            <label>📝 Mô tả thêm về video <span class="hint">(tuỳ chọn — giúp AI hiểu rõ hơn)</span></label>
+            <textarea class="desc-input" id="userDesc" placeholder="Ví dụ: Video thiếu nhi về bé tập đi, cảnh quay ngoài sân vườn, tone vui nhộn..."></textarea>
+        </div>
+        <div class="row2" style="margin-bottom:16px">
+            <div>
+                <label>🎭 Đối tượng / Thể loại video</label>
+                <select id="videoType">
+                    <option value="auto">🤖 Tự động phát hiện</option>
+                    <option value="kids">👶 Thiếu nhi / Trẻ em</option>
+                    <option value="vlog">📹 Vlog / Daily life</option>
+                    <option value="travel">✈️ Du lịch / Phong cảnh</option>
+                    <option value="food">🍜 Ẩm thực / Nấu ăn</option>
+                    <option value="tutorial">📚 Hướng dẫn / Tutorial</option>
+                    <option value="review">📦 Review sản phẩm</option>
+                    <option value="cinematic">🎬 Cinematic / Phim ngắn</option>
+                    <option value="gaming">🎮 Gaming</option>
+                    <option value="fitness">💪 Thể thao / Fitness</option>
+                    <option value="asmr">🎧 ASMR / Thư giãn</option>
+                </select>
+            </div>
+            <div>
+                <label>🎼 Phong cách nhạc mong muốn</label>
+                <select id="musicStyle">
+                    <option value="auto">🤖 Để AI gợi ý</option>
+                    <option value="lofi">🎹 Lo-fi / Chill</option>
+                    <option value="pop">🎤 Pop</option>
+                    <option value="acoustic">🎸 Acoustic / Folk</option>
+                    <option value="cinematic">🎻 Cinematic / Orchestral</option>
+                    <option value="edm">🎛️ EDM / Electronic</option>
+                    <option value="jazz">🎷 Jazz / Smooth</option>
+                    <option value="hiphop">🎤 Hip-hop / Trap</option>
+                    <option value="cute">🧸 Cute / Kawaii</option>
+                    <option value="ambient">🌊 Ambient / Nature</option>
+                    <option value="rock">🎸 Rock / Indie</option>
+                    <option value="classical">🎹 Classical / Piano</option>
+                </select>
+            </div>
+        </div>
+        <div class="row2">
+            <div>
+                <label>🎬 Nhạc nền kiểu</label>
+                <select id="bgType">
+                    <optgroup label="── Cơ bản ──">
+                        <option value="instrumental">🎶 Instrumental (không lời)</option>
+                        <option value="vocals">🎤 Có vocal / hát</option>
+                        <option value="humming">🎵 Humming / ngân nga</option>
+                    </optgroup>
+                    <optgroup label="── Kids chuyên biệt ──">
+                        <option value="epic_kids">🌟 Epic / Cao trào anh hùng</option>
+                        <option value="battle">⚔️ Battle / Tranh đấu kịch tính</option>
+                        <option value="inspiring">💫 Inspiring / Niềm tin, hy vọng</option>
+                        <option value="transformation">🦋 Transformation / Vượt lên chính mình</option>
+                        <option value="emotional">😢 Emotional / Cảm xúc, xúc động</option>
+                        <option value="lullaby">🌙 Lullaby / Ru ngủ</option>
+                        <option value="musicbox">🔔 Music Box / Hộp nhạc</option>
+                        <option value="adventure">🏴‍☠️ Adventure / Phiêu lưu khám phá</option>
+                        <option value="comedy">🤡 Comedy / Vui nhộn hài hước</option>
+                        <option value="magical">✨ Magical / Phép thuật, thần tiên</option>
+                        <option value="suspense">😱 Suspense / Hồi hộp, gay cấn</option>
+                    </optgroup>
+                    <optgroup label="── Đặc biệt ──">
+                        <option value="whisper">🗣️ Whisper / Thì thầm</option>
+                        <option value="nature_music">🌿 Nature + Music / Thiên nhiên</option>
+                        <option value="acappella">🎙️ A Cappella / Chỉ giọng hát</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div>
+                <label>⚡ Cường độ / Năng lượng</label>
+                <select id="energy">
+                    <option value="auto">🤖 Tự động</option>
+                    <option value="calm">😌 Nhẹ nhàng / Calm</option>
+                    <option value="moderate">🙂 Vừa phải / Moderate</option>
+                    <option value="upbeat">😄 Vui nhộn / Upbeat</option>
+                    <option value="energetic">🔥 Mạnh mẽ / Energetic</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="acts">
+            <button class="btn btn-p" id="analyzeBtn" onclick="analyzeVideo()">
+                <span>🧠</span> Phân tích bằng AI
+            </button>
+            <button class="btn btn-g" onclick="generateOffline()">
+                <span>✨</span> Tạo prompt không cần API
+            </button>
+        </div>
+        <div style="margin-top:8px;font-size:.78rem;color:var(--muted)">💡 Nếu API bận, bấm "Tạo prompt không cần API" — tạo ngay từ mô tả + tuỳ chọn của bạn, không chờ đợi.</div>
+    </section>
+
+    <!-- Step 4: Analysis progress -->
+    <section class="card frames-sec" id="framesSec">
+        <h3 style="margin-bottom:12px;font-size:1rem">📸 Khung hình đã trích xuất</h3>
+        <div class="frames-grid" id="framesGrid"></div>
+        <div class="prog-mini" id="analysisProg" style="display:none">
+            <span class="spin"></span>
+            <span id="analysisText">Đang gửi đến Gemini AI...</span>
+        </div>
+    </section>
+
+    <!-- Step 5: AI Analysis result -->
+    <section class="card analysis-sec" id="analysisSec">
+        <h3 style="margin-bottom:12px;font-size:1rem">🧠 Phân tích nội dung video</h3>
+        <textarea class="scene-text" id="sceneText" readonly></textarea>
+    </section>
+
+    <!-- Step 6: Suno Prompt -->
+    <section class="card prompt-sec" id="promptSec">
+        <div class="prompt-label">
+            <h3>🎵 Dán vào Suno AI</h3>
+            <span class="badge">SUNO</span>
+        </div>
+
+        <div style="margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:1.1rem">🎭</span>
+                <label style="margin:0;font-size:.9rem">Styles <span class="hint">(copy dán vào ô Styles trên Suno)</span></label>
+            </div>
+            <div class="prompt-box">
+                <span class="copy-hint" id="copyHintStyles">✅ Đã copy!</span>
+                <textarea class="prompt-output" id="stylesOutput" readonly style="min-height:80px"></textarea>
+            </div>
+            <button class="btn btn-g" style="margin-top:10px" onclick="copyStyles()">
+                <span>📋</span> Copy Styles
+            </button>
+        </div>
+
+        <div style="margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:1.1rem">📝</span>
+                <label style="margin:0;font-size:.9rem">Lyrics <span class="hint">(copy dán vào ô Lyrics trên Suno — để trống nếu instrumental)</span></label>
+            </div>
+            <div class="prompt-box">
+                <textarea class="prompt-output" id="lyricsOutput" readonly style="min-height:60px;color:#a78bfa"></textarea>
+            </div>
+            <button class="btn btn-s" style="margin-top:10px" onclick="copyLyrics()">
+                <span>📋</span> Copy Lyrics
+            </button>
+        </div>
+
+        <div style="margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:1.1rem">🎬</span>
+                <label style="margin:0;font-size:.9rem">Song Title <span class="hint">(tuỳ chọn)</span></label>
+            </div>
+            <div class="prompt-box">
+                <textarea class="prompt-output" id="titleOutput" readonly style="min-height:40px;color:var(--green)"></textarea>
+            </div>
+        </div>
+
+        <div class="acts">
+            <button class="btn btn-g" onclick="copyAll()">
+                <span>📋</span> Copy tất cả
+            </button>
+        </div>
+    </section>
+
+    <footer class="ft">Suno AI Prompt Generator — Tạo nhạc nền phù hợp video bằng AI</footer>
+</div>
+
+<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+
+<script>
+// ===== STATE =====
+let videoFile = null;
+let videoDuration = 0;
+let extractedFrames = []; // base64 frames
+
+// Load saved key
+const savedGeminiKey = localStorage.getItem('gemini_api_key');
+if (savedGeminiKey) document.getElementById('geminiKey').value = savedGeminiKey;
+
+document.getElementById('geminiKey').addEventListener('change', () => {
+    localStorage.setItem('gemini_api_key', document.getElementById('geminiKey').value.trim());
+});
+
+// ===== UTILS =====
+function toast(msg, type='success') {
+    const t = document.getElementById('toast');
+    document.getElementById('tI').textContent = type==='success'?'✅':type==='error'?'❌':'ℹ️';
+    document.getElementById('tM').textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+function fmtTime(s) {
+    const m = Math.floor(s/60), sec = Math.floor(s%60);
+    return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
+// ===== DRAG & DROP =====
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+['dragenter','dragover'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.add('drag'); }));
+['dragleave','drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.classList.remove('drag'); }));
+
+dropZone.addEventListener('drop', e => {
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('video/')) handleFile(file);
+    else toast('Chỉ hỗ trợ file video!', 'error');
+});
+
+fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+    videoFile = file;
+    dropZone.classList.add('has-file');
+    dropZone.querySelector('.dz-icon').textContent = '✅';
+    dropZone.querySelector('.dz-text').textContent = file.name;
+    dropZone.querySelector('.dz-hint').textContent = `${(file.size/1024/1024).toFixed(1)} MB — ${file.type}`;
+
+    // Preview video
+    const player = document.getElementById('videoPlayer');
+    const url = URL.createObjectURL(file);
+    player.src = url;
+    document.getElementById('vidPreview').classList.add('v');
+
+    player.addEventListener('loadedmetadata', () => {
+        videoDuration = player.duration;
+        document.getElementById('vidMeta').innerHTML = `
+            <span>⏱ <strong>${fmtTime(videoDuration)}</strong></span>
+            <span>📐 <strong>${player.videoWidth}×${player.videoHeight}</strong></span>
+            <span>📁 <strong>${(file.size/1024/1024).toFixed(1)} MB</strong></span>
+            <span>🎬 <strong>${file.type.split('/')[1].toUpperCase()}</strong></span>
+        `;
+        document.getElementById('optionsSec').style.display = 'block';
+    });
+
+    toast('Đã tải video! Cấu hình tuỳ chọn rồi bấm Phân tích.', 'info');
+}
+
+// ===== EXTRACT FRAMES =====
+function extractFrames(video, count=3, width=320, quality=0.35) {
+    return new Promise(resolve => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const frames = [];
+        const interval = video.duration / (count + 1);
+
+        canvas.width = width;
+        canvas.height = Math.round(width * (video.videoHeight / video.videoWidth));
+
+        let idx = 0;
+        function captureNext() {
+            idx++;
+            if (idx > count) {
+                resolve(frames);
+                return;
+            }
+            const time = interval * idx;
+            video.currentTime = time;
+        }
+
+        video.onseeked = () => {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.35);
+            frames.push({
+                time: video.currentTime,
+                base64: dataUrl.split(',')[1],
+                dataUrl: dataUrl
+            });
+            captureNext();
+        };
+
+        captureNext();
+    });
+}
+
+// ===== DISPLAY FRAMES =====
+function displayFrames(frames) {
+    const grid = document.getElementById('framesGrid');
+    grid.innerHTML = '';
+    frames.forEach(f => {
+        const card = document.createElement('div');
+        card.className = 'frame-card';
+        card.innerHTML = `<img src="${f.dataUrl}" alt="Frame"><span class="frame-time">${fmtTime(f.time)}</span>`;
+        grid.appendChild(card);
+    });
+    document.getElementById('framesSec').classList.add('v');
+}
+
+// ===== MODEL CONFIG =====
+const MODEL_MAP = {
+    free: 'gemini-1.5-flash',
+    paid: 'gemini-2.0-flash',
+    pro: 'gemini-1.5-pro'
+};
+
+function getSelectedModel() {
+    const mode = document.getElementById('geminiModel').value;
+    return MODEL_MAP[mode] || 'gemini-1.5-flash';
+}
+
+function onModelChange() {
+    const mode = document.getElementById('geminiModel').value;
+    localStorage.setItem('gemini_model', mode);
+    const note = document.getElementById('modelNote');
+    if (mode === 'free') {
+        note.style.color = 'var(--green)';
+        note.textContent = '💡 Chế độ miễn phí: 15 req/phút. Nếu bị lỗi quota, chọn "💳 Dùng Credits".';
+        document.getElementById('frameQuality').value = 'low';
+    } else if (mode === 'paid') {
+        note.style.color = '#f59e0b';
+        note.textContent = '💳 Dùng credits tài khoản. Không giới hạn rate. Chất lượng tốt hơn.';
+        document.getElementById('frameQuality').value = 'high';
+    } else {
+        note.style.color = '#a78bfa';
+        note.textContent = '💎 Model Pro: chính xác nhất, tốn nhiều credits hơn. Dùng cho video quan trọng.';
+        document.getElementById('frameQuality').value = 'high';
+    }
+}
+
+// Load saved model
+const savedModel = localStorage.getItem('gemini_model');
+if (savedModel) { document.getElementById('geminiModel').value = savedModel; onModelChange(); }
+
+function getFrameConfig() {
+    const q = document.getElementById('frameQuality').value;
+    if (q === 'high') return { count: 6, width: 480, quality: 0.6 };
+    return { count: 3, width: 320, quality: 0.35 };
+}
+
+// ===== GEMINI API =====
+async function callGemini(frames, systemPrompt, retries=2) {
+    const key = document.getElementById('geminiKey').value.trim();
+    if (!key) throw new Error('Chưa nhập Gemini API Key!');
+    localStorage.setItem('gemini_api_key', key);
+
+    const model = getSelectedModel();
+
+    // Build parts: images + text
+    const parts = [];
+    frames.forEach((f, i) => {
+        parts.push({
+            inline_data: {
+                mime_type: 'image/jpeg',
+                data: f.base64
+            }
+        });
+    });
+    parts.push({ text: systemPrompt });
+
+    const body = JSON.stringify({
+        contents: [{ parts }],
+        generationConfig: {
+            temperature: 0.8,
+            maxOutputTokens: 2048,
+        }
+    });
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+        document.getElementById('analysisText').textContent = `Đang gửi đến ${model}...${attempt > 0 ? ` (lần ${attempt+1})` : ''}`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: body
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            // Rate limit - auto retry after delay
+            if (data.error.code === 429 || data.error.message?.includes('quota') || data.error.message?.includes('rate')) {
+                if (attempt < retries) {
+                    const waitSec = 30;
+                    document.getElementById('analysisText').textContent = `⏳ ${model} đang bận, thử lại sau ${waitSec}s... (lần ${attempt+2}/${retries+1})`;
+                    toast(`API bận. Thử lại sau ${waitSec}s...`, 'info');
+                    await new Promise(r => setTimeout(r, waitSec * 1000));
+                    continue;
+                }
+            }
+            throw new Error(data.error.message);
+        }
+
+        if (!data.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error('Không nhận được phản hồi từ AI');
+        return data.candidates[0].content.parts[0].text;
+    }
+    throw new Error('Hết số lần thử. Đợi 1 phút hoặc chọn chế độ "💳 Dùng Credits".');
+}
+
+// ===== BUILD PROMPT FOR GEMINI =====
+function buildGeminiPrompt() {
+    const userDesc = document.getElementById('userDesc').value.trim();
+    const videoType = document.getElementById('videoType').value;
+    const musicStyle = document.getElementById('musicStyle').value;
+    const bgType = document.getElementById('bgType').value;
+    const energy = document.getElementById('energy').value;
+    const dur = fmtTime(videoDuration);
+
+    const typeMap = {
+        auto:'', kids:'Video thiếu nhi/trẻ em', vlog:'Video vlog/daily life',
+        travel:'Video du lịch/phong cảnh', food:'Video ẩm thực/nấu ăn',
+        tutorial:'Video hướng dẫn/tutorial', review:'Video review sản phẩm',
+        cinematic:'Video cinematic/phim ngắn', gaming:'Video gaming',
+        fitness:'Video thể thao/fitness', asmr:'Video ASMR/thư giãn'
+    };
+    const styleMap = {
+        auto:'', lofi:'Lo-fi/Chill', pop:'Pop', acoustic:'Acoustic/Folk',
+        cinematic:'Cinematic/Orchestral', edm:'EDM/Electronic', jazz:'Jazz/Smooth',
+        hiphop:'Hip-hop/Trap', cute:'Cute/Kawaii', ambient:'Ambient/Nature',
+        rock:'Rock/Indie', classical:'Classical/Piano'
+    };
+    const bgMap = {
+        instrumental:'instrumental (không lời)', vocals:'có vocal/hát', humming:'humming/ngân nga',
+        epic_kids:'epic heroic kids anthem (không lời, cao trào)', battle:'intense dramatic battle music (không lời, kịch tính)',
+        inspiring:'inspiring hopeful emotional (không lời, niềm tin)', transformation:'uplifting transformational cinematic (không lời, vượt lên)',
+        emotional:'emotional touching gentle (không lời, xúc động)', lullaby:'soft lullaby gentle (không lời, ru ngủ)',
+        musicbox:'music box dreamy lullaby (không lời, hộp nhạc)', adventure:'adventurous playful exciting (không lời, phiêu lưu)',
+        comedy:'funny playful quirky comedy (không lời, hài hước)', magical:'magical whimsical fairy tale (không lời, thần tiên)',
+        suspense:'suspenseful tense mysterious (không lời, hồi hộp)',
+        whisper:'whisper vocals gentle (giọng thì thầm)', nature_music:'nature sounds with gentle music (thiên nhiên + nhạc)',
+        acappella:'a cappella vocal harmony (chỉ giọng hát)'
+    };
+    const energyMap = {
+        auto:'', calm:'nhẹ nhàng/calm', moderate:'vừa phải/moderate',
+        upbeat:'vui nhộn/upbeat', energetic:'mạnh mẽ/energetic'
+    };
+
+    let context = `Bạn là chuyên gia sáng tạo nhạc nền cho video. `;
+    context += `Video này dài ${dur} (${Math.round(videoDuration)} giây). `;
+    if (typeMap[videoType]) context += `Loại video: ${typeMap[videoType]}. `;
+    if (userDesc) context += `Mô tả thêm từ người dùng: "${userDesc}". `;
+
+    context += `\n\nTôi gửi cho bạn ${extractedFrames.length} khung hình trích xuất đều từ video này. Hãy:
+
+1. **PHÂN TÍCH VIDEO**: Mô tả ngắn gọn nội dung qua các khung hình.
+
+2. **TẠO OUTPUT CHO SUNO AI** gồm 3 phần:
+
+**[STYLES]**: Dán vào ô "Styles" trên Suno. Format: các tags ngắn bằng tiếng Anh, phân cách bằng dấu phẩy. Ví dụ: "playful nursery pop, xylophone, ukulele, claps, cheerful, 120 bpm, instrumental"
+${styleMap[musicStyle] ? `Phong cách mong muốn: ${styleMap[musicStyle]}. ` : ''}
+${bgMap[bgType] ? `Kiểu nhạc: ${bgMap[bgType]}. ` : ''}
+${energyMap[energy] ? `Cường độ: ${energyMap[energy]}. ` : ''}
+
+**[LYRICS]**: Nếu instrumental hoặc humming thì ghi "[Instrumental]" hoặc "[Humming]". Nếu có vocals thì viết vài câu lyrics phù hợp với nội dung video.
+
+**[TITLE]**: Gợi ý tên bài hát ngắn gọn (tiếng Anh).
+
+Trả lời theo format chính xác này:
+---ANALYSIS---
+(Mô tả phân tích video bằng tiếng Việt, 3-5 dòng)
+---STYLES---
+(1 dòng tags cho Suno Styles)
+---LYRICS---
+(Nội dung lyrics hoặc [Instrumental])
+---TITLE---
+(Tên bài)`;
+
+    return context;
+}
+
+// ===== MAIN ANALYZE =====
+async function analyzeVideo() {
+    if (!videoFile) { toast('Chưa có video!', 'error'); return; }
+    const key = document.getElementById('geminiKey').value.trim();
+    if (!key) { toast('Nhập Gemini API Key!', 'error'); return; }
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Đang trích xuất khung hình...';
+
+    try {
+        // Extract frames based on quality setting
+        const player = document.getElementById('videoPlayer');
+        const cfg = getFrameConfig();
+        extractedFrames = await extractFrames(player, cfg.count, cfg.width, cfg.quality);
+        displayFrames(extractedFrames);
+
+        // Show progress
+        document.getElementById('analysisProg').style.display = 'flex';
+        document.getElementById('analysisText').textContent = 'Đang gửi đến Gemini AI phân tích...';
+        btn.innerHTML = '<span class="spin"></span> AI đang phân tích...';
+
+        // Call Gemini
+        const prompt = buildGeminiPrompt();
+        const result = await callGemini(extractedFrames, prompt);
+
+        // Parse result
+        parseResult(result);
+
+        document.getElementById('analysisProg').style.display = 'none';
+        toast('✅ Đã tạo prompt cho Suno AI!');
+
+    } catch(e) {
+        console.error(e);
+        toast('Lỗi: ' + e.message, 'error');
+        document.getElementById('analysisProg').style.display = 'none';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🧠</span> Phân tích video & Tạo prompt';
+    }
+}
+
+function parseResult(text) {
+    let analysis = '', styles = '', lyrics = '', title = '';
+
+    // Parse sections
+    const analysisMat = text.match(/---ANALYSIS---([\s\S]*?)---STYLES---/);
+    const stylesMat = text.match(/---STYLES---([\s\S]*?)---LYRICS---/);
+    const lyricsMat = text.match(/---LYRICS---([\s\S]*?)---TITLE---/);
+    const titleMat = text.match(/---TITLE---([\s\S]*?)$/);
+
+    if (analysisMat) analysis = analysisMat[1].trim();
+    if (stylesMat) styles = stylesMat[1].trim();
+    if (lyricsMat) lyrics = lyricsMat[1].trim();
+    if (titleMat) title = titleMat[1].trim();
+
+    // Fallback for old format
+    if (!styles) {
+        const styleMat = text.match(/---STYLE---([\s\S]*?)---TAGS---/);
+        const tagsMat = text.match(/---TAGS---([\s\S]*?)$/);
+        if (styleMat) styles = styleMat[1].trim();
+        else if (tagsMat) styles = tagsMat[1].trim();
+    }
+
+    // Show results
+    if (analysis) {
+        document.getElementById('sceneText').value = analysis;
+        document.getElementById('analysisSec').classList.add('v');
+    }
+
+    document.getElementById('stylesOutput').value = styles || 'Không thể tạo. Thử lại hoặc dùng chế độ Offline.';
+    document.getElementById('lyricsOutput').value = lyrics || '[Instrumental]';
+    document.getElementById('titleOutput').value = title || '';
+    document.getElementById('promptSec').classList.add('v');
+}
+
+// ===== COPY =====
+function copyStyles() {
+    const text = document.getElementById('stylesOutput').value;
+    navigator.clipboard.writeText(text).then(() => {
+        toast('Đã copy Styles! Dán vào ô Styles trên Suno.');
+        const h = document.getElementById('copyHintStyles');
+        h.classList.add('show');
+        setTimeout(() => h.classList.remove('show'), 2000);
+    });
+}
+
+function copyLyrics() {
+    const text = document.getElementById('lyricsOutput').value;
+    navigator.clipboard.writeText(text).then(() => toast('Đã copy Lyrics! Dán vào ô Lyrics trên Suno.'));
+}
+
+function copyAll() {
+    const styles = document.getElementById('stylesOutput').value;
+    const lyrics = document.getElementById('lyricsOutput').value;
+    const title = document.getElementById('titleOutput').value;
+    const full = `Styles: ${styles}\n\nLyrics:\n${lyrics}${title ? '\n\nTitle: ' + title : ''}`;
+    navigator.clipboard.writeText(full).then(() => toast('Đã copy tất cả!'));
+}
+
+// ===== OFFLINE GENERATE (NO API) =====
+function generateOffline() {
+    const userDesc = document.getElementById('userDesc').value.trim();
+    const videoType = document.getElementById('videoType').value;
+    const musicStyle = document.getElementById('musicStyle').value;
+    const bgType = document.getElementById('bgType').value;
+    const energy = document.getElementById('energy').value;
+    const dur = videoDuration ? Math.round(videoDuration) : 0;
+
+    // Style templates per video type
+    const typeStyles = {
+        auto: { genre: 'cinematic pop', mood: 'uplifting', instruments: 'piano and soft synths', tempo: '110 BPM', tags: ['cinematic','pop','uplifting','piano','synth','background music'] },
+        kids: { genre: 'playful nursery pop', mood: 'cheerful happy', instruments: 'xylophone, ukulele and claps', tempo: '120 BPM', tags: ['kids','nursery','playful','cheerful','xylophone','ukulele','claps','happy','cute'] },
+        vlog: { genre: 'indie pop', mood: 'feel-good', instruments: 'acoustic guitar and light drums', tempo: '105 BPM', tags: ['vlog','indie pop','feel-good','acoustic guitar','light drums','casual','warm'] },
+        travel: { genre: 'cinematic ambient', mood: 'adventurous inspiring', instruments: 'strings and atmospheric pads', tempo: '95 BPM', tags: ['travel','cinematic','ambient','adventurous','strings','atmospheric','inspiring','wanderlust'] },
+        food: { genre: 'jazzy bossa nova', mood: 'warm cozy', instruments: 'acoustic guitar and soft percussion', tempo: '90 BPM', tags: ['food','bossa nova','jazzy','warm','cozy','acoustic guitar','soft percussion','cooking'] },
+        tutorial: { genre: 'minimal electronic', mood: 'focused clean', instruments: 'soft synth pads and gentle beat', tempo: '100 BPM', tags: ['tutorial','minimal','electronic','focused','clean','synth pads','educational','calm'] },
+        review: { genre: 'modern pop', mood: 'confident dynamic', instruments: 'synth bass and crisp drums', tempo: '115 BPM', tags: ['review','modern pop','confident','dynamic','synth bass','crisp drums','tech'] },
+        cinematic: { genre: 'epic orchestral', mood: 'dramatic emotional', instruments: 'orchestra, strings and brass', tempo: '80 BPM', tags: ['cinematic','orchestral','epic','dramatic','emotional','strings','brass','film score'] },
+        gaming: { genre: 'electronic EDM', mood: 'intense energetic', instruments: 'synth leads and heavy bass', tempo: '140 BPM', tags: ['gaming','EDM','electronic','intense','energetic','synth','heavy bass','action'] },
+        fitness: { genre: 'workout EDM', mood: 'pumping powerful', instruments: 'heavy drums and bass drops', tempo: '130 BPM', tags: ['fitness','workout','EDM','pumping','powerful','heavy drums','bass drops','motivation'] },
+        asmr: { genre: 'ambient chill', mood: 'soothing peaceful', instruments: 'soft piano and nature textures', tempo: '70 BPM', tags: ['asmr','ambient','chill','soothing','peaceful','soft piano','nature','relaxation'] },
+    };
+
+    // Override with music style if specified
+    const styleOverrides = {
+        lofi: { genre: 'lo-fi chill hop', instruments: 'dusty Rhodes piano and vinyl drums', tempo: '85 BPM', tags: ['lo-fi','chill hop','Rhodes piano','vinyl','dusty','relaxing'] },
+        pop: { genre: 'modern pop', instruments: 'synth pads and snappy drums', tempo: '118 BPM', tags: ['pop','modern','synth pads','snappy drums','catchy'] },
+        acoustic: { genre: 'acoustic folk', instruments: 'fingerpick guitar and soft strings', tempo: '95 BPM', tags: ['acoustic','folk','fingerpick guitar','strings','warm','organic'] },
+        cinematic: { genre: 'cinematic orchestral', instruments: 'full orchestra and choir', tempo: '75 BPM', tags: ['cinematic','orchestral','choir','epic','sweeping'] },
+        edm: { genre: 'future bass EDM', instruments: 'supersaw synths and sub bass', tempo: '128 BPM', tags: ['EDM','future bass','supersaw','sub bass','electronic','drop'] },
+        jazz: { genre: 'smooth jazz', instruments: 'saxophone and brushed drums', tempo: '88 BPM', tags: ['jazz','smooth','saxophone','brushed drums','elegant'] },
+        hiphop: { genre: 'chill trap', instruments: 'trap hi-hats and 808 bass', tempo: '135 BPM', tags: ['hip-hop','trap','808 bass','hi-hats','chill'] },
+        cute: { genre: 'kawaii pop', instruments: 'music box, bells and squeaky synths', tempo: '125 BPM', tags: ['cute','kawaii','music box','bells','squeaky','adorable','whimsical'] },
+        ambient: { genre: 'ambient nature', instruments: 'ethereal pads and wind chimes', tempo: '65 BPM', tags: ['ambient','nature','ethereal pads','wind chimes','meditation'] },
+        rock: { genre: 'indie rock', instruments: 'electric guitar and live drums', tempo: '120 BPM', tags: ['rock','indie','electric guitar','live drums','raw'] },
+        classical: { genre: 'classical piano', instruments: 'grand piano solo', tempo: '80 BPM', tags: ['classical','piano solo','grand piano','elegant','timeless'] },
+    };
+
+    // Energy overrides
+    const energyMoods = {
+        calm: { mood: 'gentle soothing', tempoAdj: -15, tags: ['calm','gentle','soothing','soft'] },
+        moderate: { mood: 'easygoing warm', tempoAdj: 0, tags: ['moderate','easygoing','warm'] },
+        upbeat: { mood: 'cheerful bouncy', tempoAdj: +10, tags: ['upbeat','cheerful','bouncy','fun'] },
+        energetic: { mood: 'powerful driving', tempoAdj: +20, tags: ['energetic','powerful','driving','intense'] },
+    };
+
+    // Build the prompt
+    let base = typeStyles[videoType] || typeStyles.auto;
+    if (musicStyle !== 'auto' && styleOverrides[musicStyle]) {
+        const ov = styleOverrides[musicStyle];
+        base = { ...base, genre: ov.genre, instruments: ov.instruments, tempo: ov.tempo, tags: [...ov.tags, ...base.tags.slice(0,3)] };
+    }
+
+    let mood = base.mood;
+    let tempoNum = parseInt(base.tempo);
+    let extraTags = [];
+
+    if (energy !== 'auto' && energyMoods[energy]) {
+        const em = energyMoods[energy];
+        mood = em.mood;
+        tempoNum += em.tempoAdj;
+        extraTags = em.tags;
+    }
+
+    // Vocal type + special kids styles
+    const bgStyleMap = {
+        instrumental: { vocalTag: 'instrumental', extraStyle: '' },
+        vocals: { vocalTag: 'soft vocals', extraStyle: '' },
+        humming: { vocalTag: 'gentle humming', extraStyle: '' },
+        epic_kids: { vocalTag: 'instrumental', extraStyle: 'epic, heroic, triumphant, brass fanfare, soaring strings, powerful drums, kids anthem' },
+        battle: { vocalTag: 'instrumental', extraStyle: 'intense, dramatic, action, battle drums, aggressive strings, tension building, clash' },
+        inspiring: { vocalTag: 'instrumental', extraStyle: 'inspiring, hopeful, emotional piano, uplifting strings, motivational, faith, believe' },
+        transformation: { vocalTag: 'instrumental', extraStyle: 'uplifting transformation, building crescendo, from gentle to powerful, overcoming, rising, triumphant' },
+        emotional: { vocalTag: 'instrumental', extraStyle: 'emotional, touching, gentle piano, soft strings, heartwarming, tender, bittersweet' },
+        lullaby: { vocalTag: 'instrumental', extraStyle: 'lullaby, soft, soothing, gentle, dreamy, sleep, calm, warm' },
+        musicbox: { vocalTag: 'instrumental', extraStyle: 'music box, delicate, dreamy, twinkling, nostalgic, childhood melody' },
+        adventure: { vocalTag: 'instrumental', extraStyle: 'adventurous, exciting, playful discovery, curious, exploration, bouncy, fun quest' },
+        comedy: { vocalTag: 'instrumental', extraStyle: 'funny, quirky, comedic, silly, playful, cartoon, slapstick, bouncy' },
+        magical: { vocalTag: 'instrumental', extraStyle: 'magical, whimsical, fairy tale, enchanted, sparkle, wonder, fantasy, celestial bells' },
+        suspense: { vocalTag: 'instrumental', extraStyle: 'suspenseful, tense, mysterious, dark, eerie, building tension, thriller' },
+        whisper: { vocalTag: 'whisper vocals', extraStyle: 'airy, intimate, soft breath' },
+        nature_music: { vocalTag: 'instrumental', extraStyle: 'nature sounds, birds chirping, water flowing, wind, organic, peaceful' },
+        acappella: { vocalTag: 'a cappella vocal harmony', extraStyle: 'vocal only, no instruments, harmonies' },
+    };
+    const bgInfo = bgStyleMap[bgType] || bgStyleMap.instrumental;
+
+    // Build style prompt as comma-separated tags (Suno format)
+    const styleParts = [mood, base.genre, base.instruments, `${tempoNum} BPM`, bgInfo.vocalTag];
+    if (bgInfo.extraStyle) styleParts.push(bgInfo.extraStyle);
+    const stylesStr = styleParts.join(', ');
+
+    // Song structure (always use full structure)
+    const musicDur = 3;
+
+    // Lyrics with full structure for longer duration
+    let lyricsStr = '';
+    const instrumentalTypes = ['instrumental','epic_kids','battle','inspiring','transformation','emotional','lullaby','musicbox','adventure','comedy','magical','suspense','nature_music'];
+
+    if (instrumentalTypes.includes(bgType)) {
+        // Special structures per kids style
+        const lyricsTemplates = {
+            epic_kids: `[Intro - Soft, mysterious]
+
+[Build Up - Growing momentum]
+
+[Main Theme - Heroic, powerful]
+
+[Climax - Full orchestra, triumphant]
+
+[Breakdown - Tender moment]
+
+[Final Rise - Even more epic]
+
+[Outro - Victory, peaceful]`,
+            battle: `[Intro - Tension building]
+
+[Battle Begins - Intense drums]
+
+[Clash - Full power]
+
+[Turning Point - Brief pause]
+
+[Final Battle - Maximum intensity]
+
+[Victory - Triumphant resolution]
+
+[Outro - Calm after storm]`,
+            inspiring: `[Intro - Gentle piano, quiet hope]
+
+[Verse - Story begins, soft]
+
+[Build Up - Strings join, growing belief]
+
+[Chorus - Full bloom, inspiring]
+
+[Verse 2 - Deeper emotion]
+
+[Chorus - Stronger, more powerful]
+
+[Bridge - Intimate, touching]
+
+[Final Chorus - Maximum uplift]
+
+[Outro - Warm, hopeful]`,
+            transformation: `[Intro - Small, uncertain]
+
+[Struggle - Tension, doubt]
+
+[Breakthrough - First spark of change]
+
+[Rising - Growing stronger]
+
+[Transformation - Full power unleashed]
+
+[New Self - Confident, radiant]
+
+[Outro - Peaceful triumph]`,
+            emotional: `[Intro - Tender piano]
+
+[Verse - Gentle, touching]
+
+[Emotional Peak - Strings swell]
+
+[Quiet Moment - Intimate]
+
+[Resolution - Warmth, comfort]
+
+[Outro - Soft fade]`,
+            lullaby: `[Intro - Very soft]
+
+[Verse - Gentle melody]
+
+[Chorus - Soothing repeat]
+
+[Verse 2 - Even softer]
+
+[Chorus - Whisper quiet]
+
+[Outro - Fading to silence]`,
+            musicbox: `[Intro - Music box opens]
+
+[Main Melody - Delicate, twinkling]
+
+[Variation - Gentle shift]
+
+[Main Melody Reprise]
+
+[Outro - Music box winds down]`,
+            adventure: `[Intro - Curiosity, wonder]
+
+[Setting Off - Bouncy, excited]
+
+[Discovery - Playful surprise]
+
+[Challenge - Brief tension]
+
+[Triumph - Fun victory]
+
+[Journey Continues - Joyful]
+
+[Outro - Happy ending]`,
+            comedy: `[Intro - Quirky, funny]
+
+[Silly Theme - Bouncy, playful]
+
+[Goofy Moment - Extra silly]
+
+[Chase Scene - Fast, fun]
+
+[Punchline - Comedic hit]
+
+[Outro - Laughing fade]`,
+            magical: `[Intro - Sparkle, wonder]
+
+[Enchantment - Dreamy, floating]
+
+[Magic Happens - Celestial, bright]
+
+[Wonder - Awe-inspiring]
+
+[Fairy Dance - Whimsical, light]
+
+[Outro - Gentle sparkle fade]`,
+            suspense: `[Intro - Quiet, uneasy]
+
+[Mystery - Building tension]
+
+[Discovery - Sudden shift]
+
+[Chase - Heart pounding]
+
+[Climax - Maximum tension]
+
+[Resolution - Relief]
+
+[Outro - Calm return]`,
+            nature_music: `[Intro - Nature sounds]
+
+[Dawn - Gentle melody with birds]
+
+[Main Theme - Flowing, organic]
+
+[Peaceful Moment - Water sounds]
+
+[Main Theme Reprise]
+
+[Outro - Nature fades]`,
+        };
+
+        lyricsStr = lyricsTemplates[bgType] || `[Intro]
+
+[Main Theme]
+
+[Build Up]
+
+[Climax]
+
+[Breakdown]
+
+[Main Theme Reprise]
+
+[Outro]`;
+    } else if (bgType === 'humming') {
+        lyricsStr = `[Intro]
+
+[Verse 1]
+Mm mm mm mm~
+La la la la~
+
+[Chorus]
+Mm mm mm~
+Da da da~
+
+[Verse 2]
+Mm mm mm mm~
+La la la la~
+
+[Bridge]
+Oo oo oo~
+
+[Chorus]
+Mm mm mm~
+Da da da~
+
+[Outro]
+Mm mm~`;
+    } else if (bgType === 'whisper') {
+        lyricsStr = `[Intro - Soft breath]
+
+[Verse 1]
+(Whispered words here)
+(Gentle, airy)
+
+[Chorus]
+(Whispered hook)
+(Breathy, intimate)
+
+[Verse 2]
+(Continue whispering)
+
+[Chorus]
+(Repeat whispered hook)
+
+[Outro - Fading whisper]`;
+    } else if (bgType === 'acappella') {
+        lyricsStr = `[Intro - Vocal harmony]
+
+[Verse 1]
+(Sing your lyrics here)
+(Second line)
+
+[Chorus - Full harmony]
+(Main hook - catchy)
+(Harmonize)
+
+[Verse 2]
+(Continue the story)
+
+[Chorus - Full harmony]
+(Main hook repeat)
+
+[Bridge - Solo voice]
+(Something different)
+
+[Final Chorus - All voices]
+
+[Outro - Fading harmony]`;
+    } else {
+        // Vocals (default)
+        lyricsStr = `[Intro]
+
+[Verse 1]
+(Write your lyrics here)
+(Second line)
+
+[Pre-Chorus]
+(Build up line)
+
+[Chorus]
+(Main hook - catchy)
+(Repeat hook)
+
+[Verse 2]
+(Continue the story)
+(Second line)
+
+[Chorus]
+(Main hook - catchy)
+(Repeat hook)
+
+[Bridge]
+(Something different)
+
+[Chorus]
+(Final chorus - powerful)
+
+[Outro]`;
+    }
+
+    // Title suggestion
+    const titleMap = {
+        kids: 'Little Adventures', vlog: 'My Day', travel: 'Wanderlust', 
+        food: 'Golden Hour Kitchen', tutorial: 'Step By Step', review: 'First Look',
+        cinematic: 'The Story Unfolds', gaming: 'Level Up', fitness: 'Push It',
+        asmr: 'Whisper Wind', auto: 'Untitled'
+    };
+    const titleStr = titleMap[videoType] || 'Untitled';
+
+    // Analysis text
+    let analysis = 'Đã tạo prompt từ tuỳ chọn của bạn (không dùng API):\n';
+    analysis += `\n• Loại video: ${document.getElementById('videoType').selectedOptions[0].text}`;
+    analysis += `\n• Phong cách nhạc: ${document.getElementById('musicStyle').selectedOptions[0].text}`;
+    analysis += `\n• Kiểu nhạc nền: ${document.getElementById('bgType').selectedOptions[0].text}`;
+    analysis += `\n• Cường độ: ${document.getElementById('energy').selectedOptions[0].text}`;
+    if (dur) analysis += `\n• Thời lượng video: ${fmtTime(dur)}`;
+    if (userDesc) analysis += `\n• Mô tả: ${userDesc}`;
+
+    // Show results
+    document.getElementById('sceneText').value = analysis;
+    document.getElementById('analysisSec').classList.add('v');
+    document.getElementById('stylesOutput').value = stylesStr;
+    document.getElementById('lyricsOutput').value = lyricsStr;
+    document.getElementById('titleOutput').value = titleStr;
+    document.getElementById('promptSec').classList.add('v');
+
+    toast('✨ Đã tạo prompt Suno AI! (Offline mode)');
+}
+</script>
+</body>
+</html>

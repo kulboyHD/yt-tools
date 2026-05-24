@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thumbnail AI Analyzer — Phân tích thu nhỏ & Gợi ý tiêu đề SEO</title>
+    <meta name="description" content="Phân tích hình thu nhỏ YouTube bằng AI, gợi ý tiêu đề SEO theo pattern kênh nguồn">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        :root{
+            --bg:#06060f;--card:rgba(18,18,35,0.85);--card2:rgba(24,24,48,0.9);
+            --input:#0e0e22;--border:rgba(255,255,255,.06);
+            --text:#f0f0f5;--text2:#9898bb;--muted:#555575;
+            --accent:#6366f1;--accent2:#8b5cf6;--accent3:#a78bfa;
+            --grad:linear-gradient(135deg,#6366f1,#8b5cf6,#a78bfa);
+            --grad2:linear-gradient(135deg,#ec4899,#f43f5e);
+            --grad3:linear-gradient(135deg,#10b981,#14b8a6);
+            --grad4:linear-gradient(135deg,#f59e0b,#f97316);
+            --green:#10b981;--red:#f43f5e;--yellow:#f59e0b;--blue:#3b82f6;
+            --r:18px;--r2:12px;--r3:8px;
+            --glass:rgba(255,255,255,.03);
+            --shadow:0 20px 60px rgba(0,0,0,.5);
+        }
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.6}
+
+        /* Background effects */
+        .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+        .bg-orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:.15;animation:float 20s ease-in-out infinite}
+        .bg-orb:nth-child(1){width:600px;height:600px;top:-200px;right:-100px;background:#6366f1;animation-delay:0s}
+        .bg-orb:nth-child(2){width:500px;height:500px;bottom:-150px;left:-100px;background:#ec4899;animation-delay:-7s}
+        .bg-orb:nth-child(3){width:400px;height:400px;top:40%;left:30%;background:#14b8a6;animation-delay:-14s}
+        @keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(60px,-40px) scale(1.1)}66%{transform:translate(-40px,60px) scale(.9)}}
+        .bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:50px 50px}
+
+        .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:40px 20px 100px}
+
+        /* Header */
+        .hdr{text-align:center;margin-bottom:48px}
+        .logo-wrap{display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;background:var(--grad);border-radius:20px;margin-bottom:20px;font-size:36px;box-shadow:0 0 30px rgba(99,102,241,.3),0 0 60px rgba(99,102,241,.15);animation:logoPulse 3s ease-in-out infinite}
+        @keyframes logoPulse{0%,100%{box-shadow:0 0 30px rgba(99,102,241,.3)}50%{box-shadow:0 0 50px rgba(99,102,241,.5),0 0 80px rgba(139,92,246,.2)}}
+        h1{font-size:2.6rem;font-weight:900;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.03em;line-height:1.2}
+        .sub{font-size:1.05rem;color:var(--text2);margin-top:10px}
+        .nav-links{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+        .nav-links a{color:var(--accent3);text-decoration:none;font-size:.8rem;font-weight:600;padding:5px 14px;border:1px solid rgba(139,92,246,.25);border-radius:20px;transition:all .3s}
+        .nav-links a:hover{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.5)}
+
+        /* Cards */
+        .card{background:var(--card);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r);padding:32px;margin-bottom:24px;box-shadow:var(--shadow);transition:all .3s}
+
+        /* Labels & Inputs */
+        label{display:block;font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+        .hint{font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:.78rem}
+        .iw{position:relative}
+        .iw .ic{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--muted);pointer-events:none}
+        input[type="text"],input[type="password"],input[type="number"]{width:100%;padding:14px 16px 14px 48px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;transition:all .3s;outline:none}
+        input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.2)}
+        input::placeholder{color:var(--muted)}
+        textarea{width:100%;padding:16px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.6;resize:vertical;outline:none;transition:border-color .3s}
+        textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+        textarea::placeholder{color:var(--muted)}
+        select{width:100%;padding:12px 14px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.85rem;outline:none;cursor:pointer}
+        .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        @media(max-width:640px){.row{grid-template-columns:1fr}}
+
+        /* Buttons */
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border:none;border-radius:var(--r2);font-family:'Inter',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+        .btn-p{background:var(--grad);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,.3)}
+        .btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(99,102,241,.4)}
+        .btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-s{background:var(--glass);color:var(--text);border:1px solid var(--border)}
+        .btn-s:hover{background:rgba(255,255,255,.08)}
+        .btn-pink{background:var(--grad2);color:#fff;box-shadow:0 4px 20px rgba(236,72,153,.3)}
+        .btn-pink:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(236,72,153,.4)}
+        .btn-pink:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .acts{display:flex;gap:12px;flex-wrap:wrap}
+        .spin{display:inline-block;width:20px;height:20px;border:2.5px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+        @keyframes sp{to{transform:rotate(360deg)}}
+
+        /* Steps indicator */
+        .steps{display:flex;gap:0;margin-bottom:32px;position:relative}
+        .step{flex:1;text-align:center;padding:16px 12px;position:relative;cursor:default}
+        .step-num{width:40px;height:40px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:800;margin-bottom:8px;border:2px solid var(--border);color:var(--muted);background:var(--input);transition:all .4s}
+        .step.active .step-num{background:var(--grad);border-color:transparent;color:#fff;box-shadow:0 0 20px rgba(99,102,241,.4)}
+        .step.done .step-num{background:var(--green);border-color:transparent;color:#fff}
+        .step-label{font-size:.78rem;color:var(--muted);font-weight:500;transition:color .3s}
+        .step.active .step-label{color:var(--text)}
+        .step.done .step-label{color:var(--green)}
+        .step-line{position:absolute;top:36px;left:50%;width:100%;height:2px;background:var(--border);z-index:-1}
+        .step:last-child .step-line{display:none}
+        .step.done .step-line{background:var(--green)}
+
+        /* Progress */
+        .prog{display:none;animation:slideUp .4s ease}
+        .prog.v{display:block}
+        .prog-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+        .prog-t{font-size:.9rem;font-weight:500;color:var(--text2)}
+        .prog-p{font-size:1.1rem;font-weight:700;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .prog-bar{width:100%;height:6px;background:var(--input);border-radius:3px;overflow:hidden}
+        .prog-fill{height:100%;width:0%;background:var(--grad);border-radius:3px;transition:width .3s}
+
+        /* Sections */
+        .sec{display:none;animation:slideUp .5s ease}
+        .sec.v{display:block}
+        @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .fade-in{animation:fadeIn .6s ease forwards}
+
+        /* Channel cards in results */
+        .ch-result{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:12px;transition:all .3s}
+        .ch-result:hover{border-color:rgba(99,102,241,.2)}
+        .ch-header{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+        .ch-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(99,102,241,.3)}
+        .ch-info h3{font-size:1rem;font-weight:700}
+        .ch-info .ch-meta{font-size:.78rem;color:var(--text2)}
+
+        /* Video title pattern tags */
+        .pattern-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+        .ptag{display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:16px;font-size:.75rem;font-weight:600;transition:all .2s}
+        .ptag-purple{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:var(--accent3)}
+        .ptag-pink{background:rgba(236,72,153,.1);border:1px solid rgba(236,72,153,.2);color:#f472b6}
+        .ptag-green{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);color:#34d399}
+        .ptag-yellow{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);color:#fbbf24}
+
+        /* Video list in channel result */
+        .vid-list{display:grid;gap:8px;margin-top:10px}
+        .vid-item{display:flex;gap:10px;padding:10px;background:rgba(255,255,255,.02);border-radius:var(--r3);border:1px solid transparent;transition:all .2s}
+        .vid-item:hover{border-color:rgba(99,102,241,.15);background:rgba(99,102,241,.03)}
+        .vid-item-thumb{width:120px;min-width:120px;aspect-ratio:16/9;border-radius:6px;overflow:hidden;background:var(--input)}
+        .vid-item-thumb img{width:100%;height:100%;object-fit:cover}
+        .vid-item-info{flex:1;min-width:0}
+        .vid-item-title{font-size:.82rem;font-weight:600;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px}
+        .vid-item-meta{font-size:.72rem;color:var(--text2)}
+
+        /* Upload area */
+        .upload-zone{border:2px dashed rgba(99,102,241,.3);border-radius:var(--r);padding:48px 24px;text-align:center;transition:all .3s;cursor:pointer;background:rgba(99,102,241,.03)}
+        .upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(99,102,241,.08)}
+        .upload-zone .uz-icon{font-size:3.5rem;margin-bottom:12px;display:block}
+        .upload-zone .uz-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+        .upload-zone .uz-hint{font-size:.85rem;color:var(--text2)}
+        .upload-preview{position:relative;margin-top:16px;display:none}
+        .upload-preview.v{display:block}
+        .upload-preview img{width:100%;max-width:640px;border-radius:var(--r2);border:2px solid rgba(99,102,241,.2);box-shadow:0 10px 40px rgba(0,0,0,.4)}
+        .upload-preview .remove-btn{position:absolute;top:10px;right:10px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+        .upload-preview .remove-btn:hover{background:var(--red);border-color:transparent}
+
+        /* AI Report */
+        .ai-report{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:24px;font-size:.9rem;line-height:1.8;color:var(--text);white-space:pre-wrap;word-wrap:break-word}
+        .ai-report h2{font-size:1.15rem;font-weight:800;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:24px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        .ai-report h2:first-child{margin-top:0}
+        .ai-report h3{font-size:1rem;font-weight:700;color:var(--accent3);margin:20px 0 10px}
+        .ai-report h4{font-size:.95rem;font-weight:600;color:var(--text);margin:16px 0 8px}
+        .ai-report ul,.ai-report ol{margin:8px 0;padding-left:20px}
+        .ai-report li{margin:4px 0;color:var(--text2)}
+        .ai-report strong{color:var(--text);font-weight:700}
+        .ai-report em{color:var(--accent3);font-style:italic}
+        .ai-report code{background:rgba(99,102,241,.12);color:var(--accent3);padding:2px 6px;border-radius:4px;font-size:.85rem}
+        .ai-report blockquote{border-left:3px solid var(--accent);padding:12px 16px;margin:12px 0;background:rgba(99,102,241,.05);border-radius:0 8px 8px 0;color:var(--text2)}
+        .ai-report table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.82rem}
+        .ai-report table th{background:rgba(99,102,241,.1);color:var(--accent3);padding:8px;text-align:left;font-weight:600;border:1px solid var(--border)}
+        .ai-report table td{padding:8px;border:1px solid var(--border);color:var(--text2)}
+        .ai-report hr{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+        /* Title suggestions cards */
+        .title-card{background:var(--glass);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;transition:all .3s;cursor:pointer}
+        .title-card:hover{border-color:rgba(99,102,241,.3);background:rgba(99,102,241,.04);transform:translateX(4px)}
+        .title-card .t-num{width:32px;height:32px;border-radius:8px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;flex-shrink:0}
+        .title-card .t-text{flex:1;font-size:.95rem;font-weight:600;line-height:1.5}
+        .title-card .t-copy{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all .2s;flex-shrink:0}
+        .title-card .t-copy:hover{background:rgba(99,102,241,.2);border-color:var(--accent)}
+
+        /* Copy buttons */
+        .copy-wrap{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+        .copy-btn{background:var(--glass);border:1px solid var(--border);color:var(--text2);padding:8px 16px;border-radius:var(--r3);font-family:'Inter',sans-serif;font-size:.82rem;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+        .copy-btn:hover{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.3);color:var(--text)}
+
+        /* API Help */
+        .api-help{background:rgba(99,102,241,.06);border:1px solid rgba(99,102,241,.15);border-radius:var(--r2);padding:16px 20px;margin-top:10px;font-size:.83rem;line-height:1.7;color:var(--text2)}
+        .api-help summary{cursor:pointer;color:var(--accent3);font-weight:600;font-size:.85rem}
+        .api-help ol{margin-top:10px;padding-left:20px}
+        .api-help a{color:var(--accent);text-decoration:none}
+
+        /* Sec title */
+        .sec-title{display:flex;align-items:center;gap:10px;font-size:1.1rem;font-weight:700;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+        .sec-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .sec-icon.purple{background:rgba(99,102,241,.15)}
+        .sec-icon.pink{background:rgba(236,72,153,.15)}
+        .sec-icon.green{background:rgba(16,185,129,.15)}
+        .sec-icon.yellow{background:rgba(245,158,11,.15)}
+        .sec-icon.blue{background:rgba(59,130,246,.15)}
+        .sec-icon.teal{background:rgba(20,184,166,.15)}
+
+        /* Toast */
+        .toast{position:fixed;bottom:30px;right:30px;background:var(--card2);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:var(--r2);padding:16px 24px;box-shadow:0 20px 60px rgba(0,0,0,.6);z-index:1000;display:flex;align-items:center;gap:10px;font-size:.9rem;transform:translateY(100px);opacity:0;transition:all .4s cubic-bezier(.16,1,.3,1);max-width:420px}
+        .toast.show{transform:translateY(0);opacity:1}
+        .toast.error{border-color:rgba(244,63,94,.3)}
+        .toast.success{border-color:rgba(16,185,129,.3)}
+
+        /* Ultra Web Mode */
+        .ultra-box{padding:20px;background:linear-gradient(135deg,rgba(236,72,153,.06),rgba(139,92,246,.06));border:1px solid rgba(236,72,153,.15);border-radius:12px;margin-bottom:16px;text-align:center}
+
+        /* Ultra Steps */
+        .ultra-steps{display:flex;flex-direction:column;gap:14px;margin:20px 0;text-align:left}
+        .ultra-step{display:flex;align-items:flex-start;gap:14px;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--r2);transition:all .4s}
+        .ultra-step.active{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.06);box-shadow:0 0 20px rgba(99,102,241,.1)}
+        .ultra-step.done{border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.04)}
+        .ultra-step-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;flex-shrink:0;border:2px solid var(--border);color:var(--muted);background:var(--input)}
+        .ultra-step.active .ultra-step-num{background:var(--grad);border-color:transparent;color:#fff;animation:logoPulse 2s ease-in-out infinite}
+        .ultra-step.done .ultra-step-num{background:var(--green);border-color:transparent;color:#fff}
+        .ultra-step-content{flex:1}
+        .ultra-step-title{font-size:.95rem;font-weight:700;margin-bottom:4px}
+        .ultra-step-desc{font-size:.82rem;color:var(--text2);line-height:1.5}
+        .ultra-step .btn{margin-top:10px}
+
+        .ft{text-align:center;color:var(--muted);font-size:.8rem;margin-top:60px;padding-top:20px;border-top:1px solid var(--border)}
+
+        /* Stats bar */
+        .stats-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:20px}
+        .stat-mini{background:var(--glass);border:1px solid var(--border);border-radius:var(--r3);padding:14px;text-align:center}
+        .stat-mini .sv{font-size:1.3rem;font-weight:800;margin-bottom:2px}
+        .stat-mini .sl{font-size:.72rem;color:var(--text2)}
+        .sv-purple{color:var(--accent3)}
+        .sv-green{color:var(--green)}
+        .sv-pink{color:#f472b6}
+        .sv-yellow{color:var(--yellow)}
+
+        @media(max-width:768px){
+            h1{font-size:1.8rem}.card{padding:20px}
+            .steps{flex-wrap:wrap}.step{min-width:80px}
+            .vid-item{flex-direction:column}.vid-item-thumb{width:100%}
+        }
+    </style>
+</head>
+<body>
+<div class="bg-canvas"><div class="bg-orb"></div><div class="bg-orb"></div><div class="bg-orb"></div></div>
+<div class="bg-grid"></div>
+
+<div class="wrap">
+    <header class="hdr">
+        <div class="logo-wrap">🎨</div>
+        <h1>Thumbnail AI Analyzer</h1>
+        <p class="sub">Phân tích hình thu nhỏ bằng AI • Gợi ý tiêu đề SEO • Tối ưu Thumbnail</p>
+        <div class="nav-links" style="flex-direction:row;gap:14px;align-items:flex-start">
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="index.html">📸 Thumbnail</a>
+                    <a href="yt-downloader.html">⬇️ Tải Video</a>
+                    <a href="trending.html">🔥 Xu hướng</a>
+                    <a href="video-links.html">🔗 Link</a>
+                    <a href="channel-analyzer.html">🧬 DNA</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="music-check.html">🎵 Nhạc</a>
+                    <a href="srt-maker.html">📝 SRT</a>
+                    <a href="suno-prompt.html">🎵 Suno</a>
+                </div>
+            </div>
+            <div style="width:1px;height:36px;background:var(--border);margin:8px 2px 0;flex-shrink:0"></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                <span style="font-size:.6rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                    <a href="tiktok.html">🎬 TikTok</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Steps indicator -->
+    <div class="steps" id="stepsBar">
+        <div class="step active" id="step1">
+            <div class="step-num">1</div>
+            <div class="step-label">Cài đặt API</div>
+            <div class="step-line"></div>
+        </div>
+        <div class="step" id="step2">
+            <div class="step-num">2</div>
+            <div class="step-label">Kênh nguồn</div>
+            <div class="step-line"></div>
+        </div>
+        <div class="step" id="step3">
+            <div class="step-num">3</div>
+            <div class="step-label">Upload ảnh</div>
+            <div class="step-line"></div>
+        </div>
+        <div class="step" id="step4">
+            <div class="step-num">4</div>
+            <div class="step-label">AI phân tích</div>
+        </div>
+    </div>
+
+    <!-- ====== STEP 1: API Keys ====== -->
+    <section class="card sec v" id="sec1">
+        <div class="sec-title"><div class="sec-icon purple">🔑</div><span>Bước 1: Cài đặt API Key</span></div>
+
+        <div style="margin-bottom:20px">
+            <label>🔑 YouTube API Key <span class="hint">(bắt buộc — để lấy video từ kênh)</span></label>
+            <div class="iw">
+                <span class="ic">🔑</span>
+                <input type="password" id="ytKeyInput" placeholder="Dán YouTube API Key..." autocomplete="off">
+            </div>
+        </div>
+
+        <div style="margin-bottom:20px">
+            <label>🤖 Gemini API Key <span class="hint">(TÙY CHỌN — để trống = dùng Gemini Ultra Web)</span></label>
+            <div class="iw">
+                <span class="ic">🤖</span>
+                <input type="password" id="geminiKeyInput" placeholder="Để trống nếu muốn dùng Gemini Ultra Web..." autocomplete="off">
+            </div>
+            <div style="margin-top:10px;padding:12px 16px;background:linear-gradient(135deg,rgba(236,72,153,.08),rgba(139,92,246,.08));border:1px solid rgba(236,72,153,.2);border-radius:10px">
+                <div style="font-size:.85rem;font-weight:700;color:#f472b6;margin-bottom:6px">💎 Có tài khoản Gemini Ultra? Không cần API Key!</div>
+                <div style="font-size:.8rem;color:var(--text2);line-height:1.6">
+                    Để trống → Tool sẽ tự <strong>tạo prompt + mở Gemini Ultra</strong> cho bạn.<br>
+                    <span style="color:var(--green)">✅ Không rate limit • ✅ Chất lượng cao nhất • ✅ Hỗ trợ phân tích hình ảnh</span>
+                </div>
+            </div>
+            <details class="api-help" style="margin-top:10px">
+                <summary>🔑 Hoặc: Dùng API Key miễn phí (tự động, nhiều key)</summary>
+                <ol>
+                    <li>Vào <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a> → Create API Key</li>
+                    <li>Đăng nhập bằng <strong>nhiều tài khoản Google khác nhau</strong>, mỗi account tạo 1 key</li>
+                    <li>Dán tất cả key, <strong>cách nhau bằng dấu phẩy</strong></li>
+                </ol>
+            </details>
+        </div>
+
+        <div class="acts">
+            <button class="btn btn-p" id="btnNext1" onclick="goStep2()">
+                <span>→</span> Tiếp tục: Nhập kênh nguồn
+            </button>
+        </div>
+    </section>
+
+    <!-- ====== STEP 2: Source Channels ====== -->
+    <section class="card sec" id="sec2">
+        <div class="sec-title"><div class="sec-icon green">📋</div><span>Bước 2: Danh sách kênh nguồn</span></div>
+
+        <div style="margin-bottom:16px">
+            <label>📁 Upload file TXT <span class="hint">(mỗi dòng 1 URL/handle kênh)</span></label>
+            <div class="upload-zone" id="txtUploadZone" onclick="document.getElementById('txtFileInput').click()" style="padding:24px;border-color:rgba(16,185,129,.3);background:rgba(16,185,129,.03)">
+                <span class="uz-icon" style="font-size:2rem">📄</span>
+                <div class="uz-title" style="font-size:.95rem">Click hoặc kéo thả file .txt vào đây</div>
+                <div class="uz-hint" style="font-size:.8rem">Mỗi dòng 1 kênh: @handle, URL, hoặc Channel ID</div>
+            </div>
+            <input type="file" id="txtFileInput" accept=".txt" style="display:none" onchange="handleTxtFile(event)">
+            <div id="txtFileName" style="display:none;margin-top:8px;padding:8px 14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;font-size:.85rem;color:var(--green)"></div>
+        </div>
+
+        <div style="margin-bottom:16px">
+            <label>✏️ Hoặc paste trực tiếp <span class="hint">(mỗi dòng 1 kênh)</span></label>
+            <textarea id="channelListArea" rows="6" placeholder="@CocomelanEnglish&#10;@LooLooKids&#10;https://youtube.com/@BabyBus&#10;UCxxxxxxxx"></textarea>
+        </div>
+
+        <div class="row" style="margin-bottom:20px">
+            <div>
+                <label>📊 Số video/kênh <span class="hint">(tối đa 10)</span></label>
+                <div class="iw">
+                    <span class="ic">📊</span>
+                    <input type="number" id="videosPerChannel" value="10" min="1" max="10" placeholder="10">
+                </div>
+            </div>
+            <div>
+                <label>🌐 Ngôn ngữ phân tích</label>
+                <select id="langSelect">
+                    <option value="vi" selected>🇻🇳 Tiếng Việt</option>
+                    <option value="en">🇺🇸 English</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="acts">
+            <button class="btn btn-s" onclick="goStep1()">← Quay lại</button>
+            <button class="btn btn-p" id="btnFetch" onclick="fetchChannels()">
+                <span>📥</span> Tải & Phân tích kênh nguồn
+            </button>
+        </div>
+    </section>
+
+    <!-- ====== Progress ====== -->
+    <section class="card prog" id="progSec">
+        <div class="prog-h">
+            <span class="prog-t" id="progT">Đang tải...</span>
+            <span class="prog-p" id="progP">0%</span>
+        </div>
+        <div class="prog-bar"><div class="prog-fill" id="progF"></div></div>
+    </section>
+
+    <!-- ====== STEP 2 Results: Channel Data ====== -->
+    <section class="card sec" id="sec2Results">
+        <div class="sec-title"><div class="sec-icon teal">📊</div><span>Dữ liệu kênh nguồn đã tải</span></div>
+        <div class="stats-bar" id="channelStats"></div>
+        <div id="channelResultsList"></div>
+        <div style="margin-top:20px" class="acts">
+            <button class="btn btn-p" onclick="goStep3()">
+                <span>🖼️</span> Tiếp tục: Upload thumbnail của bạn
+            </button>
+        </div>
+    </section>
+
+    <!-- ====== STEP 3: Upload Your Thumbnail ====== -->
+    <section class="card sec" id="sec3">
+        <div class="sec-title"><div class="sec-icon pink">🖼️</div><span>Bước 3: Upload hình thu nhỏ của bạn</span></div>
+
+        <div class="upload-zone" id="thumbUploadZone">
+            <span class="uz-icon">🖼️</span>
+            <div class="uz-title">Kéo thả hoặc click để upload thumbnail</div>
+            <div class="uz-hint">Hỗ trợ: JPG, PNG, WebP — Kích thước khuyến nghị: 1280×720</div>
+        </div>
+        <input type="file" id="thumbFileInput" accept="image/*" style="display:none" onchange="handleThumbUpload(event)">
+        <div class="upload-preview" id="thumbPreview">
+            <img id="thumbPreviewImg" src="" alt="Thumbnail preview">
+            <button class="remove-btn" onclick="removeThumb()" title="Xóa">✕</button>
+        </div>
+
+        <div style="margin-top:20px" class="acts">
+            <button class="btn btn-s" onclick="showSec('sec2Results')">← Quay lại</button>
+            <button class="btn btn-pink" id="btnAnalyze" onclick="startAIAnalysis()">
+                <span>🤖</span> AI Phân tích & Gợi ý tiêu đề
+            </button>
+        </div>
+    </section>
+
+    <!-- ====== STEP 4: AI Analysis Results ====== -->
+    <section class="card sec" id="sec4">
+        <div class="sec-title"><div class="sec-icon purple">🧬</div><span>Kết quả phân tích AI</span></div>
+
+        <div class="copy-wrap">
+            <button class="copy-btn" onclick="copyReport()">📋 Copy báo cáo</button>
+            <button class="copy-btn" onclick="exportTxt()">📄 Xuất .txt</button>
+            <button class="copy-btn" onclick="goStep3()">🔄 Phân tích lại</button>
+        </div>
+
+        <!-- Ultra Web Mode -->
+        <div id="ultraWebMode" style="display:none">
+            <div class="ultra-box">
+                <div style="font-size:2rem;margin-bottom:8px">💎</div>
+                <div style="font-size:1.1rem;font-weight:700;color:#f472b6;margin-bottom:8px">Chế độ Gemini Ultra Web — Tự động gửi</div>
+                <div style="font-size:.85rem;color:var(--text2);margin-bottom:8px;line-height:1.6">
+                    Làm theo 3 bước bên dưới — Tool sẽ tự <strong>copy ảnh + prompt</strong> cho bạn!
+                </div>
+            </div>
+
+            <div class="ultra-steps" id="ultraSteps">
+                <!-- Step 1: Copy Image -->
+                <div class="ultra-step active" id="uStep1">
+                    <div class="ultra-step-num">1</div>
+                    <div class="ultra-step-content">
+                        <div class="ultra-step-title">🖼️ Copy ảnh thumbnail vào clipboard</div>
+                        <div class="ultra-step-desc">Ảnh thumbnail sẽ được copy vào clipboard. Sau đó mở Gemini và paste ảnh (Ctrl+V).</div>
+                        <button class="btn btn-pink" onclick="ultraStep1_CopyImage()">🖼️ Copy ảnh & Mở Gemini</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Paste Image → Copy Prompt -->
+                <div class="ultra-step" id="uStep2">
+                    <div class="ultra-step-num">2</div>
+                    <div class="ultra-step-content">
+                        <div class="ultra-step-title">📋 Paste ảnh vào Gemini → Copy prompt</div>
+                        <div class="ultra-step-desc">Trong tab Gemini: nhấn <strong>Ctrl+V</strong> để dán ảnh. Sau đó quay lại đây nhấn nút bên dưới để copy prompt.</div>
+                        <button class="btn btn-p" onclick="ultraStep2_CopyPrompt()">📋 Copy prompt phân tích</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Paste Prompt & Send -->
+                <div class="ultra-step" id="uStep3">
+                    <div class="ultra-step-num">3</div>
+                    <div class="ultra-step-content">
+                        <div class="ultra-step-title">🚀 Paste prompt vào Gemini & Gửi</div>
+                        <div class="ultra-step-desc">Quay lại tab Gemini → <strong>Ctrl+V</strong> paste prompt → nhấn <strong>Enter/Gửi</strong>. AI sẽ phân tích ảnh + gợi ý tiêu đề!</div>
+                        <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+                            <button class="btn btn-s" onclick="openGeminiTab()">💎 Mở lại Gemini</button>
+                            <button class="btn btn-s" onclick="ultraStep2_CopyPrompt()">📋 Copy lại prompt</button>
+                            <button class="btn btn-s" onclick="ultraStep1_CopyImage()">🖼️ Copy lại ảnh</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;padding:14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px">
+                <div style="font-size:.85rem;font-weight:700;color:var(--yellow);margin-bottom:6px">📥 Nhận kết quả từ Gemini</div>
+                <div style="font-size:.82rem;color:var(--text2);margin-bottom:10px">Sau khi Gemini phân tích xong, copy kết quả và paste vào ô bên dưới:</div>
+            </div>
+            <textarea id="ultraPasteArea" placeholder="Paste kết quả từ Gemini Ultra vào đây...&#10;&#10;Sau đó nhấn nút 'Hiển thị báo cáo' bên dưới." style="min-height:150px;margin-top:10px"></textarea>
+            <div style="margin-top:10px;display:flex;gap:10px">
+                <button class="btn btn-p" onclick="renderPastedReport()">📊 Hiển thị báo cáo</button>
+            </div>
+        </div>
+
+        <!-- AI Report -->
+        <div class="ai-report" id="aiReport"></div>
+    </section>
+
+    <footer class="ft">Thumbnail AI Analyzer • YouTube Data API + Gemini Vision AI</footer>
+</div>
+
+<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+// ===== STATE =====
+let channelsData = []; // [{channelInfo, videos:[{title,views,likes,thumb,publishedAt,...}]}]
+let userThumbBase64 = null;
+let userThumbFile = null;
+let rawReport = '';
+let cachedPrompt = '';
+let currentStep = 1;
+
+// Load saved keys
+const savedYtKey = localStorage.getItem('yt_api_key');
+const savedGemKey = localStorage.getItem('gemini_keys_multi');
+if (savedYtKey) document.getElementById('ytKeyInput').value = savedYtKey;
+if (savedGemKey) document.getElementById('geminiKeyInput').value = savedGemKey;
+
+// ===== UTILS =====
+function toast(msg, type='success') {
+    const t = document.getElementById('toast');
+    document.getElementById('tI').textContent = type==='success'?'✅':type==='error'?'❌':'ℹ️';
+    document.getElementById('tM').textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 4000);
+}
+function fmtNum(n) { if(!n)return'0';n=parseInt(n);if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toLocaleString('vi-VN'); }
+function fmtFull(n) { if(!n)return'0';return parseInt(n).toLocaleString('vi-VN'); }
+function prog(text,pct){document.getElementById('progT').textContent=text;document.getElementById('progP').textContent=Math.round(pct)+'%';document.getElementById('progF').style.width=pct+'%'}
+function parseDur(iso){const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);if(!m)return 0;return(parseInt(m[1]||0))*3600+(parseInt(m[2]||0))*60+(parseInt(m[3]||0))}
+function fmtDur(s){const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;return h>0?`${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`:`${m}:${String(sec).padStart(2,'0')}`}
+function fmtDateVN(isoStr){if(!isoStr)return'';return new Date(isoStr).toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})}
+
+function showSec(id) {
+    document.querySelectorAll('.sec').forEach(s => s.classList.remove('v'));
+    document.getElementById(id).classList.add('v');
+    document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function setStep(n) {
+    currentStep = n;
+    document.querySelectorAll('.step').forEach((s,i) => {
+        s.classList.remove('active','done');
+        if (i+1 < n) s.classList.add('done');
+        else if (i+1 === n) s.classList.add('active');
+    });
+}
+
+// ===== NAVIGATION =====
+function goStep1() { setStep(1); showSec('sec1'); }
+function goStep2() {
+    const ytKey = document.getElementById('ytKeyInput').value.trim();
+    if (!ytKey) { toast('Nhập YouTube API Key!','error'); return; }
+    localStorage.setItem('yt_api_key', ytKey);
+    const gemKey = document.getElementById('geminiKeyInput').value.trim();
+    if (gemKey) localStorage.setItem('gemini_keys_multi', gemKey);
+    setStep(2); showSec('sec2');
+}
+function goStep3() {
+    setStep(3); showSec('sec3');
+}
+
+// ===== YouTube API =====
+async function ytApi(endpoint) {
+    const key = document.getElementById('ytKeyInput').value.trim();
+    if (!key) throw new Error('Chưa nhập YouTube API Key!');
+    const r = await fetch(`https://www.googleapis.com/youtube/v3/${endpoint}&key=${key}`);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+    return d;
+}
+
+async function resolveChannel(input) {
+    input = input.trim();
+    if (!input) return null;
+    // URL with channel ID
+    if (input.startsWith('http')) {
+        try {
+            const u = new URL(input), p = u.pathname;
+            const cm = p.match(/\/channel\/(UC[\w-]+)/);
+            if (cm) return cm[1];
+            const hm = p.match(/\/@([\w.-]+)/);
+            if (hm) {
+                const d = await ytApi(`channels?part=id&forHandle=${encodeURIComponent(hm[1])}`);
+                if (d.items?.length) return d.items[0].id;
+            }
+            const um = p.match(/\/(c|user)\/([\w.-]+)/);
+            if (um) {
+                const d = await ytApi(`channels?part=id&forUsername=${encodeURIComponent(um[2])}`);
+                if (d.items?.length) return d.items[0].id;
+            }
+        } catch(e) { if (e.message.includes('API')) throw e; }
+    }
+    if (input.startsWith('@')) input = input.slice(1);
+    if (/^UC[\w-]{22}$/.test(input)) return input;
+    try {
+        const d = await ytApi(`channels?part=id&forHandle=${encodeURIComponent(input)}`);
+        if (d.items?.length) return d.items[0].id;
+    } catch(e) {}
+    const s = await ytApi(`search?part=snippet&type=channel&q=${encodeURIComponent(input)}&maxResults=1`);
+    if (s.items?.length) return s.items[0].snippet.channelId;
+    return null;
+}
+
+// ===== TXT FILE =====
+function handleTxtFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('channelListArea').value = e.target.result;
+        const nameDiv = document.getElementById('txtFileName');
+        nameDiv.style.display = 'block';
+        nameDiv.textContent = `✅ Đã tải: ${file.name} (${e.target.result.split('\n').filter(l=>l.trim()).length} kênh)`;
+    };
+    reader.readAsText(file);
+}
+
+// TXT drag & drop
+const txtZone = document.getElementById('txtUploadZone');
+txtZone.addEventListener('dragover', e => { e.preventDefault(); txtZone.classList.add('drag'); });
+txtZone.addEventListener('dragleave', () => txtZone.classList.remove('drag'));
+txtZone.addEventListener('drop', e => {
+    e.preventDefault(); txtZone.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.txt')) {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            document.getElementById('channelListArea').value = ev.target.result;
+            const nameDiv = document.getElementById('txtFileName');
+            nameDiv.style.display = 'block';
+            nameDiv.textContent = `✅ Đã tải: ${file.name} (${ev.target.result.split('\n').filter(l=>l.trim()).length} kênh)`;
+        };
+        reader.readAsText(file);
+    }
+});
+
+// ===== THUMBNAIL UPLOAD =====
+const thumbZone = document.getElementById('thumbUploadZone');
+const thumbInput = document.getElementById('thumbFileInput');
+thumbZone.addEventListener('click', () => thumbInput.click());
+thumbZone.addEventListener('dragover', e => { e.preventDefault(); thumbZone.classList.add('drag'); });
+thumbZone.addEventListener('dragleave', () => thumbZone.classList.remove('drag'));
+thumbZone.addEventListener('drop', e => {
+    e.preventDefault(); thumbZone.classList.remove('drag');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        processThumbFile(file);
+    }
+});
+
+function handleThumbUpload(event) {
+    const file = event.target.files[0];
+    if (file) processThumbFile(file);
+}
+
+function processThumbFile(file) {
+    userThumbFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        userThumbBase64 = e.target.result;
+        document.getElementById('thumbPreviewImg').src = userThumbBase64;
+        document.getElementById('thumbPreview').classList.add('v');
+        thumbZone.style.display = 'none';
+        toast('✅ Đã upload thumbnail!');
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeThumb() {
+    userThumbBase64 = null;
+    userThumbFile = null;
+    document.getElementById('thumbPreview').classList.remove('v');
+    thumbZone.style.display = '';
+    document.getElementById('thumbFileInput').value = '';
+}
+
+// ===== FETCH CHANNELS =====
+async function fetchChannels() {
+    const raw = document.getElementById('channelListArea').value.trim();
+    if (!raw) { toast('Nhập danh sách kênh!','error'); return; }
+    
+    const lines = raw.split('\n').map(l=>l.trim()).filter(l=>l && !l.startsWith('#') && !l.startsWith('//'));
+    if (!lines.length) { toast('Không tìm thấy kênh nào trong danh sách!','error'); return; }
+
+    const maxVids = Math.min(parseInt(document.getElementById('videosPerChannel').value) || 10, 10);
+    
+    const btn = document.getElementById('btnFetch');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> Đang tải...';
+    document.getElementById('progSec').classList.add('v');
+
+    channelsData = [];
+    let errors = [];
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        prog(`🔍 Đang xử lý kênh ${i+1}/${lines.length}: ${line}`, (i/lines.length)*80);
+        
+        try {
+            const channelId = await resolveChannel(line);
+            if (!channelId) { errors.push(`❌ Không tìm thấy: ${line}`); continue; }
+
+            // Get channel info
+            const chInfo = await ytApi(`channels?part=snippet,statistics,contentDetails&id=${channelId}`);
+            if (!chInfo.items?.length) { errors.push(`❌ Không lấy được info: ${line}`); continue; }
+            const ch = chInfo.items[0];
+
+            // Get uploads playlist
+            const uploadsId = ch.contentDetails.relatedPlaylists.uploads;
+            
+            // Fetch recent videos
+            prog(`📥 Tải ${maxVids} video từ ${ch.snippet.title}...`, (i/lines.length)*80 + 10);
+            const plData = await ytApi(`playlistItems?part=snippet&playlistId=${uploadsId}&maxResults=${maxVids}`);
+            
+            if (!plData.items?.length) { errors.push(`⚠️ Không có video: ${ch.snippet.title}`); continue; }
+
+            // Get video details (views, likes, duration)
+            const videoIds = plData.items.map(item => item.snippet.resourceId.videoId).filter(Boolean);
+            const detData = await ytApi(`videos?part=contentDetails,statistics&id=${videoIds.join(',')}`);
+            
+            const videos = plData.items.map(item => {
+                const vid = item.snippet;
+                const det = detData.items?.find(d => d.id === vid.resourceId.videoId);
+                return {
+                    videoId: vid.resourceId.videoId,
+                    title: vid.title,
+                    publishedAt: vid.publishedAt,
+                    description: vid.description?.substring(0, 200),
+                    thumb: vid.thumbnails?.maxres?.url || vid.thumbnails?.high?.url || vid.thumbnails?.medium?.url || `https://img.youtube.com/vi/${vid.resourceId.videoId}/hqdefault.jpg`,
+                    views: parseInt(det?.statistics?.viewCount || 0),
+                    likes: parseInt(det?.statistics?.likeCount || 0),
+                    comments: parseInt(det?.statistics?.commentCount || 0),
+                    duration: parseDur(det?.contentDetails?.duration || 'PT0S')
+                };
+            }).filter(v => v.title !== 'Private video' && v.title !== 'Deleted video');
+
+            channelsData.push({
+                channelInfo: {
+                    id: channelId,
+                    name: ch.snippet.title,
+                    avatar: ch.snippet.thumbnails?.default?.url || '',
+                    subs: parseInt(ch.statistics.subscriberCount || 0),
+                    totalViews: parseInt(ch.statistics.viewCount || 0),
+                    totalVideos: parseInt(ch.statistics.videoCount || 0)
+                },
+                videos: videos
+            });
+
+        } catch(e) {
+            errors.push(`❌ Lỗi ${line}: ${e.message}`);
+        }
+
+        await new Promise(r => setTimeout(r, 100));
+    }
+
+    prog('✅ Hoàn tất tải kênh!', 100);
+
+    if (errors.length) {
+        toast(`Tải xong ${channelsData.length}/${lines.length} kênh. ${errors.length} lỗi.`, errors.length === lines.length ? 'error' : 'info');
+        console.warn('Errors:', errors);
+    } else {
+        toast(`✅ Đã tải ${channelsData.length} kênh thành công!`);
+    }
+
+    if (channelsData.length > 0) {
+        renderChannelResults();
+        setStep(2);
+        document.getElementById('sec2Results').classList.add('v');
+        document.getElementById('sec2Results').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<span>📥</span> Tải & Phân tích kênh nguồn';
+    setTimeout(() => document.getElementById('progSec').classList.remove('v'), 2000);
+}
+
+// ===== RENDER CHANNEL RESULTS =====
+function renderChannelResults() {
+    const totalChannels = channelsData.length;
+    const totalVideos = channelsData.reduce((s,c) => s + c.videos.length, 0);
+    const allTitles = channelsData.flatMap(c => c.videos.map(v => v.title));
+    const avgTitleLen = Math.round(allTitles.reduce((s,t) => s + t.length, 0) / allTitles.length);
+
+    // Stats bar
+    document.getElementById('channelStats').innerHTML = `
+        <div class="stat-mini"><div class="sv sv-purple">${totalChannels}</div><div class="sl">Kênh đã tải</div></div>
+        <div class="stat-mini"><div class="sv sv-green">${totalVideos}</div><div class="sl">Video phân tích</div></div>
+        <div class="stat-mini"><div class="sv sv-pink">${avgTitleLen}</div><div class="sl">TB ký tự tiêu đề</div></div>
+        <div class="stat-mini"><div class="sv sv-yellow">${Math.round(channelsData.reduce((s,c) => s + c.channelInfo.subs, 0) / totalChannels)>1e6?((channelsData.reduce((s,c) => s + c.channelInfo.subs, 0)/totalChannels/1e6).toFixed(1)+'M'):fmtNum(Math.round(channelsData.reduce((s,c) => s + c.channelInfo.subs, 0)/totalChannels))}</div><div class="sl">TB Subscribers</div></div>
+    `;
+
+    // Channel cards
+    const list = document.getElementById('channelResultsList');
+    list.innerHTML = '';
+
+    channelsData.forEach((ch, ci) => {
+        const info = ch.channelInfo;
+        const videos = ch.videos;
+        
+        // Analyze title patterns
+        const titles = videos.map(v => v.title);
+        const hasNumbers = titles.filter(t => /\d/.test(t)).length;
+        const hasEmoji = titles.filter(t => /[\u{1F300}-\u{1FAFF}]/u.test(t)).length;
+        const hasQuestion = titles.filter(t => /\?/.test(t)).length;
+        const hasPipe = titles.filter(t => /[|•\-–—]/.test(t)).length;
+        const avgLen = Math.round(titles.reduce((s,t) => s+t.length, 0) / titles.length);
+
+        const card = document.createElement('div');
+        card.className = 'ch-result fade-in';
+        card.style.animationDelay = `${ci * .1}s`;
+        card.innerHTML = `
+            <div class="ch-header">
+                <img class="ch-avatar" src="${info.avatar}" alt="${info.name}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%236366f1%22 width=%22100%22 height=%22100%22 rx=%2250%22/><text x=%2250%22 y=%2258%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2240%22>${info.name[0]}</text></svg>'">
+                <div class="ch-info">
+                    <h3>${info.name}</h3>
+                    <div class="ch-meta">${fmtNum(info.subs)} subs • ${fmtNum(info.totalViews)} views • ${videos.length} video đã tải</div>
+                </div>
+            </div>
+            <div class="pattern-tags">
+                <span class="ptag ptag-purple">📏 TB ${avgLen} ký tự</span>
+                ${hasNumbers > 0 ? `<span class="ptag ptag-green">🔢 Có số: ${hasNumbers}/${titles.length}</span>` : ''}
+                ${hasEmoji > 0 ? `<span class="ptag ptag-pink">😀 Emoji: ${hasEmoji}/${titles.length}</span>` : ''}
+                ${hasQuestion > 0 ? `<span class="ptag ptag-yellow">❓ Câu hỏi: ${hasQuestion}/${titles.length}</span>` : ''}
+                ${hasPipe > 0 ? `<span class="ptag ptag-purple">➖ Dấu ngăn: ${hasPipe}/${titles.length}</span>` : ''}
+            </div>
+            <div class="vid-list">
+                ${videos.map(v => `
+                    <div class="vid-item">
+                        <div class="vid-item-thumb">
+                            <a href="https://youtube.com/watch?v=${v.videoId}" target="_blank">
+                                <img src="${v.thumb}" loading="lazy" alt="">
+                            </a>
+                        </div>
+                        <div class="vid-item-info">
+                            <div class="vid-item-title">${v.title}</div>
+                            <div class="vid-item-meta">
+                                👁 ${fmtNum(v.views)} • 👍 ${fmtNum(v.likes)} • ⏱ ${fmtDur(v.duration)} • 📅 ${fmtDateVN(v.publishedAt)}
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+// ===== GEMINI AI =====
+const MODELS = [
+    {id:'gemini-2.0-flash', name:'2.0 Flash', tokens:16000},
+    {id:'gemini-2.0-flash-lite', name:'2.0 Flash Lite', tokens:12000},
+    {id:'gemini-1.5-flash-8b', name:'1.5 Flash 8B', tokens:12000},
+];
+
+function getGeminiKeys() {
+    const raw = document.getElementById('geminiKeyInput').value.trim();
+    return raw.split(/[,;\s]+/).map(k=>k.trim()).filter(k=>k.length>10);
+}
+
+async function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+
+function buildAnalysisPrompt() {
+    const lang = document.getElementById('langSelect').value;
+    const langText = lang === 'vi' ? 'tiếng Việt' : 'English';
+
+    // Build channel title data
+    let channelSection = '';
+    channelsData.forEach(ch => {
+        channelSection += `\n### Kênh: ${ch.channelInfo.name} (${fmtNum(ch.channelInfo.subs)} subs)\n`;
+        ch.videos.forEach((v, i) => {
+            channelSection += `${i+1}. "${v.title}" — ${fmtNum(v.views)} views, ${fmtDur(v.duration)}\n`;
+        });
+    });
+
+    return `Bạn là chuyên gia YouTube SEO hàng đầu thế giới. Trả lời bằng ${langText}.
+
+## NHIỆM VỤ
+Tôi gửi bạn:
+1. **Hình thu nhỏ (thumbnail)** của video tôi sắp đăng
+2. **Danh sách tiêu đề** từ ${channelsData.length} kênh đối thủ/nguồn cảm hứng (mỗi kênh ${channelsData[0]?.videos?.length || 10} video gần nhất)
+
+Hãy phân tích hình thu nhỏ và gợi ý tiêu đề + cải thiện thumbnail.
+
+⚠️ **QUAN TRỌNG**: Tất cả tiêu đề gợi ý, mô tả video, tags PHẢI có kèm bản dịch tiếng Việt bên dưới để tôi hiểu nội dung.
+
+---
+
+## DỮ LIỆU TIÊU ĐỀ KÊNH NGUỒN:
+${channelSection}
+
+---
+
+## YÊU CẦU PHÂN TÍCH CHI TIẾT:
+
+### 1. 🖼️ PHÂN TÍCH HÌNH THU NHỎ
+- **Nhân vật chính**: Ai/cái gì xuất hiện? Loại nhân vật (3D, 2D, người thật, hoạt hình)? Biểu cảm, pose?
+- **Brand elements**: Logo, watermark, khung viền, font chữ đặc trưng?
+- **Màu sắc & Composition**: Bảng màu chủ đạo, bố cục, ánh sáng, độ tương phản
+- **Text overlay**: Có chữ viết trên ảnh không? Nội dung, font, vị trí?
+- **Nội dung/Context**: Hình ảnh diễn tả điều gì? Cảnh gì? Hành động gì?
+- **Cảm xúc/Tone**: Vui nhộn, kịch tính, tò mò, đáng yêu...?
+
+### 2. 📊 PHÂN TÍCH PATTERN TIÊU ĐỀ KÊNH NGUỒN
+- Mỗi kênh có pattern đặt tiêu đề như thế nào?
+- Công thức chung: [Nhân vật] + [Hành động]? Số liệu? Câu hỏi?
+- Từ khóa xuất hiện nhiều nhất?
+- Độ dài tiêu đề phổ biến?
+- Cách sử dụng emoji, ký tự đặc biệt?
+
+### 3. ✍️ GỢI Ý 10-15 TIÊU ĐỀ SEO
+Dựa trên hình thu nhỏ + pattern kênh nguồn, gợi ý **10-15 tiêu đề** chuẩn SEO:
+- Mỗi tiêu đề theo phong cách của 1 kênh nguồn (ghi rõ theo kênh nào)
+- Tối ưu CTR (click-through rate)
+- Chứa từ khóa hot
+- Phù hợp với nội dung thumbnail
+- Đánh giá mỗi tiêu đề: ⭐ (1-5) dự đoán CTR
+
+**⚠️ BẮT BUỘC: Mỗi tiêu đề phải kèm bản dịch tiếng Việt!**
+
+Format mỗi tiêu đề:
+> **Tiêu đề:** [tiêu đề gợi ý bằng ngôn ngữ gốc phù hợp niche]
+> **🇻🇳 Tiếng Việt:** [bản dịch tiếng Việt để hiểu nội dung]
+> **Theo kênh:** [tên kênh nguồn]  
+> **CTR:** ⭐⭐⭐⭐⭐
+> **Lý do:** [tại sao tiêu đề này hiệu quả - giải thích bằng tiếng Việt]
+
+### 4. 🎨 GỢI Ý CẢI THIỆN THUMBNAIL
+- Thumbnail hiện tại đã tốt ở điểm nào?
+- Cần cải thiện gì? (bố cục, màu sắc, text overlay, biểu cảm...)
+- So sánh với thumbnail chuẩn top kênh trong niche
+- **5 gợi ý cụ thể** để tăng CTR cho thumbnail
+- Nên thêm/bớt element nào?
+
+### 5. 🎯 CHIẾN LƯỢC SEO TỔNG THỂ
+
+#### Tags gợi ý (10-15 tags):
+Format: Tag gốc → (Nghĩa tiếng Việt)
+
+#### Mô tả video mẫu (100-200 từ):
+- Viết mô tả bằng ngôn ngữ phù hợp niche
+- **Kèm bản dịch tiếng Việt đầy đủ bên dưới**
+
+#### Hashtags (10-15 hashtags):
+Format: #hashtag → (nghĩa tiếng Việt)
+
+#### Thời điểm đăng tốt nhất:
+- Giờ (timezone VN UTC+7)
+- Ngày trong tuần
+
+---
+Dùng Markdown. THỰC CHIẾN, CỤ THỂ, RÕ RÀNG. Phân tích dựa trên ảnh thumbnail thực tế.
+**NHỚ: TẤT CẢ tiêu đề, mô tả, tags PHẢI kèm bản dịch TIẾNG VIỆT!**`;
+}
+
+async function startAIAnalysis() {
+    if (!userThumbBase64) { toast('Upload thumbnail trước!','error'); return; }
+    if (!channelsData.length) { toast('Chưa tải kênh nguồn!','error'); return; }
+
+    const geminiKeys = getGeminiKeys();
+    const useUltraWeb = !geminiKeys.length;
+
+    const btn = document.getElementById('btnAnalyze');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> AI đang phân tích...';
+    document.getElementById('progSec').classList.add('v');
+
+    setStep(4);
+    showSec('sec4');
+    document.getElementById('ultraWebMode').style.display = 'none';
+    document.getElementById('aiReport').style.display = 'block';
+    document.getElementById('aiReport').innerHTML = '';
+
+    const prompt = buildAnalysisPrompt();
+    cachedPrompt = prompt;
+
+    if (useUltraWeb) {
+        // Ultra Web mode - show step-by-step flow
+        prog('💎 Chuẩn bị chế độ Gemini Ultra Web...', 90);
+        document.getElementById('ultraWebMode').style.display = 'block';
+        document.getElementById('aiReport').style.display = 'none';
+        // Reset ultra steps
+        resetUltraSteps();
+        prog('✅ Sẵn sàng! Làm theo 3 bước bên dưới.', 100);
+        toast('💎 Làm theo 3 bước để gửi ảnh + prompt vào Gemini!', 'success');
+    } else {
+        // API mode with vision
+        prog('🤖 Gửi thumbnail lên Gemini Vision AI...', 30);
+        try {
+            const stream = await analyzeWithGeminiVision(prompt, geminiKeys);
+            prog('🧬 Đang phân tích...', 60);
+            await streamToReport(stream);
+            prog('✅ Hoàn tất!', 100);
+            toast('✅ Phân tích hoàn tất!');
+        } catch(e) {
+            console.warn('API failed, switching to Ultra Web:', e);
+            cachedPrompt = prompt;
+            document.getElementById('ultraWebMode').style.display = 'block';
+            document.getElementById('aiReport').style.display = 'none';
+            resetUltraSteps();
+            prog('💎 API bị limit → Dùng Gemini Ultra Web', 100);
+            toast('⚠️ API bị limit → Làm theo 3 bước bên dưới!', 'info');
+        }
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<span>🤖</span> AI Phân tích & Gợi ý tiêu đề';
+    setTimeout(() => document.getElementById('progSec').classList.remove('v'), 3000);
+}
+
+async function analyzeWithGeminiVision(prompt, keys) {
+    // Extract base64 data (remove data:image/xxx;base64, prefix)
+    const base64Data = userThumbBase64.split(',')[1];
+    const mimeType = userThumbBase64.match(/data:(.*?);/)?.[1] || 'image/jpeg';
+
+    let lastErr = null;
+    for (let ki = 0; ki < keys.length; ki++) {
+        const key = keys[ki];
+        for (let mi = 0; mi < MODELS.length; mi++) {
+            const model = MODELS[mi];
+            for (let retry = 0; retry < 3; retry++) {
+                try {
+                    const label = keys.length > 1 ? `Key${ki+1}/${model.name}` : `${model.name}`;
+                    prog(`🤖 ${label}${retry>0?` (lần ${retry+1})`:''}...`, 40 + mi*8);
+                    toast(`Thử ${label}...`, 'info');
+
+                    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model.id}:streamGenerateContent?alt=sse&key=${key}`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: prompt },
+                                    { inline_data: { mime_type: mimeType, data: base64Data } }
+                                ]
+                            }],
+                            generationConfig: {
+                                temperature: 0.7,
+                                topP: 0.9,
+                                maxOutputTokens: model.tokens
+                            }
+                        })
+                    });
+
+                    if (!r.ok) {
+                        const e = await r.json().catch(()=>null);
+                        const msg = e?.error?.message || r.statusText;
+                        const isRL = r.status === 429 || msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('rate');
+                        throw {message: msg, isRateLimit: isRL};
+                    }
+
+                    toast(`✅ ${label} OK!`);
+                    return r;
+                } catch(e) {
+                    lastErr = e;
+                    if (e.isRateLimit && retry < 2) {
+                        const delay = [5,15,30][retry];
+                        for (let i=delay; i>0; i--) { prog(`⏳ Rate limit - đợi ${i}s...`, 45); await sleep(1000); }
+                    } else if (e.isRateLimit) { break; }
+                    else { break; }
+                }
+            }
+        }
+    }
+    throw new Error(`Tất cả key/model đều bị rate limit.\n${lastErr?.message||''}`);
+}
+
+// ===== STREAM RENDERING =====
+async function streamToReport(response) {
+    const el = document.getElementById('aiReport');
+    el.innerHTML = '';
+    rawReport = '';
+    const reader = response.body.getReader(), decoder = new TextDecoder();
+    let buffer = '';
+    while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, {stream:true});
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+            if (line.startsWith('data: ')) {
+                const json = line.slice(6).trim();
+                if (json === '[DONE]') continue;
+                try {
+                    const d = JSON.parse(json);
+                    const t = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+                    if (t) {
+                        rawReport += t;
+                        try { el.innerHTML = marked.parse(rawReport); } catch(e) { el.textContent = rawReport; }
+                        el.scrollTop = el.scrollHeight;
+                    }
+                } catch(e) {}
+            }
+        }
+    }
+    try { el.innerHTML = marked.parse(rawReport); } catch(e) { el.textContent = rawReport; }
+}
+
+// ===== COPY & EXPORT =====
+function copyReport() {
+    if (!rawReport) { toast('Chưa có báo cáo!','error'); return; }
+    navigator.clipboard.writeText(rawReport).then(()=>toast('📋 Đã copy!')).catch(()=>{
+        const t = document.createElement('textarea'); t.value = rawReport;
+        document.body.appendChild(t); t.select(); document.execCommand('copy');
+        document.body.removeChild(t); toast('📋 Đã copy!');
+    });
+}
+
+function exportTxt() {
+    if (!rawReport) { toast('Chưa có báo cáo!','error'); return; }
+    const blob = new Blob([rawReport], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Thumbnail_Analysis_${new Date().toISOString().slice(0,10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('📄 Đã xuất!');
+}
+
+// ===== ULTRA WEB MODE — STEP BY STEP =====
+function resetUltraSteps() {
+    document.querySelectorAll('.ultra-step').forEach(s => { s.classList.remove('active','done'); });
+    document.getElementById('uStep1').classList.add('active');
+}
+
+function setUltraStep(stepNum) {
+    document.querySelectorAll('.ultra-step').forEach((s, i) => {
+        s.classList.remove('active','done');
+        if (i+1 < stepNum) s.classList.add('done');
+        else if (i+1 === stepNum) s.classList.add('active');
+    });
+}
+
+// Step 1: Copy image to clipboard → Open Gemini
+async function ultraStep1_CopyImage() {
+    if (!userThumbBase64) { toast('Chưa upload thumbnail!','error'); return; }
+    
+    try {
+        // Convert base64 to blob for clipboard
+        const response = await fetch(userThumbBase64);
+        const blob = await response.blob();
+        
+        // Convert to PNG blob (clipboard requires PNG)
+        const canvas = document.createElement('canvas');
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = userThumbBase64;
+        });
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        
+        const pngBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        
+        // Copy image to clipboard using ClipboardItem API
+        await navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': pngBlob })
+        ]);
+        
+        toast('🖼️ Ảnh đã copy! Mở Gemini → Ctrl+V để dán ảnh.', 'success');
+    } catch(e) {
+        console.warn('ClipboardItem failed, downloading image instead:', e);
+        // Fallback: download the image
+        const a = document.createElement('a');
+        a.href = userThumbBase64;
+        a.download = 'thumbnail.png';
+        a.click();
+        toast('🖼️ Đã tải ảnh! Kéo thả vào Gemini.', 'info');
+    }
+    
+    // Move to step 2
+    setUltraStep(2);
+    
+    // Open Gemini in new tab
+    setTimeout(() => window.open('https://gemini.google.com/app', '_blank'), 500);
+}
+
+// Step 2: Copy prompt text
+async function ultraStep2_CopyPrompt() {
+    if (!cachedPrompt && channelsData.length) {
+        cachedPrompt = buildAnalysisPrompt();
+    }
+    if (!cachedPrompt) { toast('Chưa có dữ liệu.','error'); return; }
+    
+    try {
+        await navigator.clipboard.writeText(cachedPrompt);
+        toast('📋 Prompt đã copy! Quay lại Gemini → Ctrl+V → Enter.', 'success');
+    } catch(e) {
+        // Fallback
+        const t = document.createElement('textarea');
+        t.value = cachedPrompt;
+        document.body.appendChild(t);
+        t.select();
+        document.execCommand('copy');
+        document.body.removeChild(t);
+        toast('📋 Prompt đã copy!', 'success');
+    }
+    
+    // Move to step 3
+    setUltraStep(3);
+}
+
+// Open Gemini tab helper
+function openGeminiTab() {
+    window.open('https://gemini.google.com/app', '_blank');
+}
+
+function renderPastedReport() {
+    const text = document.getElementById('ultraPasteArea').value.trim();
+    if (!text) { toast('Chưa paste kết quả!','error'); return; }
+    rawReport = text;
+    const el = document.getElementById('aiReport');
+    el.style.display = 'block';
+    try { el.innerHTML = marked.parse(text); } catch(e) { el.textContent = text; }
+    document.getElementById('ultraWebMode').style.display = 'none';
+    el.scrollIntoView({behavior:'smooth',block:'start'});
+    toast('✅ Báo cáo đã hiển thị!');
+}
+
+// Save keys on change
+document.getElementById('ytKeyInput').addEventListener('change', () => localStorage.setItem('yt_api_key', document.getElementById('ytKeyInput').value.trim()));
+document.getElementById('geminiKeyInput').addEventListener('change', () => localStorage.setItem('gemini_keys_multi', document.getElementById('geminiKeyInput').value.trim()));
+</script>
+</body>
+</html>
