@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniVoice - AI Voice Cloning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card: #1a1a2e;
+            --input: #16162a;
+            --border: rgba(255,255,255,.06);
+            --text: #f0f0f5;
+            --text2: #8888aa;
+            --muted: #555570;
+            --accent: #ff3860;
+            --grad: linear-gradient(135deg, #ff3860, #7c3aed);
+            --green: #10b981;
+            --r: 16px;
+            --r2: 10px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        header.hdr {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            background: var(--grad);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        .subtitle {
+            color: var(--text2);
+            font-size: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--r);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card-title span {
+            font-size: 1.75rem;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.25rem;
+        }
+        .feature {
+            background-color: var(--input);
+            padding: 1.5rem;
+            border-radius: var(--r2);
+            border: 1px solid var(--border);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .feature:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,56,96,.3);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .feature-title {
+            font-weight: 600;
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .feature-desc {
+            color: var(--text2);
+            font-size: 0.95rem;
+        }
+
+        pre, code {
+            font-family: 'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+        code {
+            background-color: #0d0d1a;
+            color: var(--green);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #0d0d1a;
+            padding: 1.25rem;
+            border-radius: var(--r2);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            margin-bottom: 1.25rem;
+        }
+        pre code {
+            background: transparent;
+            padding: 0;
+            color: var(--green);
+            font-size: 0.95rem;
+        }
+        .code-title {
+            font-size: 0.9rem;
+            color: var(--text2);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            background: transparent;
+            color: var(--text2);
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: var(--r2);
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .tab-btn:hover {
+            color: #fff;
+            background-color: rgba(255,255,255,0.05);
+        }
+        .tab-btn.active {
+            color: #fff;
+            background: var(--grad);
+            box-shadow: 0 4px 15px rgba(255, 56, 96, 0.25);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--text2);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .links-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--input);
+            color: #fff;
+            text-decoration: none;
+            padding: 0.75rem 1.25rem;
+            border-radius: var(--r2);
+            border: 1px solid var(--border);
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        .link-btn:hover {
+            border-color: var(--accent);
+            background-color: rgba(255, 56, 96, 0.05);
+            transform: translateY(-2px);
+        }
+        
+        footer {
+            text-align: center;
+            color: var(--muted);
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        p { margin-bottom: 1rem; color: var(--text); }
+        ul, ol { margin-left: 1.5rem; margin-bottom: 1rem; }
+        li { margin-bottom: 0.5rem; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="hdr">
+            <div class="logo">🗣️</div>
+            <h1>OmniVoice</h1>
+            <div class="subtitle">Nhân bản giọng nói AI chất lượng cao cho 600+ ngôn ngữ</div>
+            
+            <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;flex-wrap:wrap;align-items:flex-start">
+                <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                    <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">YouTube</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                        <a href="index.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">📸 Thumbnail</a>
+                        <a href="yt-downloader.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">⬇️ Tải Video</a>
+                        <a href="trending.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🔥 Xu hướng</a>
+                        <a href="video-links.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🔗 Lấy link</a>
+                        <a href="channel-analyzer.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🧬 DNA</a>
+                        <a href="thumbnail-analyzer.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎨 AI Ảnh</a>
+                    </div>
+                </div>
+                <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
+                <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                    <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                        <a href="music-check.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎵 Nhạc</a>
+                        <a href="audio-separator.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎚️ Tách nhạc</a>
+                        <a href="srt-maker.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">📝 SRT</a>
+                        <a href="suno-prompt.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎵 Suno</a>
+                    </div>
+                </div>
+                <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
+                <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                    <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">AI Tools</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                        <a href="omnivoice.html" style="color:#fff;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;background:linear-gradient(135deg,#ff3860,#7c3aed);border-radius:16px">🗣️ OmniVoice</a>
+                    </div>
+                </div>
+                <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
+                <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
+                    <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">TikTok</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
+                        <a href="tiktok.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎬 TikTok</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="card">
+            <h2 class="card-title"><span>💡</span> Giới thiệu</h2>
+            <p><strong>OmniVoice</strong> là một hệ thống AI tạo giọng nói (TTS) mã nguồn mở mạnh mẽ, có khả năng nhân bản và tổng hợp giọng nói cho hơn 600 ngôn ngữ khác nhau. Dự án này cho phép bạn tạo ra các đoạn âm thanh tự nhiên, chân thực từ văn bản với khả năng kiểm soát cảm xúc và phong cách độc đáo.</p>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title"><span>✨</span> Tính năng chính</h2>
+            <div class="grid">
+                <div class="feature">
+                    <div class="feature-icon">🌍</div>
+                    <div class="feature-title">600+ ngôn ngữ</div>
+                    <div class="feature-desc">Hỗ trợ số lượng ngôn ngữ khổng lồ, bao gồm cả tiếng Việt với độ chính xác và tự nhiên cao.</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎙️</div>
+                    <div class="feature-title">Voice Cloning</div>
+                    <div class="feature-desc">Nhân bản giọng nói (Zero-shot) chỉ cần một đoạn âm thanh mẫu ngắn 3-10 giây.</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🎨</div>
+                    <div class="feature-title">Voice Design</div>
+                    <div class="feature-desc">Tạo giọng nói hoàn toàn mới dựa trên các mô tả về giới tính, độ tuổi, và phong cách.</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <div class="feature-title">Tốc độ siêu nhanh</div>
+                    <div class="feature-desc">Hiệu suất inference ấn tượng, có thể đạt tới 40x thời gian thực trên các GPU hiện đại.</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔧</div>
+                    <div class="feature-title">Điều khiển chi tiết</div>
+                    <div class="feature-desc">Hỗ trợ các thẻ điều khiển cảm xúc như cười, thở dài, thì thầm hoặc thay đổi nhịp điệu.</div>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🧠</div>
+                    <div class="feature-title">Kiến trúc Diffusion</div>
+                    <div class="feature-desc">Sử dụng mô hình ngôn ngữ dựa trên Diffusion tiên tiến để đạt chất lượng âm thanh vượt trội.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title"><span>⚙️</span> Hướng dẫn cài đặt</h2>
+            <p>Thực hiện các bước sau để cài đặt OmniVoice trên máy của bạn:</p>
+            
+            <div class="code-title">Bước 1: Cài đặt Python 3.10+ (nếu chưa có) và tạo môi trường ảo</div>
+            <pre><code>python -m venv venv
+# Windows: venv\Scripts\activate
+# Linux/Mac: source venv/bin/activate</code></pre>
+            
+            <div class="code-title">Bước 2: Cài đặt PyTorch phù hợp với hệ thống của bạn</div>
+            <pre><code># Dành cho GPU NVIDIA (Khuyến nghị)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Dành cho CPU / Apple Silicon (M1/M2/M3)
+pip install torch torchvision torchaudio</code></pre>
+            
+            <div class="code-title">Bước 3: Cài đặt OmniVoice</div>
+            <pre><code>pip install omnivoice</code></pre>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title"><span>🚀</span> Cách sử dụng</h2>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab(event, 'web-demo')">Web Demo</button>
+                <button class="tab-btn" onclick="openTab(event, 'python-api')">Python API</button>
+                <button class="tab-btn" onclick="openTab(event, 'cli')">Command Line</button>
+            </div>
+
+            <div id="web-demo" class="tab-content active">
+                <p>Khởi chạy giao diện Web UI (Gradio) để sử dụng một cách trực quan:</p>
+                <pre><code>omnivoice-demo --ip 0.0.0.0 --port 8001</code></pre>
+                <p>Sau đó mở trình duyệt và truy cập vào <code>http://localhost:8001</code>.</p>
+            </div>
+
+            <div id="python-api" class="tab-content">
+                <p>Sử dụng OmniVoice trực tiếp trong mã Python:</p>
+                <pre><code>import torchaudio
+from omnivoice import OmniVoice
+
+# Khởi tạo mô hình
+model = OmniVoice()
+
+# Văn bản cần tổng hợp
+text = "Xin chào, đây là giọng nói được tạo ra bởi AI."
+
+# Đường dẫn file âm thanh mẫu (3-10 giây)
+prompt_audio = "mau_giong.wav" 
+
+# Tạo âm thanh
+audio, sample_rate = model.synthesize(
+    text=text,
+    prompt_audio=prompt_audio,
+    language="vi"
+)
+
+# Lưu kết quả
+torchaudio.save("ket_qua.wav", audio, sample_rate)</code></pre>
+            </div>
+
+            <div id="cli" class="tab-content">
+                <p>Chạy trực tiếp từ dòng lệnh:</p>
+                <pre><code>omnivoice-infer \
+  --text "Chào mừng bạn đến với OmniVoice" \
+  --prompt_audio mau.wav \
+  --output ket_qua.wav \
+  --lang vi</code></pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title"><span>💻</span> Yêu cầu hệ thống</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Thành phần</th>
+                        <th>Yêu cầu tối thiểu</th>
+                        <th>Khuyến nghị</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>GPU</strong></td>
+                        <td>NVIDIA GPU 4GB VRAM hoặc CPU</td>
+                        <td>NVIDIA GPU 8GB+ VRAM (RTX 3060/4060+)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>RAM</strong></td>
+                        <td>8 GB</td>
+                        <td>16 GB hoặc cao hơn</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ổ cứng</strong></td>
+                        <td>10 GB trống</td>
+                        <td>15 GB+ trống (SSD)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hệ điều hành</strong></td>
+                        <td>Windows 10+, Linux, macOS</td>
+                        <td>Linux (Ubuntu) hoặc Windows + WSL2</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Python</strong></td>
+                        <td>3.9</td>
+                        <td>3.10 hoặc 3.11</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title"><span>🔗</span> Liên kết tham khảo</h2>
+            <div class="links-grid">
+                <a href="https://github.com/k2-fsa/omnivoice" target="_blank" class="link-btn">
+                    <span>🐙</span> GitHub Repository
+                </a>
+                <a href="https://huggingface.co/k2-fsa/omnivoice" target="_blank" class="link-btn">
+                    <span>🤗</span> HuggingFace Model
+                </a>
+                <a href="https://huggingface.co/spaces/k2-fsa/omnivoice" target="_blank" class="link-btn">
+                    <span>🌐</span> HuggingFace Space Demo
+                </a>
+                <a href="#" target="_blank" class="link-btn">
+                    <span>📝</span> Google Colab Notebook
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            <p>Made with ❤️ by kulboyHD</p>
+        </footer>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Ẩn tất cả tab nội dung
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            
+            // Bỏ class active ở tất cả các nút
+            tablinks = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            
+            // Hiện tab được chọn và thêm class active vào nút
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+</body>
+</html>
