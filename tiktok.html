@@ -591,7 +591,61 @@
             </div>
         </div>
 
+        <!-- Channel Section -->
+        <div class="channel-section" id="channelSection">
+            <div class="channel-profile" id="channelProfile"></div>
+            
+            <div class="count-selector" id="countSelector">
+                <div class="count-selector-inner">
+                    <span class="count-selector-label">📺 Chọn số video muốn tải:</span>
+                    <div class="count-options">
+                        <button class="count-option active" data-count="20" onclick="selectVideoCount(20, this)">20 video gần nhất</button>
+                        <button class="count-option" data-count="30" onclick="selectVideoCount(30, this)">30 video gần nhất</button>
+                        <button class="count-option" data-count="50" onclick="selectVideoCount(50, this)">50 video gần nhất</button>
+                    </div>
+                    <button class="btn-load-channel" id="btnLoadChannel" onclick="loadChannelVideos()">
+                        <span>📥</span> Tải danh sách
+                    </button>
+                </div>
+            </div>
 
+            <div class="loading-section" id="channelLoadingIndicator" style="display:none; padding: 24px;">
+                <div class="spinner" style="width: 40px; height: 40px;"></div>
+                <p class="loading-text" id="channelLoadingText">Đang tải danh sách video<span class="loading-dots"></span></p>
+            </div>
+
+            <div class="batch-bar" id="batchBar" style="display:none;">
+                <div class="batch-bar-left">
+                    <label class="batch-select-all">
+                        <div class="custom-checkbox checked" id="selectAllCheckbox" onclick="toggleSelectAll()"></div>
+                        Chọn tất cả
+                    </label>
+                    <span class="selected-count" id="selectedCount">Đã chọn: <strong>0</strong> video</span>
+                </div>
+                <div class="batch-bar-right">
+                    <button class="btn-batch-download" id="btnBatchDownload" onclick="startBatchDownload()" disabled>
+                        <span>📦</span> <span>Tải video đã chọn</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Batch Progress -->
+            <div class="download-progress" id="downloadProgress">
+                <div class="progress-header">
+                    <h4 id="progressTitle">📦 Đang tải video...</h4>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressBarFill"></div>
+                </div>
+                <div id="progressDetail" style="text-align:center;color:var(--text-secondary);font-size:13px;margin:8px 0;"></div>
+                <div class="progress-log" id="progressLog"></div>
+                <button class="btn-cancel-download" id="btnCancelBatch" onclick="cancelBatchDownload()">❌ Hủy tải</button>
+            </div>
+
+            <div class="video-grid" id="videoGrid"></div>
+            <button class="btn-load-more" id="btnLoadMore" onclick="loadMoreVideos()" style="display:none;">📦 Tải thêm video...</button>
+        </div>
 
         <!-- Features -->
         <div class="features">
@@ -1222,21 +1276,22 @@
 
             const detected = detectUrlType(url);
 
-            if (detected.type === 'channel') {
-                showError('⚠️ Tải kênh tạm thời không khả dụng (API bị chặn).\n\n💡 Hãy dùng chức năng "Tải nhiều video": nhấn nút 📦 bên trên, dán từng link video và nhấn "Tải tất cả".');
-                return;
-            }
-
             if (detected.type === 'unknown') {
-                showError('Link không hợp lệ. Vui lòng dán link video TikTok.');
+                showError('Link không hợp lệ. Vui lòng dán link video hoặc kênh TikTok.');
                 return;
             }
 
             hideError();
             hideResult();
             hideMultiProgress();
+            
+            // Hide channel section if active
+            const channelSec = document.getElementById('channelSection');
+            if(channelSec) channelSec.classList.remove('active');
 
-            if (detected.type === 'video') {
+            if (detected.type === 'channel') {
+                await processChannelUrl(detected.username);
+            } else if (detected.type === 'video') {
                 await processVideoUrl(detected.url);
             }
         }
@@ -1516,7 +1571,8 @@
             requestedVideoCount = count;
             document.querySelectorAll('.count-option').forEach(el => el.classList.remove('active'));
             if (btnEl) btnEl.classList.add('active');
-            document.getElementById('customCountInput').value = '';
+            const customInput = document.getElementById('customCountInput');
+            if (customInput) customInput.value = '';
         }
 
         function selectCustomCount(val) {
@@ -1541,13 +1597,10 @@
             currentUsername = username;
             channelVideos = [];
             selectedVideoIds.clear();
-            channelCursor = 0;
-            channelHasMore = true;
 
             try {
-                // Try to get user info (may fail due to Cloudflare)
+                // Try to get user info (may fail due to Cloudflare, but we will ignore the error)
                 let userInfo = { nickname: username, username, avatar: null, followers: 0, following: 0, likes: 0, videoCount: 0 };
-                let userInfoSuccess = false;
                 try {
                     const infoJson = await fetchWithProxy('api/user/info', {
                         method: 'POST',
@@ -1565,39 +1618,22 @@
                             likes: d.stats?.heartCount || d.stats?.heart || 0,
                             videoCount: d.stats?.videoCount || 0,
                         };
-                        userInfoSuccess = true;
                     }
                 } catch (e) {
-                    console.warn('Could not get user info:', e);
+                    console.warn('Could not get user info, proceeding with defaults:', e);
                 }
 
                 channelUserInfo = userInfo;
-
-                // Try loading videos
-                try {
-                    displayChannelProfile(userInfo);
-                    document.getElementById('channelSection').classList.add('active');
-                    document.getElementById('channelSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    await loadChannelVideos();
-                } catch (channelErr) {
-                    // Channel API blocked - show helpful error
-                    console.warn('Channel API blocked:', channelErr.message);
-                    hideChannel();
-                    showError(
-                        `⚠️ API tải kênh tạm thời bị Cloudflare chặn.\n\n` +
-                        `✅ Tải từng video vẫn hoạt động bình thường!\n` +
-                        `💡 Hãy dán link video cụ thể (ví dụ: https://www.tiktok.com/@${username}/video/...) để tải chất lượng gốc.`
-                    );
-                    showToast('⚠️ API kênh bị Cloudflare chặn - hãy dán link video cụ thể', 'error');
-                }
-
+                displayChannelProfile(userInfo);
+                
+                const channelSec = document.getElementById('channelSection');
+                channelSec.classList.add('active');
+                channelSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                await loadChannelVideos();
             } catch (err) {
                 console.error('Channel error:', err);
-                showError(
-                    `⚠️ Không thể tải thông tin kênh @${username}.\n\n` +
-                    `API kênh TikTok đang bị Cloudflare bảo vệ.\n` +
-                    `✅ Bạn vẫn có thể tải từng video bằng cách dán link video cụ thể.`
-                );
+                showError(`Lỗi khi xử lý kênh @${username}: ${err.message}`);
             } finally {
                 setLoading(false);
             }
@@ -1613,8 +1649,6 @@
 
             channelVideos = [];
             selectedVideoIds.clear();
-            channelCursor = 0;
-            channelHasMore = true;
 
             loadingEl.style.display = 'block';
             btnLoad.disabled = true;
@@ -1623,94 +1657,56 @@
             document.getElementById('batchBar').style.display = 'none';
             document.getElementById('btnLoadMore').style.display = 'none';
 
-            const targetCount = requestedVideoCount; // 0 = all
+            const targetCount = requestedVideoCount || 20;
+            loadingText.innerHTML = `Đang dùng yt-dlp để lấy danh sách ${targetCount} video...<span class="loading-dots"></span>`;
 
             try {
-                let pageIndex = 0;
-                while (true) {
-                    pageIndex++;
-                    const loaded = channelVideos.length;
-                    if (targetCount > 0 && loaded >= targetCount) break;
-                    if (!channelHasMore && pageIndex > 1) break;
+                const response = await fetch(`/tiktok-channel/?username=${encodeURIComponent(currentUsername)}&count=${targetCount}`);
+                if (!response.ok) {
+                    throw new Error('Lỗi từ server proxy: HTTP ' + response.status);
+                }
+                const json = await response.json();
+                
+                if (json.error) {
+                    throw new Error(json.error);
+                }
 
-                    loadingText.innerHTML = `Đang tải video (${loaded} đã tìm thấy)${targetCount > 0 ? ` / ${targetCount} yêu cầu` : ' / tất cả'}<span class="loading-dots"></span>`;
-
-                    const result = await fetchUserVideosByPosts(currentUsername, channelCursor);
-
-                    if (!result || result.videos.length === 0) {
-                        channelHasMore = false;
-                        break;
-                    }
-
-                    channelVideos = [...channelVideos, ...result.videos];
-                    channelCursor = result.cursor;
-                    channelHasMore = result.hasMore;
-
-                    if (targetCount > 0 && channelVideos.length >= targetCount) {
-                        channelVideos = channelVideos.slice(0, targetCount);
-                        break;
-                    }
-
-                    if (!channelHasMore) break;
-                    await sleep(500);
+                if (json.code === 0 && json.data && json.data.videos) {
+                    channelVideos = json.data.videos.map(v => ({
+                        id: v.id,
+                        title: v.title || 'Không có mô tả',
+                        cover: v.cover,
+                        duration: v.duration || 0,
+                        plays: v.plays || 0,
+                        likes: v.likes || 0,
+                        comments: v.comments || 0,
+                        shares: 0,
+                        downloadHD: `https://www.tikwm.com/video/media/hdplay/${v.id}.mp4`,
+                        downloadNoWM: `https://www.tikwm.com/video/media/play/${v.id}.mp4`,
+                        music: null,
+                        isSlideshow: false,
+                        images: null
+                    }));
                 }
 
                 if (channelVideos.length > 0) {
                     renderVideoGrid(channelVideos);
                     document.getElementById('batchBar').style.display = 'flex';
                     updateBatchBar();
-                    document.getElementById('btnLoadMore').style.display = channelHasMore && (targetCount === 0 || channelVideos.length < targetCount) ? 'block' : 'none';
-                    showToast(`✅ Đã tải ${channelVideos.length} video từ @${currentUsername}`, 'success');
+                    // Select all by default
+                    toggleSelectAll(); 
+                    showToast(`✅ Đã lấy ${channelVideos.length} video từ @${currentUsername}`, 'success');
                 } else {
                     showToast('⚠️ Không tìm thấy video nào từ kênh này', 'error');
                 }
-
             } catch (err) {
                 console.error('Load channel videos error:', err);
                 showToast(`❌ Lỗi: ${err.message}`, 'error');
             } finally {
                 loadingEl.style.display = 'none';
                 btnLoad.disabled = false;
-                btnLoad.innerHTML = '📥 Tải danh sách';
+                btnLoad.innerHTML = '<span>📥</span> Tải danh sách';
             }
-        }
-
-        // Fetch user videos using /api/user/posts (correct endpoint)
-        async function fetchUserVideosByPosts(username, cursor = 0) {
-            const body = `unique_id=${encodeURIComponent(username)}&count=33&cursor=${cursor}`;
-
-            const json = await fetchWithProxy('api/user/posts', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: body
-            });
-
-            if (json.code !== 0) throw new Error(json.msg || 'Không thể lấy danh sách video');
-
-            const data = json.data;
-            const allVideos = data.videos || [];
-
-            const videos = allVideos.map(v => ({
-                id: v.video_id || v.id,
-                title: v.title || 'Không có mô tả',
-                cover: v.cover || v.origin_cover || null,
-                duration: v.duration || 0,
-                plays: v.play_count || 0,
-                likes: v.digg_count || 0,
-                comments: v.comment_count || 0,
-                shares: v.share_count || 0,
-                downloadHD: v.hdplay ? `https://www.tikwm.com/video/media/hdplay/${v.video_id || v.id}.mp4` : null,
-                downloadNoWM: v.play ? `https://www.tikwm.com/video/media/play/${v.video_id || v.id}.mp4` : null,
-                music: v.music ? (v.music.startsWith('http') ? v.music : `https://www.tikwm.com${v.music}`) : null,
-                isSlideshow: v.images && v.images.length > 0,
-                images: v.images || null,
-            }));
-
-            return {
-                videos,
-                cursor: data.cursor || 0,
-                hasMore: data.hasMore !== undefined ? data.hasMore : (videos.length > 0),
-            };
         }
 
         function displayChannelProfile(userInfo) {
@@ -1766,36 +1762,9 @@
             `).join('');
         }
 
-        // Load more videos
+        // Load more functionality is disabled since yt-dlp gets the selected count directly.
         async function loadMoreVideos() {
-            if (!channelHasMore || !currentUsername) return;
-
-            const btn = document.getElementById('btnLoadMore');
-            btn.textContent = '⏳ Đang tải thêm...';
-            btn.disabled = true;
-
-            try {
-                const result = await fetchUserVideosByPosts(currentUsername, channelCursor);
-                if (result && result.videos.length > 0) {
-                    channelVideos = [...channelVideos, ...result.videos];
-                    channelCursor = result.cursor;
-                    channelHasMore = result.hasMore;
-                    renderVideoGrid(channelVideos);
-                    updateBatchBar();
-                    btn.style.display = channelHasMore ? 'block' : 'none';
-                    showToast(`📦 Đã tải ${channelVideos.length} video`, 'success');
-                } else {
-                    channelHasMore = false;
-                    btn.style.display = 'none';
-                    showToast('📦 Đã tải hết video', 'info');
-                }
-            } catch (err) {
-                console.error('Load more error:', err);
-                showToast('❌ Lỗi khi tải thêm video', 'error');
-            } finally {
-                btn.textContent = '📦 Tải thêm video...';
-                btn.disabled = false;
-            }
+            // Deprecated
         }
 
         // ============================================

@@ -1,0 +1,76 @@
+    # ============================================
+    # TIKTOK CHANNEL PROXY: /tiktok-channel/?username=...&count=...
+    # ============================================
+    if ($path -eq "/tiktok-channel/") {
+        $username = ""
+        $count = 20
+        if ($request.Url.Query) {
+            $query = [System.Web.HttpUtility]::ParseQueryString($request.Url.Query)
+            $username = $query["username"]
+            if ($query["count"]) { $count = $query["count"] }
+        }
+
+        if (-not $username) {
+            $response.StatusCode = 400
+            $msg = [System.Text.Encoding]::UTF8.GetBytes('{"error":"Missing username parameter"}')
+            $response.ContentType = "application/json"
+            $response.ContentLength64 = $msg.Length
+            $response.OutputStream.Write($msg, 0, $msg.Length)
+            $response.Close()
+            continue
+        }
+
+        Write-Host "[CHANNEL] Fetching $count videos for: $username"
+        try {
+            $url = "https://www.tiktok.com/@$($username.TrimStart('@'))"
+            $ytdlpArgs = @(
+                "--dump-json",
+                "--flat-playlist",
+                "--playlist-end", $count,
+                $url
+            )
+            $output = & yt-dlp @ytdlpArgs 2>&1
+            $jsonOutput = $output | Where-Object { $_ -is [string] -and $_ -match '^{' } | ConvertFrom-Json
+            
+            $videos = @()
+            if ($jsonOutput) {
+                foreach ($item in $jsonOutput) {
+                    $videos += @{
+                        id = $item.id
+                        title = $item.title
+                        url = $item.url
+                        cover = if ($item.thumbnails) { $item.thumbnails[0].url } else { $null }
+                        duration = $item.duration
+                        plays = $item.view_count
+                        likes = $item.like_count
+                        comments = $item.comment_count
+                    }
+                }
+            }
+            
+            $resultObj = @{
+                code = 0
+                data = @{
+                    videos = $videos
+                }
+            }
+            $json = $resultObj | ConvertTo-Json -Depth 10 -Compress
+            $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
+            $response.ContentType = "application/json; charset=utf-8"
+            $response.StatusCode = 200
+            $response.ContentLength64 = $bytes.Length
+            $response.OutputStream.Write($bytes, 0, $bytes.Length)
+            Write-Host "  => 200 OK ($($videos.Count) videos found)"
+        } catch {
+            $response.StatusCode = 500
+            $errMsg = $_.Exception.Message -replace '"', '\"' -replace '
+', ' '
+            $msg = [System.Text.Encoding]::UTF8.GetBytes("{\"error\":\"$errMsg\"}")
+            $response.ContentType = "application/json"
+            $response.ContentLength64 = $msg.Length
+            $response.OutputStream.Write($msg, 0, $msg.Length)
+            Write-Host "  => 500 Error: $errMsg"
+        }
+        $response.Close()
+        continue
+    }
