@@ -986,14 +986,16 @@
                 if (!text) { showToast('⚠️ Clipboard trống', 'error'); return; }
 
                 const newUrls = extractTikTokUrls(text);
-                if (newUrls.length === 0) {
-                    // Not a TikTok URL - put in single input for quick use
+                if (newUrls.length === 0 || newUrls.length === 1) {
+                    // Put in single input for quick use
                     document.getElementById('urlInput').value = text;
                     showToast('📋 Đã dán link', 'success');
+                    // Tự động tải nếu là link hợp lệ
+                    if (newUrls.length === 1) processUrl();
                     return;
                 }
 
-                // Always append to multi-input (open it if hidden)
+                // If multiple links, append to multi-input (open it if hidden)
                 appendUrlsToMultiInput(newUrls);
             } catch (err) {
                 showToast('⚠️ Không thể truy cập clipboard', 'error');
@@ -1046,6 +1048,12 @@
 
             if (urls.length === 0) {
                 showToast('⚠️ Không tìm thấy link TikTok hợp lệ', 'error');
+                return;
+            }
+
+            const hasChannel = urls.some(u => detectUrlType(u).type === 'channel');
+            if (hasChannel) {
+                showError('⚠️ Chức năng "Tải nhiều video" không hỗ trợ tải kênh. Vui lòng dán link kênh vào ô nhập liệu chính phía trên và bấm "Tải xuống" để sử dụng chức năng tải kênh chuyên dụng.');
                 return;
             }
 
@@ -1227,10 +1235,7 @@
             });
         });
 
-        // Paste from clipboard - uses same triggerPasteToMulti mechanism
-        function pasteFromClipboard() {
-            triggerPasteToMulti();
-        }
+
 
         // ============================================
         // URL DETECTION
