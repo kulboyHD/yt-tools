@@ -1876,12 +1876,12 @@
                         if (hdJson.code === 0 && hdJson.data) {
                             const d = hdJson.data;
                             const vid = d.id || video.id;
-                            // Use tikwm proxy URLs for reliable HD downloads
+                            // Use direct CDN URL for best quality if available
                             if (d.hdplay) {
-                                downloadUrl = `https://www.tikwm.com/video/media/hdplay/${vid}.mp4`;
+                                downloadUrl = d.hdplay;
                                 quality = '1080p';
                             } else if (d.play) {
-                                downloadUrl = `https://www.tikwm.com/video/media/play/${vid}.mp4`;
+                                downloadUrl = d.play;
                                 quality = 'NoWM';
                             }
                         }
@@ -1913,8 +1913,8 @@
                         .replace(/[<>:"\/\\|?*#]/g, '')
                         .replace(/\s+/g, ' ')
                         .trim()
-                        .substring(0, 100) || video.id;
-                    const fileName = `${cleanTitle}.mp4`;
+                        .substring(0, 80) || 'video';
+                    const fileName = `${cleanTitle}_${video.id}.mp4`;
 
                     // Add to ZIP
                     folder.file(fileName, blob);
