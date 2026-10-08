@@ -1095,7 +1095,7 @@
             let failed = 0;
             let totalSize = 0;
             const total = urls.length;
-            const usedNames = new Set();
+            const usedNames = {};
 
             for (let i = 0; i < urls.length; i++) {
                 if (multiCancelled) {
@@ -1141,13 +1141,24 @@
                     const sizeInMB = (blob.size / 1024 / 1024).toFixed(1);
                     totalSize += blob.size;
 
-                    let safeTitle = originalTitle.replace(/[<>:"\/\\|?*#]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100) || `video_${d.id || i + 1}`;
-                    // Deduplicate filenames
-                    let fileName = `${safeTitle}.mp4`;
-                    if (usedNames.has(fileName.toLowerCase())) {
-                        fileName = `${safeTitle}_${d.id || i + 1}.mp4`;
+                    let cleanTitle = originalTitle
+                        .replace(/[<>:"\/\\|?\*\n\r]/g, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                        
+                    if (cleanTitle.length > 150) {
+                        cleanTitle = cleanTitle.substring(0, 150).trim();
                     }
-                    usedNames.add(fileName.toLowerCase());
+                    if (!cleanTitle) cleanTitle = 'video';
+                    
+                    let fileName = `${cleanTitle}.mp4`;
+                    let lowerName = cleanTitle.toLowerCase();
+                    if (usedNames[lowerName]) {
+                        usedNames[lowerName]++;
+                        fileName = `${cleanTitle} (${usedNames[lowerName]}).mp4`;
+                    } else {
+                        usedNames[lowerName] = 1;
+                    }
 
                     zip.file(fileName, blob);
                     completed++;
@@ -1849,6 +1860,8 @@
 
             const zip = new JSZip();
             const folder = zip.folder(`tiktok_${currentUsername}`);
+            
+            const fileNameTracker = {};
 
             for (let i = 0; i < selectedVideos.length; i++) {
                 if (batchCancelled) {
@@ -1908,13 +1921,24 @@
                     const sizeInMB = (blob.size / 1024 / 1024).toFixed(1);
                     totalSize += blob.size;
 
-                    // Use original title as filename (keep Vietnamese characters)
-                    const cleanTitle = video.title
-                        .replace(/[<>:"\/\\|?*#]/g, '')
+                    // Use original title as filename (keep Vietnamese characters and hashtags)
+                    let cleanTitle = video.title
+                        .replace(/[<>:"\/\\|?\*\n\r]/g, '')
                         .replace(/\s+/g, ' ')
-                        .trim()
-                        .substring(0, 80) || 'video';
-                    const fileName = `${cleanTitle}_${video.id}.mp4`;
+                        .trim();
+                        
+                    if (cleanTitle.length > 150) {
+                        cleanTitle = cleanTitle.substring(0, 150).trim();
+                    }
+                    if (!cleanTitle) cleanTitle = 'video';
+                    
+                    let fileName = `${cleanTitle}.mp4`;
+                    if (fileNameTracker[cleanTitle]) {
+                        fileNameTracker[cleanTitle]++;
+                        fileName = `${cleanTitle} (${fileNameTracker[cleanTitle]}).mp4`;
+                    } else {
+                        fileNameTracker[cleanTitle] = 1;
+                    }
 
                     // Add to ZIP
                     folder.file(fileName, blob);
