@@ -193,41 +193,40 @@
                     const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
                     
                     const timestamp = Date.now().toString().slice(-4);
-                    let baseName = `fb_video_${i+1}_${timestamp}`;
                     
                     // Lấy tiêu đề và mô tả (có chứa link Affiliate) từ Header
                     let fullTitle = res.headers.get('X-Video-Title');
+                    let baseName = `fb_video_${i+1}_${timestamp}`;
+                    let extractedLink = '';
+                    
                     if (fullTitle) {
                         try {
                             fullTitle = decodeURIComponent(fullTitle);
                             
                             // 1. Trích xuất link đầu tiên tìm thấy
                             const urlMatch = fullTitle.match(/https?:\/\/[^\s]+/i);
-                            let extractedLink = '';
                             if (urlMatch) {
-                                // Xóa https:// và thay các ký tự cấm thành dấu gạch dưới
-                                extractedLink = urlMatch[0].replace(/https?:\/\//i, '').replace(/[\/:*?"<>|]/g, '_');
+                                extractedLink = urlMatch[0];
                             }
 
-                            // 2. Tạo tiêu đề sạch (xóa link, xóa ký tự cấm)
+                            // 2. Tạo tiêu đề sạch cho tên file (xóa link, xóa ký tự cấm)
                             let shortTitle = fullTitle.replace(/https?:\/\/[^\s]+/ig, '').trim();
                             shortTitle = shortTitle.replace(/[\/:*?"<>|\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
-                            if (shortTitle.length > 80) shortTitle = shortTitle.substring(0, 80).trim();
-                            if (!shortTitle) shortTitle = `fb_video_${i+1}`;
-
-                            // 3. Ghép Tên + Link
-                            if (extractedLink) {
-                                baseName = `${shortTitle} - ${extractedLink}`;
-                            } else {
+                            if (shortTitle.length > 150) shortTitle = shortTitle.substring(0, 150).trim();
+                            
+                            if (shortTitle) {
                                 baseName = shortTitle;
                             }
                             
-                            // Giới hạn độ dài an toàn cho Windows
-                            if (baseName.length > 180) baseName = baseName.substring(0, 180);
-
-                            // Vẫn lưu file txt dự phòng
+                            // Vẫn lưu file txt dự phòng nội dung gốc
                             zip.file(`${baseName}_noidung.txt`, fullTitle);
-                            addLog(`📝 Đã gắn link sản phẩm vào tên file`, 'info');
+                            
+                            // 3. TẠO FILE SHORTCUT TRUY CẬP NHANH (.url)
+                            if (extractedLink) {
+                                const shortcutContent = `[InternetShortcut]\r\nURL=${extractedLink}\r\n`;
+                                zip.file(`👉 MO LINK SP - ${baseName}.url`, shortcutContent);
+                                addLog(`🔗 Đã tạo Shortcut truy cập nhanh link SP`, 'info');
+                            }
                         } catch(e) {}
                     }
                     
