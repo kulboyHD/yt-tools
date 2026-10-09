@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -73,9 +73,9 @@
     <div class="container">
         <!-- Navigation -->
         <div class="nav-links">
-            <a href="/index.html" class="nav-link">📸 YouTube</a>
-            <a href="/tiktok.html" class="nav-link">🎵 TikTok</a>
-            <a href="/facebook.html" class="nav-link active">📘 Facebook</a>
+            <a href="index.html" class="nav-link">📸 YouTube</a>
+            <a href="tiktok.html" class="nav-link">🎵 TikTok</a>
+            <a href="facebook.html" class="nav-link active">📘 Facebook</a>
         </div>
 
         <div class="header">
@@ -122,7 +122,7 @@
         function showToast(msg, type = 'success') {
             const t = document.getElementById('toast');
             t.textContent = msg;
-            t.className = 	oast show ;
+            t.className = `toast show ${type}`;
             setTimeout(() => t.className = 'toast', 3000);
         }
 
@@ -140,7 +140,7 @@
 
         function addLog(msg, type = '') {
             const log = document.getElementById('progressLog');
-            log.innerHTML = <div class="log-item "></div> + log.innerHTML;
+            log.innerHTML = `<div class="log-item ${type}">${msg}</div>` + log.innerHTML;
         }
 
         async function startBatch() {
@@ -169,15 +169,15 @@
             let failed = 0;
             const total = links.length;
             
-            addLog(🚀 Bắt đầu xử lý  video...);
-            if (isReup) addLog(🛡️ Chế độ chống Re-up ĐÃ BẬT (Sẽ mất thêm chút thời gian xử lý MD5));
+            addLog(`🚀 Bắt đầu xử lý ${total} video...`);
+            if (isReup) addLog(`🛡️ Chế độ chống Re-up ĐÃ BẬT (Sẽ mất thêm chút thời gian xử lý MD5)`);
 
             for (let i = 0; i < total; i++) {
                 const url = links[i];
-                addLog(⏳ [/] Đang tải: ..., 'info');
+                addLog(`⏳ [${i+1}/${total}] Đang tải: ${url.substring(0,40)}...`, 'info');
                 
                 try {
-                    const proxyUrl = /fb-download/?url= + encodeURIComponent(url) + (isReup ? &reup=1 : '');
+                    const proxyUrl = `/fb-download/?url=` + encodeURIComponent(url) + (isReup ? `&reup=1` : '');
                     const res = await fetch(proxyUrl);
                     
                     if (!res.ok) {
@@ -192,14 +192,28 @@
                     const blob = await res.blob();
                     const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
                     
-                    const fileName = b_video__.mp4;
-                    zip.file(fileName, blob);
+                    const timestamp = Date.now().toString().slice(-4);
+                    const baseName = `fb_video_${i+1}_${timestamp}`;
+                    
+                    // Lưu video MP4
+                    zip.file(`${baseName}.mp4`, blob);
+                    
+                    // Lấy tiêu đề và mô tả (có chứa link Affiliate) từ Header
+                    let fullTitle = res.headers.get('X-Video-Title');
+                    if (fullTitle) {
+                        try {
+                            fullTitle = decodeURIComponent(fullTitle);
+                            // Lưu toàn bộ tiêu đề/mô tả ra file txt để người dùng copy link
+                            zip.file(`${baseName}_noidung.txt`, fullTitle);
+                            addLog(`📝 Đã lưu nội dung/tiêu đề gốc`, 'info');
+                        } catch(e) {}
+                    }
                     
                     completed++;
-                    addLog(✅ [/] Thành công (MB), 'success');
+                    addLog(`✅ [${i+1}/${total}] Thành công (${sizeMB}MB)`, 'success');
                 } catch (err) {
                     failed++;
-                    addLog(❌ [/] Lỗi: , 'error');
+                    addLog(`❌ [${i+1}/${total}] Lỗi: ${err.message}`, 'error');
                 }
                 
                 const pct = Math.round(((i + 1) / total) * 100);
@@ -208,19 +222,19 @@
             }
             
             if (completed > 0) {
-                addLog(📦 Đang nén thành file ZIP...);
+                addLog(`📦 Đang nén thành file ZIP...`);
                 try {
                     const content = await zip.generateAsync({ type: "blob" });
                     const a = document.createElement("a");
                     a.href = URL.createObjectURL(content);
-                    a.download = acebook_videos_.zip;
+                    a.download = `facebook_videos_${Date.now()}.zip`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
-                    showToast(✅ Đã tải xong  video!, 'success');
-                    addLog(🎉 Hoàn tất! Tải thành công / video., 'success');
+                    showToast(`✅ Đã tải xong ${completed} video!`, 'success');
+                    addLog(`🎉 Hoàn tất! Tải thành công ${completed}/${total} video.`, 'success');
                 } catch (err) {
-                    addLog(❌ Lỗi tạo ZIP: , 'error');
+                    addLog(`❌ Lỗi tạo ZIP: ${err.message}`, 'error');
                 }
             } else {
                 showToast('❌ Không tải được video nào!', 'error');

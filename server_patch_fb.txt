@@ -1,0 +1,111 @@
+    # ============================================
+    # FACEBOOK DOWNLOAD PROXY: /fb-download/?url=...&reup=1
+    # ============================================
+    if ($path -eq "/fb-download/") {
+        $videoUrl = ""
+        $reup = $false
+        if ($request.Url.Query) {
+            $query = [System.Web.HttpUtility]::ParseQueryString($request.Url.Query)
+            $videoUrl = $query["url"]
+            if ($query["reup"] -eq "1") { $reup = $true }
+        }
+
+        if (-not $videoUrl) {
+            $response.StatusCode = 400
+            $msg = [System.Text.Encoding]::UTF8.GetBytes('{"error":"Missing url parameter"}')
+            $response.ContentType = "application/json"
+            $response.ContentLength64 = $msg.Length
+            $response.OutputStream.Write($msg, 0, $msg.Length)
+            $response.Close()
+            continue
+        }
+
+        Write-Host "[FACEBOOK] Downloading: $videoUrl"
+        try {
+            $tempId = [Guid]::NewGuid().ToString().Substring(0,8)
+            $tempFile = [System.IO.Path]::GetTempFileName() + "_$tempId.mp4"
+            $finalFile = $tempFile
+
+            # Extract title and description
+            $titleOutput = & .\yt-dlp.exe --print "%(title)s - %(description)s" $videoUrl 2>&1
+            $fullTitle = $titleOutput -join " "
+            if ([string]::IsNullOrWhiteSpace($fullTitle) -or $fullTitle -match "ERROR") {
+                $fullTitle = "Facebook Video $tempId"
+            }
+            $fullTitle = $fullTitle.Trim()
+            
+            # Avoid HTTP header newline injection
+            $safeTitle = $fullTitle -replace '', ' ' -replace '
+', ' '
+            if ($safeTitle.Length -gt 1500) { $safeTitle = $safeTitle.Substring(0, 1500) }
+            
+            Write-Host "  -> Title: $safeTitle"
+
+            # Download using yt-dlp
+            $ytdlpArgs = @(
+                "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+                "--merge-output-format", "mp4",
+                "-o", $tempFile,
+                $videoUrl
+            )
+            & .\yt-dlp.exe @ytdlpArgs 2>&1 | Out-Null
+
+            if (-not (Test-Path $tempFile)) {
+                throw "Download failed by yt-dlp."
+            }
+
+            if ($reup) {
+                Write-Host "[FACEBOOK] Modifying metadata to bypass Re-up detection..."
+                $reupFile = [System.IO.Path]::GetTempFileName() + "_reup_$tempId.mp4"
+                # Remove all metadata, set creation_time to current, copy streams
+                $currentTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
+                $ffmpegArgs = @(
+                    "-y", "-i", $tempFile,
+                    "-map_metadata", "-1",
+                    "-metadata", "creation_time=$currentTime",
+                    "-metadata", "title=Facebook Video",
+                    "-c:v", "copy",
+                    "-c:a", "copy",
+                    "-bitexact",
+                    $reupFile
+                )
+                & ffmpeg @ffmpegArgs 2>&1 | Out-Null
+
+                if (Test-Path $reupFile) {
+                    Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
+                    $finalFile = $reupFile
+                }
+            }
+
+            $fileBytes = [System.IO.File]::ReadAllBytes($finalFile)
+            Remove-Item $finalFile -Force -ErrorAction SilentlyContinue
+
+            if ($fileBytes.Length -gt 1000) {
+                $response.ContentType = "video/mp4"
+                $response.StatusCode = 200
+                $response.ContentLength64 = $fileBytes.Length
+                $response.Headers.Add("Content-Disposition", "attachment; filename=facebook_video.mp4")
+                # Add title to header
+                $response.Headers.Add("X-Video-Title", [uri]::EscapeDataString($safeTitle))
+                $response.Headers.Add("Access-Control-Expose-Headers", "X-Video-Title")
+                
+                $response.OutputStream.Write($fileBytes, 0, $fileBytes.Length)
+                $sizeMB = [Math]::Round($fileBytes.Length / 1MB, 1)
+                Write-Host "  => 200 OK (${sizeMB}MB)"
+            } else {
+                throw "File is too small or empty."
+            }
+
+        } catch {
+            $response.StatusCode = 500
+            $errMsg = $_.Exception.Message -replace '"', '\"' -replace '
+', ' '
+            $msg = [System.Text.Encoding]::UTF8.GetBytes("{\"error\":\"$errMsg\"}")
+            $response.ContentType = "application/json"
+            $response.ContentLength64 = $msg.Length
+            $response.OutputStream.Write($msg, 0, $msg.Length)
+            Write-Host "  => 500 Error: $errMsg"
+        }
+        $response.Close()
+        continue
+    }
