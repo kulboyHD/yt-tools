@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Downloader - T?i Video FB & Ch?ng Re-up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a; --bg-card: #1e293b; --bg-input: #334155; --text-main: #f8fafc;
+            --text-secondary: #94a3b8; --text-muted: #64748b; --border-color: #334155;
+            --accent-fb: #1877F2; --accent-fb-hover: #166fe5;
+            --radius-lg: 16px; --radius-xl: 24px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 20px; }
+        
+        /* Layout */
+        .container { max-width: 900px; margin: 0 auto; padding: 20px 0; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { font-size: 36px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px; }
+        .header h1 span { color: var(--accent-fb); }
+        .header p { color: var(--text-secondary); font-size: 16px; }
+
+        /* Navigation */
+        .nav-links { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .nav-link { padding: 6px 16px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 20px; color: var(--text-secondary); text-decoration: none; font-size: 14px; transition: all 0.2s; }
+        .nav-link:hover { color: var(--text-main); border-color: var(--accent-fb); }
+        .nav-link.active { background: rgba(24, 119, 242, 0.1); color: var(--accent-fb); border-color: var(--accent-fb); font-weight: 600; }
+
+        /* Main Card */
+        .search-card { background: var(--bg-card); border-radius: var(--radius-xl); padding: 32px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        
+        .multi-input { width: 100%; background: var(--bg-input); border: 2px solid transparent; border-radius: 12px; color: var(--text-main); font-size: 14px; padding: 16px; margin-bottom: 16px; resize: vertical; min-height: 150px; outline: none; transition: all 0.2s; line-height: 1.5; }
+        .multi-input:focus { border-color: var(--accent-fb); }
+        
+        /* Re-up Toggle */
+        .toggle-container { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 16px; background: rgba(24, 119, 242, 0.05); border: 1px solid rgba(24, 119, 242, 0.2); border-radius: 12px; }
+        .toggle-switch { position: relative; width: 44px; height: 24px; background: var(--border-color); border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch.active { background: var(--accent-fb); }
+        .toggle-switch.active::after { transform: translateX(20px); }
+        .toggle-label { font-weight: 600; color: var(--text-main); }
+        .toggle-desc { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+        .btn-download { background: var(--accent-fb); color: white; border: none; border-radius: 12px; padding: 16px 32px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-download:hover { background: var(--accent-fb-hover); }
+        .btn-download:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Progress */
+        .progress-section { background: var(--bg-card); border-radius: var(--radius-xl); padding: 32px; margin-bottom: 30px; display: none; }
+        .progress-header { display: flex; justify-content: space-between; margin-bottom: 16px; font-weight: 600; }
+        .progress-bar-container { height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden; margin-bottom: 16px; }
+        .progress-bar-fill { height: 100%; background: var(--accent-fb); width: 0%; transition: width 0.3s ease; }
+        .progress-log { background: var(--bg-input); border-radius: 8px; padding: 12px; max-height: 200px; overflow-y: auto; font-size: 13px; font-family: monospace; color: var(--text-secondary); }
+        .log-item { margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px; }
+        .log-item.success { color: #4ade80; }
+        .log-item.error { color: #f87171; }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--bg-card); border: 1px solid var(--border-color); padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 500; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 1000; opacity: 0; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.success { border-color: #4ade80; color: #4ade80; }
+        .toast.error { border-color: #f87171; color: #f87171; }
+        
+        .loading-dots::after { content: '.'; animation: dots 1.5s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { color: transparent; text-shadow: .25em 0 0 transparent, .5em 0 0 transparent; } 40% { color: inherit; text-shadow: .25em 0 0 transparent, .5em 0 0 transparent; } 60% { text-shadow: .25em 0 0 inherit, .5em 0 0 transparent; } 80%, 100% { text-shadow: .25em 0 0 inherit, .5em 0 0 inherit; } }
+    </style>
+    <!-- JSZip for zipping files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <div class="nav-links">
+            <a href="/index.html" class="nav-link">?? YouTube</a>
+            <a href="/tiktok.html" class="nav-link">?? TikTok</a>
+            <a href="/facebook.html" class="nav-link active">?? Facebook</a>
+        </div>
+
+        <div class="header">
+            <h1><span>??</span> Facebook Downloader</h1>
+            <p>T?i hàng lo?t video Facebook ch?t lu?ng cao • H? tr? lách lu?t Re-up</p>
+        </div>
+
+        <div class="search-card">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span style="font-size:14px; font-weight:600; color:var(--text-secondary);">?? Dán danh sách link video Facebook:</span>
+                <span id="linkCount" style="font-size:14px; font-weight:600; color:var(--accent-fb);">0 link</span>
+            </div>
+            
+            <textarea class="multi-input" id="linksInput" placeholder="M?i link m?t dòng...
+Ví d?:
+https://www.facebook.com/watch/?v=123456789
+https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
+            
+            <div class="toggle-container">
+                <div class="toggle-switch active" id="reupToggle" onclick="this.classList.toggle('active')"></div>
+                <div>
+                    <div class="toggle-label">Ch?ng Re-up (Ð?i MD5 & Metadata)</div>
+                    <div class="toggle-desc">T? d?ng dùng FFmpeg d? reset toàn b? metadata, th?i gian t?o, tag... giúp gi? l?p thành video m?i tinh 100% d? lách lu?t b?n quy?n FB.</div>
+                </div>
+            </div>
+
+            <button class="btn-download" id="btnDownload" onclick="startBatch()">
+                <span>??</span> T?i xu?ng t?t c?
+            </button>
+        </div>
+
+        <div class="progress-section" id="progressSection">
+            <div class="progress-header">
+                <span id="progressTitle">?? Ðang t?i video...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <div class="progress-log" id="progressLog"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function showToast(msg, type = 'success') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 	oast show ;
+            setTimeout(() => t.className = 'toast', 3000);
+        }
+
+        function extractLinks(text) {
+            const regex = /https?:\/\/(?:www\.|m\.|web\.|fb\.)?(?:facebook\.com|fb\.watch)\/[^\s]+/gi;
+            const matches = text.match(regex) || [];
+            return [...new Set(matches)]; // deduplicate
+        }
+
+        function updateCount() {
+            const text = document.getElementById('linksInput').value;
+            const count = extractLinks(text).length;
+            document.getElementById('linkCount').textContent = count + ' link';
+        }
+
+        function addLog(msg, type = '') {
+            const log = document.getElementById('progressLog');
+            log.innerHTML = <div class="log-item "></div> + log.innerHTML;
+        }
+
+        async function startBatch() {
+            const text = document.getElementById('linksInput').value;
+            const links = extractLinks(text);
+            
+            if (links.length === 0) {
+                showToast('?? Vui lòng dán ít nh?t 1 link video FB h?p l?!', 'error');
+                return;
+            }
+
+            const isReup = document.getElementById('reupToggle').classList.contains('active');
+            
+            const btn = document.getElementById('btnDownload');
+            const progressSec = document.getElementById('progressSection');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercent = document.getElementById('progressPercent');
+            
+            btn.disabled = true;
+            btn.innerHTML = '? Ðang x? lý<span class="loading-dots"></span>';
+            progressSec.style.display = 'block';
+            document.getElementById('progressLog').innerHTML = '';
+            
+            const zip = new JSZip();
+            let completed = 0;
+            let failed = 0;
+            const total = links.length;
+            
+            addLog(?? B?t d?u x? lý  video...);
+            if (isReup) addLog(??? Ch? d? ch?ng Re-up ÐÃ B?T (S? m?t thêm chút th?i gian x? lý MD5));
+
+            for (let i = 0; i < total; i++) {
+                const url = links[i];
+                addLog(? [/] Ðang t?i: ..., 'info');
+                
+                try {
+                    const proxyUrl = /fb-download/?url= + encodeURIComponent(url) + (isReup ? &reup=1 : '');
+                    const res = await fetch(proxyUrl);
+                    
+                    if (!res.ok) {
+                        let errStr = 'L?i server';
+                        try {
+                            const errObj = await res.json();
+                            errStr = errObj.error || errStr;
+                        } catch(e){}
+                        throw new Error(errStr);
+                    }
+                    
+                    const blob = await res.blob();
+                    const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+                    
+                    const fileName = b_video__.mp4;
+                    zip.file(fileName, blob);
+                    
+                    completed++;
+                    addLog(? [/] Thành công (MB), 'success');
+                } catch (err) {
+                    failed++;
+                    addLog(? [/] L?i: , 'error');
+                }
+                
+                const pct = Math.round(((i + 1) / total) * 100);
+                progressBar.style.width = pct + '%';
+                progressPercent.textContent = pct + '%';
+            }
+            
+            if (completed > 0) {
+                addLog(?? Ðang nén thành file ZIP...);
+                try {
+                    const content = await zip.generateAsync({ type: "blob" });
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(content);
+                    a.download = acebook_videos_.zip;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    showToast(? Ðã t?i xong  video!, 'success');
+                    addLog(?? Hoàn t?t! T?i thành công / video., 'success');
+                } catch (err) {
+                    addLog(? L?i t?o ZIP: , 'error');
+                }
+            } else {
+                showToast('? Không t?i du?c video nào!', 'error');
+            }
+            
+            btn.disabled = false;
+            btn.innerHTML = '<span>??</span> T?i xu?ng t?t c?';
+        }
+    </script>
+</body>
+</html>
