@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -100,7 +100,7 @@
         .td-views{display:inline-flex;align-items:center;gap:3px;color:var(--muted);font-size:.75rem}
         .sc{position:absolute;top:10px;left:10px;width:24px;height:24px;border-radius:6px;background:rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;z-index:2;cursor:pointer;transition:all .2s}
         .sc.ck{background:var(--accent);border-color:var(--accent)}
-        .sc.ck::after{content:'✓';color:#fff;font-size:14px;font-weight:700}
+        .sc.ck::after{content:'âœ“';color:#fff;font-size:14px;font-weight:700}
         .qb{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.7);color:var(--green);font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:4px;text-transform:uppercase;z-index:2}
 
         /* Toast */
@@ -136,81 +136,50 @@
 <div class="bg-g"></div>
 <div class="wrap">
     <header class="hdr">
-        <div class="logo-i">📸</div>
+        <div class="logo-i">ðŸ“¸</div>
         <h1>YouTube Thumbnail Downloader</h1>
-        <p class="sub">Tải tất cả hình thu nhỏ từ kênh YouTube</p>
-        <div style="display:flex;gap:14px;justify-content:center;margin-top:14px;flex-wrap:wrap;align-items:flex-start">
-            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
-                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">YouTube</span>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
-                    <a href="yt-downloader.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">⬇️ Tải Video</a>
-                    <a href="trending.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🔥 Xu hướng</a>
-                    <a href="video-links.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🔗 Lấy link</a>
-                    <a href="channel-analyzer.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🧬 DNA</a>
-                    <a href="thumbnail-analyzer.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎨 AI Ảnh</a>
-                </div>
-            </div>
-            <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
-            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
-                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">Âm thanh</span>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
-                    <a href="music-check.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎵 Nhạc</a>
-                    <a href="audio-separator.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎚️ Tách nhạc</a>
-                    <a href="srt-maker.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">📝 SRT</a>
-                    <a href="suno-prompt.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎵 Suno</a>
-                </div>
-            </div>
-            <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
-            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
-                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">AI Tools</span>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
-                    <a href="omnivoice.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🗣️ OmniVoice</a>
-                </div>
-            </div>
-            <div style="width:1px;height:36px;background:rgba(255,255,255,.06);margin:8px 2px 0;flex-shrink:0"></div>
-            <div style="display:flex;flex-direction:column;gap:4px;align-items:center">
-                <span style="font-size:.6rem;font-weight:700;color:#555570;text-transform:uppercase;letter-spacing:.1em">TikTok</span>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center">
-                    <a href="tiktok.html" style="color:#ff3860;text-decoration:none;font-size:.75rem;font-weight:600;padding:4px 12px;border:1px solid rgba(255,56,96,.25);border-radius:16px">🎬 TikTok</a>
-                </div>
-            </div>
-        </div>
-    </header>
+        <p class="sub">Táº£i táº¥t cáº£ hÃ¬nh thu nhá» tá»« kÃªnh YouTube</p>
+                  <div class="nav-links" style="display:flex;justify-content:center;gap:10px;margin-top:20px;flex-wrap:wrap">
+              <a href="index.html" class="nav-link" style="padding:6px 16px;background:rgba(255,56,96,0.1);border:1px solid #ff3860;border-radius:20px;color:#ff3860;text-decoration:none;font-size:14px;font-weight:600">📸 YouTube</a>
+              <a href="tiktok.html" class="nav-link" style="padding:6px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;color:#94a3b8;text-decoration:none;font-size:14px">🎵 TikTok</a>
+              <a href="facebook.html" class="nav-link" style="padding:6px 16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;color:#94a3b8;text-decoration:none;font-size:14px">📘 Facebook</a>
+          </div>
+      </header>
 
     <section class="card">
         <!-- Mode tabs -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('api')">🔑 YouTube API <span class="mode-badge api">Nhanh</span></button>
-            <button class="tab" onclick="switchTab('free')">🌐 Không cần Key <span class="mode-badge free">Miễn phí</span></button>
+            <button class="tab active" onclick="switchTab('api')">ðŸ”‘ YouTube API <span class="mode-badge api">Nhanh</span></button>
+            <button class="tab" onclick="switchTab('free')">ðŸŒ KhÃ´ng cáº§n Key <span class="mode-badge free">Miá»…n phÃ­</span></button>
         </div>
 
         <!-- API Key tab -->
         <div class="tab-content active" id="tab-api">
             <div style="margin-bottom:16px">
-                <label>YouTube API Key <span class="hint">(miễn phí từ Google)</span></label>
+                <label>YouTube API Key <span class="hint">(miá»…n phÃ­ tá»« Google)</span></label>
                 <div class="iw">
-                    <span class="ic">🔑</span>
-                    <input type="password" id="apiKeyInput" placeholder="Dán API Key vào đây..." autocomplete="off">
+                    <span class="ic">ðŸ”‘</span>
+                    <input type="password" id="apiKeyInput" placeholder="DÃ¡n API Key vÃ o Ä‘Ã¢y..." autocomplete="off">
                 </div>
             </div>
             <details class="api-help">
-                <summary>📖 Hướng dẫn lấy API Key (5 phút)</summary>
+                <summary>ðŸ“– HÆ°á»›ng dáº«n láº¥y API Key (5 phÃºt)</summary>
                 <ol>
-                    <li>Truy cập <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> và đăng nhập</li>
-                    <li>Click <strong>"Select a project"</strong> ở góc trên → <strong>"New Project"</strong> → đặt tên bất kỳ → <strong>Create</strong></li>
-                    <li>Ở thanh tìm kiếm trên cùng, gõ <strong>"YouTube Data API v3"</strong> → click vào kết quả → <strong>Enable</strong></li>
-                    <li>Sau khi bật xong, click <strong>"Create Credentials"</strong> (hoặc vào menu <strong>APIs & Services → Credentials</strong>)</li>
-                    <li>Chọn <strong>"API Key"</strong> → Key sẽ hiện ra → <strong>Copy</strong> và dán vào ô trên</li>
+                    <li>Truy cáº­p <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> vÃ  Ä‘Äƒng nháº­p</li>
+                    <li>Click <strong>"Select a project"</strong> á»Ÿ gÃ³c trÃªn â†’ <strong>"New Project"</strong> â†’ Ä‘áº·t tÃªn báº¥t ká»³ â†’ <strong>Create</strong></li>
+                    <li>á»ž thanh tÃ¬m kiáº¿m trÃªn cÃ¹ng, gÃµ <strong>"YouTube Data API v3"</strong> â†’ click vÃ o káº¿t quáº£ â†’ <strong>Enable</strong></li>
+                    <li>Sau khi báº­t xong, click <strong>"Create Credentials"</strong> (hoáº·c vÃ o menu <strong>APIs & Services â†’ Credentials</strong>)</li>
+                    <li>Chá»n <strong>"API Key"</strong> â†’ Key sáº½ hiá»‡n ra â†’ <strong>Copy</strong> vÃ  dÃ¡n vÃ o Ã´ trÃªn</li>
                 </ol>
-                <div class="step-img">💡 Mỗi ngày bạn được 10,000 đơn vị API miễn phí (đủ tải ~500+ video). Key được lưu tự động trong trình duyệt.</div>
+                <div class="step-img">ðŸ’¡ Má»—i ngÃ y báº¡n Ä‘Æ°á»£c 10,000 Ä‘Æ¡n vá»‹ API miá»…n phÃ­ (Ä‘á»§ táº£i ~500+ video). Key Ä‘Æ°á»£c lÆ°u tá»± Ä‘á»™ng trong trÃ¬nh duyá»‡t.</div>
             </details>
         </div>
 
         <!-- Free tab (Invidious) -->
         <div class="tab-content" id="tab-free">
             <div style="padding:12px;background:rgba(124,58,237,.06);border-radius:8px;color:var(--text2);font-size:.85rem;line-height:1.6">
-                ℹ️ Chế độ miễn phí sử dụng server Invidious. Có thể chậm hơn hoặc không khả dụng tùy thời điểm.<br>
-                👉 Khuyên dùng chế độ <strong>YouTube API</strong> để nhanh và ổn định hơn.
+                â„¹ï¸ Cháº¿ Ä‘á»™ miá»…n phÃ­ sá»­ dá»¥ng server Invidious. CÃ³ thá»ƒ cháº­m hÆ¡n hoáº·c khÃ´ng kháº£ dá»¥ng tÃ¹y thá»i Ä‘iá»ƒm.<br>
+                ðŸ‘‰ KhuyÃªn dÃ¹ng cháº¿ Ä‘á»™ <strong>YouTube API</strong> Ä‘á»ƒ nhanh vÃ  á»•n Ä‘á»‹nh hÆ¡n.
             </div>
         </div>
 
@@ -218,36 +187,36 @@
 
         <!-- Common inputs -->
         <div style="margin-bottom:20px">
-            <label>URL hoặc Handle kênh YouTube</label>
+            <label>URL hoáº·c Handle kÃªnh YouTube</label>
             <div class="iw">
-                <span class="ic">🔗</span>
-                <input type="text" id="channelInput" placeholder="Ví dụ: https://youtube.com/@MrBeast hoặc @MrBeast">
+                <span class="ic">ðŸ”—</span>
+                <input type="text" id="channelInput" placeholder="VÃ­ dá»¥: https://youtube.com/@MrBeast hoáº·c @MrBeast">
             </div>
         </div>
         <div class="row" style="margin-bottom:20px">
             <div>
-                <label>Chất lượng thumbnail</label>
+                <label>Cháº¥t lÆ°á»£ng thumbnail</label>
                 <select id="qualitySelect">
-                    <option value="maxres" selected>Cao nhất (maxresdefault - 1280×720)</option>
-                    <option value="sd">Tiêu chuẩn (sddefault - 640×480)</option>
-                    <option value="hq">Tốt (hqdefault - 480×360)</option>
-                    <option value="mq">Trung bình (mqdefault - 320×180)</option>
+                    <option value="maxres" selected>Cao nháº¥t (maxresdefault - 1280Ã—720)</option>
+                    <option value="sd">TiÃªu chuáº©n (sddefault - 640Ã—480)</option>
+                    <option value="hq">Tá»‘t (hqdefault - 480Ã—360)</option>
+                    <option value="mq">Trung bÃ¬nh (mqdefault - 320Ã—180)</option>
                 </select>
             </div>
             <div>
-                <label>Số lượng video <span class="hint">(tối đa)</span></label>
+                <label>Sá»‘ lÆ°á»£ng video <span class="hint">(tá»‘i Ä‘a)</span></label>
                 <div class="iw">
-                    <span class="ic">📊</span>
+                    <span class="ic">ðŸ“Š</span>
                     <input type="text" id="maxVideosInput" value="60">
                 </div>
             </div>
         </div>
         <div class="acts">
             <button class="btn btn-p" id="fetchBtn" onclick="startFetching()">
-                <span>🚀</span> Tải danh sách video
+                <span>ðŸš€</span> Táº£i danh sÃ¡ch video
             </button>
             <button class="btn btn-g" id="dlBtn" onclick="downloadSelected()" style="display:none">
-                <span>💾</span> Tải ZIP (<span id="dlCnt">0</span>)
+                <span>ðŸ’¾</span> Táº£i ZIP (<span id="dlCnt">0</span>)
             </button>
         </div>
 
@@ -255,12 +224,12 @@
 
         <!-- Paste video links -->
         <div style="margin-bottom:12px">
-            <label>🎬 Hoặc: Dán link video trực tiếp <span class="hint">(mỗi link 1 dòng — không cần nhập kênh)</span></label>
-            <textarea id="videoLinksInput" style="width:100%;min-height:80px;padding:14px 16px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.6;outline:none;resize:vertical" placeholder="Dán link video vào đây, mỗi link 1 dòng:&#10;https://www.youtube.com/watch?v=abc123&#10;https://youtu.be/def456&#10;..."></textarea>
+            <label>ðŸŽ¬ Hoáº·c: DÃ¡n link video trá»±c tiáº¿p <span class="hint">(má»—i link 1 dÃ²ng â€” khÃ´ng cáº§n nháº­p kÃªnh)</span></label>
+            <textarea id="videoLinksInput" style="width:100%;min-height:80px;padding:14px 16px;background:var(--input);border:1.5px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:'Inter',sans-serif;font-size:.9rem;line-height:1.6;outline:none;resize:vertical" placeholder="DÃ¡n link video vÃ o Ä‘Ã¢y, má»—i link 1 dÃ²ng:&#10;https://www.youtube.com/watch?v=abc123&#10;https://youtu.be/def456&#10;..."></textarea>
         </div>
         <div class="acts">
             <button class="btn btn-s" onclick="fetchFromVideoLinks()">
-                <span>🖼️</span> Lấy thumbnail từ link
+                <span>ðŸ–¼ï¸</span> Láº¥y thumbnail tá»« link
             </button>
         </div>
     </section>
@@ -279,7 +248,7 @@
 
     <section class="card prog" id="progSec">
         <div class="prog-h">
-            <span class="prog-t" id="progT">Đang tải...</span>
+            <span class="prog-t" id="progT">Äang táº£i...</span>
             <span class="prog-p" id="progP">0%</span>
         </div>
         <div class="prog-bar"><div class="prog-fill" id="progF"></div></div>
@@ -288,24 +257,24 @@
     <section class="th-sec" id="thSec">
         <div class="sec-h">
             <div>
-                <h3>🖼️ Thumbnails (<span id="totCnt">0</span>)</h3>
+                <h3>ðŸ–¼ï¸ Thumbnails (<span id="totCnt">0</span>)</h3>
                 <div class="sa">
-                    <label><input type="checkbox" id="selAll" onchange="toggleSelectAll()" checked> Chọn tất cả</label>
-                    <span class="scnt" id="selCnt">0 đã chọn</span>
+                    <label><input type="checkbox" id="selAll" onchange="toggleSelectAll()" checked> Chá»n táº¥t cáº£</label>
+                    <span class="scnt" id="selCnt">0 Ä‘Ã£ chá»n</span>
                 </div>
             </div>
-            <button class="btn btn-g" onclick="downloadSelected()">💾 Tải ZIP</button>
+            <button class="btn btn-g" onclick="downloadSelected()">ðŸ’¾ Táº£i ZIP</button>
         </div>
         <div class="grid" id="grid"></div>
         <div class="lm" id="lmSec" style="display:none">
-            <button class="btn btn-s" id="lmBtn" onclick="loadMore()">📥 Tải thêm video...</button>
+            <button class="btn btn-s" id="lmBtn" onclick="loadMore()">ðŸ“¥ Táº£i thÃªm video...</button>
         </div>
     </section>
 
     <footer class="ft">YouTube Thumbnail Downloader</footer>
 </div>
 
-<div class="toast" id="toast"><span id="tI">✅</span><span id="tM"></span></div>
+<div class="toast" id="toast"><span id="tI">âœ…</span><span id="tM"></span></div>
 
 <script>
 // ===== STATE =====
@@ -351,7 +320,7 @@ function switchTab(m) {
 // ===== UTILS =====
 function toast(msg, type='success') {
     const t=document.getElementById('toast');
-    document.getElementById('tI').textContent=type==='success'?'✅':type==='error'?'❌':'ℹ️';
+    document.getElementById('tI').textContent=type==='success'?'âœ…':type==='error'?'âŒ':'â„¹ï¸';
     document.getElementById('tM').textContent=msg;
     t.className=`toast ${type} show`;
     setTimeout(()=>t.classList.remove('show'),4000);
@@ -392,7 +361,7 @@ async function fetchBestThumb(vid, quality) {
 // ===== YOUTUBE DATA API v3 =====
 async function ytApi(endpoint) {
     const key = document.getElementById('apiKeyInput').value.trim();
-    if (!key) throw new Error('Chưa nhập API Key!');
+    if (!key) throw new Error('ChÆ°a nháº­p API Key!');
     const url = `https://www.googleapis.com/youtube/v3/${endpoint}&key=${key}`;
     const res = await fetch(url);
     const data = await res.json();
@@ -431,7 +400,7 @@ async function resolveChannelYT(input) {
     // Try search
     const s = await ytApi(`search?part=snippet&type=channel&q=${encodeURIComponent(input)}&maxResults=1`);
     if (s.items?.length) return s.items[0].snippet.channelId;
-    throw new Error('Không tìm thấy kênh: ' + input);
+    throw new Error('KhÃ´ng tÃ¬m tháº¥y kÃªnh: ' + input);
 }
 
 // Parse ISO 8601 duration (PT1H2M3S) to seconds
@@ -461,20 +430,20 @@ async function fetchWithYTApi() {
     const maxVids = parseInt(document.getElementById('maxVideosInput').value) || 60;
     const apiKey = document.getElementById('apiKeyInput').value.trim();
 
-    if (!apiKey) { toast('Nhập API Key!','error'); return; }
-    if (!input) { toast('Nhập URL kênh!','error'); return; }
+    if (!apiKey) { toast('Nháº­p API Key!','error'); return; }
+    if (!input) { toast('Nháº­p URL kÃªnh!','error'); return; }
 
     localStorage.setItem('yt_api_key', apiKey);
-    prog('Đang tìm kênh...', 10);
+    prog('Äang tÃ¬m kÃªnh...', 10);
 
     // Resolve channel
     const channelId = await resolveChannelYT(input);
     chId = channelId;
-    prog('Tải thông tin kênh...', 20);
+    prog('Táº£i thÃ´ng tin kÃªnh...', 20);
 
     // Get channel info
     const info = await ytApi(`channels?part=snippet,statistics,contentDetails&id=${channelId}`);
-    if (!info.items?.length) throw new Error('Không tìm thấy kênh');
+    if (!info.items?.length) throw new Error('KhÃ´ng tÃ¬m tháº¥y kÃªnh');
     const ch = info.items[0];
     chAuthor = ch.snippet.title;
 
@@ -488,9 +457,9 @@ async function fetchWithYTApi() {
 
     // Get uploads playlist (sorted newest first by default)
     const uploadsId = ch.contentDetails.relatedPlaylists.uploads;
-    prog('Tải danh sách video...', 30);
+    prog('Táº£i danh sÃ¡ch video...', 30);
 
-    // Fetch videos, filter out Shorts (≤60s)
+    // Fetch videos, filter out Shorts (â‰¤60s)
     allVideos = [];
     nextPageToken = '';
     let page = 0;
@@ -515,7 +484,7 @@ async function fetchWithYTApi() {
         const ids = batchVideos.map(v => v.videoId);
 
         // Get durations for this batch
-        prog(`Kiểm tra thời lượng... (đã lọc ${allVideos.length} video dài)`, 30 + (allVideos.length/maxVids)*55);
+        prog(`Kiá»ƒm tra thá»i lÆ°á»£ng... (Ä‘Ã£ lá»c ${allVideos.length} video dÃ i)`, 30 + (allVideos.length/maxVids)*55);
         const durations = await getVideoDurations(ids);
 
         // Filter: only keep videos > 60 seconds (not Shorts)
@@ -532,7 +501,7 @@ async function fetchWithYTApi() {
         totalChecked += batchVideos.length;
 
         page++;
-        prog(`Trang ${page}... (${allVideos.length} video dài, bỏ qua ${shortsSkipped} Shorts)`, 30 + (allVideos.length/maxVids)*60);
+        prog(`Trang ${page}... (${allVideos.length} video dÃ i, bá» qua ${shortsSkipped} Shorts)`, 30 + (allVideos.length/maxVids)*60);
 
         nextPageToken = data.nextPageToken || '';
         if (!nextPageToken) break;
@@ -540,7 +509,7 @@ async function fetchWithYTApi() {
     }
 
     if (shortsSkipped > 0) {
-        toast(`Đã bỏ qua ${shortsSkipped} Shorts, giữ lại ${allVideos.length} video dài`, 'info');
+        toast(`ÄÃ£ bá» qua ${shortsSkipped} Shorts, giá»¯ láº¡i ${allVideos.length} video dÃ i`, 'info');
     }
 }
 
@@ -555,16 +524,16 @@ async function corsF(url, timeout=12000) {
     // Try proxies
     if(activeProxy){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);const r=await fetch(activeProxy(url),{signal:c.signal});clearTimeout(t);if(r.ok)return r}catch(e){}}
     for(const proxy of CORS_PROXIES){try{const c=new AbortController();const t=setTimeout(()=>c.abort(),timeout);const r=await fetch(proxy(url),{signal:c.signal});clearTimeout(t);if(r.ok){activeProxy=proxy;return r}}catch(e){}}
-    throw new Error('Không thể kết nối. Thử chế độ YouTube API.');
+    throw new Error('KhÃ´ng thá»ƒ káº¿t ná»‘i. Thá»­ cháº¿ Ä‘á»™ YouTube API.');
 }
 
 async function apiJson(url){const r=await corsF(url);return r.json()}
 
 async function findInstance(){
     for(const inst of INSTANCES){
-        try{const d=await apiJson(`${inst}/api/v1/stats`);if(d?.software){workingInst=inst;toast(`Kết nối: ${new URL(inst).hostname}`);return}}catch(e){}
+        try{const d=await apiJson(`${inst}/api/v1/stats`);if(d?.software){workingInst=inst;toast(`Káº¿t ná»‘i: ${new URL(inst).hostname}`);return}}catch(e){}
     }
-    throw new Error('Không có server khả dụng. Dùng chế độ YouTube API.');
+    throw new Error('KhÃ´ng cÃ³ server kháº£ dá»¥ng. DÃ¹ng cháº¿ Ä‘á»™ YouTube API.');
 }
 
 async function invApi(path){
@@ -576,11 +545,11 @@ async function invApi(path){
 async function fetchWithInvidious() {
     const input = document.getElementById('channelInput').value.trim();
     const maxVids = parseInt(document.getElementById('maxVideosInput').value) || 60;
-    if (!input) { toast('Nhập URL kênh!','error'); return; }
+    if (!input) { toast('Nháº­p URL kÃªnh!','error'); return; }
 
-    prog('Tìm server...', 5);
+    prog('TÃ¬m server...', 5);
     if (!workingInst) await findInstance();
-    prog('Tìm kênh...', 15);
+    prog('TÃ¬m kÃªnh...', 15);
 
     // Parse input
     let parsed = input.trim();
@@ -593,7 +562,7 @@ async function fetchWithInvidious() {
     } else {
         const results = await invApi(`/api/v1/search?q=${encodeURIComponent(parsed)}&type=channel&page=1`);
         const ch = results?.find(r=>r.type==='channel');
-        if(!ch) throw new Error('Không tìm thấy kênh');
+        if(!ch) throw new Error('KhÃ´ng tÃ¬m tháº¥y kÃªnh');
         chData = await invApi(`/api/v1/channels/${ch.authorId}`);
     }
 
@@ -608,11 +577,11 @@ async function fetchWithInvidious() {
     document.getElementById('chViews').textContent='?';
     document.getElementById('chInfo').classList.add('v');
 
-    prog('Tải video (chỉ video dài, bỏ Shorts)...', 30);
+    prog('Táº£i video (chá»‰ video dÃ i, bá» Shorts)...', 30);
     allVideos=[];
     let p=1,got=0,shortsSkipped=0;
     while(got<maxVids){
-        prog(`Trang ${p}... (${got} video dài, bỏ ${shortsSkipped} Shorts)`,30+(got/maxVids)*60);
+        prog(`Trang ${p}... (${got} video dÃ i, bá» ${shortsSkipped} Shorts)`,30+(got/maxVids)*60);
         try{
             const vids=await invApi(`/api/v1/channels/${chId}/videos?page=${p}&sort_by=newest`);
             if(!vids?.length)break;
@@ -627,7 +596,7 @@ async function fetchWithInvidious() {
             p++;await new Promise(r=>setTimeout(r,300));
         }catch(e){break}
     }
-    if(shortsSkipped>0) toast(`Bỏ qua ${shortsSkipped} Shorts, giữ ${allVideos.length} video dài`,'info');
+    if(shortsSkipped>0) toast(`Bá» qua ${shortsSkipped} Shorts, giá»¯ ${allVideos.length} video dÃ i`,'info');
 }
 
 // ===== MAIN =====
@@ -636,7 +605,7 @@ async function startFetching() {
     loading=true;
     const btn=document.getElementById('fetchBtn');
     btn.disabled=true;
-    btn.innerHTML='<span class="spin"></span> Đang xử lý...';
+    btn.innerHTML='<span class="spin"></span> Äang xá»­ lÃ½...';
     document.getElementById('chInfo').classList.remove('v');
     document.getElementById('thSec').classList.remove('v');
     document.getElementById('progSec').classList.add('v');
@@ -646,20 +615,20 @@ async function startFetching() {
         if(mode==='api') await fetchWithYTApi();
         else await fetchWithInvidious();
 
-        if(!allVideos.length){toast('Không có video!','error');return}
-        prog(`Hoàn tất! ${allVideos.length} video`,100);
+        if(!allVideos.length){toast('KhÃ´ng cÃ³ video!','error');return}
+        prog(`HoÃ n táº¥t! ${allVideos.length} video`,100);
         allVideos.forEach(v=>selected.add(v.videoId));
         render();
         document.getElementById('thSec').classList.add('v');
         document.getElementById('dlBtn').style.display='inline-flex';
-        toast(`Đã tải ${allVideos.length} video từ ${chAuthor}!`);
+        toast(`ÄÃ£ táº£i ${allVideos.length} video tá»« ${chAuthor}!`);
     } catch(e) {
         console.error(e);
-        toast('Lỗi: '+e.message,'error');
+        toast('Lá»—i: '+e.message,'error');
     } finally {
         loading=false;
         btn.disabled=false;
-        btn.innerHTML='<span>🚀</span> Tải danh sách video';
+        btn.innerHTML='<span>ðŸš€</span> Táº£i danh sÃ¡ch video';
         setTimeout(()=>document.getElementById('progSec').classList.remove('v'),2000);
     }
 }
@@ -667,7 +636,7 @@ async function startFetching() {
 async function loadMore() {
     if(loading)return;loading=true;
     const btn=document.getElementById('lmBtn');
-    btn.disabled=true;btn.innerHTML='<span class="spin"></span> Đang tải...';
+    btn.disabled=true;btn.innerHTML='<span class="spin"></span> Äang táº£i...';
     document.getElementById('progSec').classList.add('v');
     try{
         const before=allVideos.length;
@@ -681,11 +650,11 @@ async function loadMore() {
             while(got<60){try{const vids=await invApi(`/api/v1/channels/${chId}/videos?page=${p}&sort_by=newest`);if(!vids?.length)break;for(const v of vids){if(!allVideos.find(x=>x.videoId===v.videoId)){allVideos.push({videoId:v.videoId,title:v.title,published:v.published,viewCount:v.viewCount,lengthSeconds:v.lengthSeconds});got++}}p++;await new Promise(r=>setTimeout(r,300))}catch(e){break}}
         }
         const added=allVideos.length-before;
-        if(added>0){allVideos.slice(before).forEach(v=>selected.add(v.videoId));render();toast(`Thêm ${added} video!`)}
-        else{toast('Hết video!','info');document.getElementById('lmSec').style.display='none'}
+        if(added>0){allVideos.slice(before).forEach(v=>selected.add(v.videoId));render();toast(`ThÃªm ${added} video!`)}
+        else{toast('Háº¿t video!','info');document.getElementById('lmSec').style.display='none'}
         prog(`${allVideos.length} video`,100);
-    }catch(e){toast('Lỗi: '+e.message,'error')}
-    finally{loading=false;btn.disabled=false;btn.innerHTML='📥 Tải thêm video...';setTimeout(()=>document.getElementById('progSec').classList.remove('v'),1500)}
+    }catch(e){toast('Lá»—i: '+e.message,'error')}
+    finally{loading=false;btn.disabled=false;btn.innerHTML='ðŸ“¥ Táº£i thÃªm video...';setTimeout(()=>document.getElementById('progSec').classList.remove('v'),1500)}
 }
 
 // ===== RENDER =====
@@ -698,7 +667,7 @@ function render(){
         const dur=v.lengthSeconds?fmtDur(v.lengthSeconds):'';
         const sel=selected.has(v.videoId);
         const c=document.createElement('div');c.className='tc';
-        c.innerHTML=`<div class="sc ${sel?'ck':''}" onclick="event.stopPropagation();togSel('${v.videoId}',this)"></div><span class="qb">${q.toUpperCase()}</span><div class="tw"><img src="${url}" alt="${esc(v.title)}" loading="lazy" onerror="this.src='${thumbUrl(v.videoId,'hq')}'"><div class="tov"><div class="di">⬇</div></div></div><div class="ti"><div class="tt">${esc(v.title)}</div><div class="td">${date?'<span class="td-time">📅 Đăng: '+date+'</span>':''} ${dur?'<span class="td-dur">⏱ Dài: '+dur+'</span>':''} ${v.viewCount?'<span class="td-views">👁 '+fmtNum(v.viewCount)+'</span>':''}</div></div>`;
+        c.innerHTML=`<div class="sc ${sel?'ck':''}" onclick="event.stopPropagation();togSel('${v.videoId}',this)"></div><span class="qb">${q.toUpperCase()}</span><div class="tw"><img src="${url}" alt="${esc(v.title)}" loading="lazy" onerror="this.src='${thumbUrl(v.videoId,'hq')}'"><div class="tov"><div class="di">â¬‡</div></div></div><div class="ti"><div class="tt">${esc(v.title)}</div><div class="td">${date?'<span class="td-time">ðŸ“… ÄÄƒng: '+date+'</span>':''} ${dur?'<span class="td-dur">â± DÃ i: '+dur+'</span>':''} ${v.viewCount?'<span class="td-views">ðŸ‘ '+fmtNum(v.viewCount)+'</span>':''}</div></div>`;
         c.addEventListener('click',()=>dlOne(v));g.appendChild(c);
     });
     document.getElementById('totCnt').textContent=allVideos.length;
@@ -709,16 +678,16 @@ function render(){
 // ===== SELECTION =====
 function togSel(id,el){if(selected.has(id)){selected.delete(id);el.classList.remove('ck')}else{selected.add(id);el.classList.add('ck')}updSel()}
 function toggleSelectAll(){const c=document.getElementById('selAll').checked;if(c)allVideos.forEach(v=>selected.add(v.videoId));else selected.clear();document.querySelectorAll('.sc').forEach(e=>{if(c)e.classList.add('ck');else e.classList.remove('ck')});updSel()}
-function updSel(){document.getElementById('selCnt').textContent=selected.size+' đã chọn';document.getElementById('dlCnt').textContent=selected.size;const a=document.getElementById('selAll');a.checked=selected.size===allVideos.length;a.indeterminate=selected.size>0&&selected.size<allVideos.length}
+function updSel(){document.getElementById('selCnt').textContent=selected.size+' Ä‘Ã£ chá»n';document.getElementById('dlCnt').textContent=selected.size;const a=document.getElementById('selAll');a.checked=selected.size===allVideos.length;a.indeterminate=selected.size>0&&selected.size<allVideos.length}
 
 // ===== DOWNLOAD =====
 function sanitizeFilename(title) {
     if (!title) return 'untitled';
-    // Loại bỏ các ký tự không hợp lệ trong tên file Windows: \ / : * ? " < > |
+    // Loáº¡i bá» cÃ¡c kÃ½ tá»± khÃ´ng há»£p lá»‡ trong tÃªn file Windows: \ / : * ? " < > |
     let clean = title.replace(/[\\/:*?"<>|]/g, '');
-    // Thay thế nhiều dấu cách liên tiếp bằng 1 dấu cách và trim
+    // Thay tháº¿ nhiá»u dáº¥u cÃ¡ch liÃªn tiáº¿p báº±ng 1 dáº¥u cÃ¡ch vÃ  trim
     clean = clean.replace(/\s+/g, ' ').trim();
-    // Tên file trong Windows không được kết thúc bằng dấu chấm hoặc dấu cách
+    // TÃªn file trong Windows khÃ´ng Ä‘Æ°á»£c káº¿t thÃºc báº±ng dáº¥u cháº¥m hoáº·c dáº¥u cÃ¡ch
     while (clean.endsWith('.') || clean.endsWith(' ')) {
         clean = clean.slice(0, -1);
     }
@@ -735,16 +704,16 @@ async function dlOne(v){
         a.download=`${name}.jpg`;
         a.click();
         URL.revokeObjectURL(a.href);
-        toast('Đã tải HD: '+v.title.substring(0,50));
-    }catch(e){toast('Lỗi: '+e.message,'error')}
+        toast('ÄÃ£ táº£i HD: '+v.title.substring(0,50));
+    }catch(e){toast('Lá»—i: '+e.message,'error')}
 }
 
 async function downloadSelected(){
-    if(!selected.size){toast('Chưa chọn!','error');return}
+    if(!selected.size){toast('ChÆ°a chá»n!','error');return}
     const q=document.getElementById('qualitySelect').value;
     const zip=new JSZip();const folder=zip.folder(`thumbnails_${chAuthor.replace(/[^\w]/g,'_')}`);
     let done=0;const total=selected.size;
-    document.getElementById('progSec').classList.add('v');prog('Chuẩn bị tải chất lượng cao nhất...',0);
+    document.getElementById('progSec').classList.add('v');prog('Chuáº©n bá»‹ táº£i cháº¥t lÆ°á»£ng cao nháº¥t...',0);
     const list=allVideos.filter(v=>selected.has(v.videoId));
     const usedFilenames = new Set();
     for(let i=0;i<list.length;i+=4){
@@ -761,12 +730,12 @@ async function downloadSelected(){
                 usedFilenames.add(finalName.toLowerCase());
                 folder.file(`${finalName}.jpg`,b);
             }catch(e){}
-            done++;prog(`Tải HD... (${done}/${total})`,done/total*90);
+            done++;prog(`Táº£i HD... (${done}/${total})`,done/total*90);
         }));
     }
-    prog('Nén ZIP...',95);
+    prog('NÃ©n ZIP...',95);
     try{const c=await zip.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}});
-    const a=document.createElement('a');a.href=URL.createObjectURL(c);a.download=`thumbnails_HD_${chAuthor.replace(/[^\w]/g,'_')}_${new Date().toISOString().slice(0,10)}.zip`;a.click();URL.revokeObjectURL(a.href);toast(`Đã tải ${done} thumbnails chất lượng cao!`)}catch(e){toast('Lỗi: '+e.message,'error')}
+    const a=document.createElement('a');a.href=URL.createObjectURL(c);a.download=`thumbnails_HD_${chAuthor.replace(/[^\w]/g,'_')}_${new Date().toISOString().slice(0,10)}.zip`;a.click();URL.revokeObjectURL(a.href);toast(`ÄÃ£ táº£i ${done} thumbnails cháº¥t lÆ°á»£ng cao!`)}catch(e){toast('Lá»—i: '+e.message,'error')}
     setTimeout(()=>document.getElementById('progSec').classList.remove('v'),2000);
 }
 
@@ -798,7 +767,7 @@ function extractVideoId(url) {
 
 async function fetchFromVideoLinks() {
     const raw = document.getElementById('videoLinksInput').value.trim();
-    if (!raw) { toast('Dán link video vào ô trước!', 'error'); return; }
+    if (!raw) { toast('DÃ¡n link video vÃ o Ã´ trÆ°á»›c!', 'error'); return; }
 
     const lines = raw.split(/[\n\r,]+/).map(l => l.trim()).filter(l => l);
     const videoIds = [];
@@ -811,11 +780,11 @@ async function fetchFromVideoLinks() {
         }
     }
 
-    if (!videoIds.length) { toast('Không tìm thấy video ID hợp lệ!', 'error'); return; }
+    if (!videoIds.length) { toast('KhÃ´ng tÃ¬m tháº¥y video ID há»£p lá»‡!', 'error'); return; }
 
     // Show progress
     document.getElementById('progSec').classList.add('v');
-    prog('Đang lấy thông tin video...', 10);
+    prog('Äang láº¥y thÃ´ng tin video...', 10);
 
     allVideos = [];
     selected.clear();
@@ -849,7 +818,7 @@ async function fetchFromVideoLinks() {
                     }
                 }
             }
-            prog(`Đang lấy... (${Math.min(i+50, videoIds.length)}/${videoIds.length})`, 10 + (i/videoIds.length)*80);
+            prog(`Äang láº¥y... (${Math.min(i+50, videoIds.length)}/${videoIds.length})`, 10 + (i/videoIds.length)*80);
         }
     } else {
         // No API key: try noembed.com to get at least title
@@ -867,13 +836,13 @@ async function fetchFromVideoLinks() {
             } catch(e) {
                 allVideos.push({ videoId: vid, title: 'Video ' + vid, published: 0 });
             }
-            prog(`Đang lấy... (${i+1}/${videoIds.length})`, 10 + (i/videoIds.length)*80);
+            prog(`Äang láº¥y... (${i+1}/${videoIds.length})`, 10 + (i/videoIds.length)*80);
         }
     }
 
-    if (!allVideos.length) { toast('Không có video!', 'error'); return; }
+    if (!allVideos.length) { toast('KhÃ´ng cÃ³ video!', 'error'); return; }
 
-    prog('Hoàn tất! ' + allVideos.length + ' video', 100);
+    prog('HoÃ n táº¥t! ' + allVideos.length + ' video', 100);
     allVideos.forEach(v => selected.add(v.videoId));
     render();
     document.getElementById('thSec').classList.add('v');
@@ -886,3 +855,4 @@ async function fetchFromVideoLinks() {
 </script>
 </body>
 </html>
+
