@@ -193,21 +193,46 @@
                     const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
                     
                     const timestamp = Date.now().toString().slice(-4);
-                    const baseName = `fb_video_${i+1}_${timestamp}`;
-                    
-                    // Lưu video MP4
-                    zip.file(`${baseName}.mp4`, blob);
+                    let baseName = `fb_video_${i+1}_${timestamp}`;
                     
                     // Lấy tiêu đề và mô tả (có chứa link Affiliate) từ Header
                     let fullTitle = res.headers.get('X-Video-Title');
                     if (fullTitle) {
                         try {
                             fullTitle = decodeURIComponent(fullTitle);
-                            // Lưu toàn bộ tiêu đề/mô tả ra file txt để người dùng copy link
+                            
+                            // 1. Trích xuất link đầu tiên tìm thấy
+                            const urlMatch = fullTitle.match(/https?:\/\/[^\s]+/i);
+                            let extractedLink = '';
+                            if (urlMatch) {
+                                // Xóa https:// và thay các ký tự cấm thành dấu gạch dưới
+                                extractedLink = urlMatch[0].replace(/https?:\/\//i, '').replace(/[\/:*?"<>|]/g, '_');
+                            }
+
+                            // 2. Tạo tiêu đề sạch (xóa link, xóa ký tự cấm)
+                            let shortTitle = fullTitle.replace(/https?:\/\/[^\s]+/ig, '').trim();
+                            shortTitle = shortTitle.replace(/[\/:*?"<>|\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+                            if (shortTitle.length > 80) shortTitle = shortTitle.substring(0, 80).trim();
+                            if (!shortTitle) shortTitle = `fb_video_${i+1}`;
+
+                            // 3. Ghép Tên + Link
+                            if (extractedLink) {
+                                baseName = `${shortTitle} - ${extractedLink}`;
+                            } else {
+                                baseName = shortTitle;
+                            }
+                            
+                            // Giới hạn độ dài an toàn cho Windows
+                            if (baseName.length > 180) baseName = baseName.substring(0, 180);
+
+                            // Vẫn lưu file txt dự phòng
                             zip.file(`${baseName}_noidung.txt`, fullTitle);
-                            addLog(`📝 Đã lưu nội dung/tiêu đề gốc`, 'info');
+                            addLog(`📝 Đã gắn link sản phẩm vào tên file`, 'info');
                         } catch(e) {}
                     }
+                    
+                    // Lưu video MP4
+                    zip.file(`${baseName}.mp4`, blob);
                     
                     completed++;
                     addLog(`✅ [${i+1}/${total}] Thành công (${sizeMB}MB)`, 'success');
