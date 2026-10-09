@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Facebook Downloader - T?i Video FB & Ch?ng Re-up</title>
+    <title>Facebook Downloader - Tải Video FB & Chống Re-up</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -73,43 +73,40 @@
     <div class="container">
         <!-- Navigation -->
         <div class="nav-links">
-            <a href="/index.html" class="nav-link">?? YouTube</a>
-            <a href="/tiktok.html" class="nav-link">?? TikTok</a>
-            <a href="/facebook.html" class="nav-link active">?? Facebook</a>
+            <a href="/index.html" class="nav-link">📸 YouTube</a>
+            <a href="/tiktok.html" class="nav-link">🎵 TikTok</a>
+            <a href="/facebook.html" class="nav-link active">📘 Facebook</a>
         </div>
 
         <div class="header">
-            <h1><span>??</span> Facebook Downloader</h1>
-            <p>T?i h�ng lo?t video Facebook ch?t lu?ng cao � H? tr? l�ch lu?t Re-up</p>
+            <h1><span>📘</span> Facebook Downloader</h1>
+            <p>Tải hàng loạt video Facebook chất lượng cao • Hỗ trợ lách luật Re-up</p>
         </div>
 
         <div class="search-card">
             <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-                <span style="font-size:14px; font-weight:600; color:var(--text-secondary);">?? D�n danh s�ch link video Facebook:</span>
+                <span style="font-size:14px; font-weight:600; color:var(--text-secondary);">📝 Dán danh sách link video Facebook:</span>
                 <span id="linkCount" style="font-size:14px; font-weight:600; color:var(--accent-fb);">0 link</span>
             </div>
             
-            <textarea class="multi-input" id="linksInput" placeholder="M?i link m?t d�ng...
-V� d?:
-https://www.facebook.com/watch/?v=123456789
-https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
+            <textarea class="multi-input" id="linksInput" placeholder="Mỗi link một dòng...&#10;Ví dụ:&#10;https://www.facebook.com/watch/?v=123456789&#10;https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
             
             <div class="toggle-container">
                 <div class="toggle-switch active" id="reupToggle" onclick="this.classList.toggle('active')"></div>
                 <div>
-                    <div class="toggle-label">Ch?ng Re-up (�?i MD5 & Metadata)</div>
-                    <div class="toggle-desc">T? d?ng d�ng FFmpeg d? reset to�n b? metadata, th?i gian t?o, tag... gi�p gi? l?p th�nh video m?i tinh 100% d? l�ch lu?t b?n quy?n FB.</div>
+                    <div class="toggle-label">Chống Re-up (Đổi MD5 & Metadata)</div>
+                    <div class="toggle-desc">Tự động dùng FFmpeg để reset toàn bộ metadata, thời gian tạo, tag... giúp giả lập thành video mới tinh 100% để lách luật bản quyền FB.</div>
                 </div>
             </div>
 
             <button class="btn-download" id="btnDownload" onclick="startBatch()">
-                <span>??</span> T?i xu?ng t?t c?
+                <span>⬇️</span> Tải xuống tất cả
             </button>
         </div>
 
         <div class="progress-section" id="progressSection">
             <div class="progress-header">
-                <span id="progressTitle">?? �ang t?i video...</span>
+                <span id="progressTitle">📦 Đang tải video...</span>
                 <span id="progressPercent">0%</span>
             </div>
             <div class="progress-bar-container">
@@ -151,7 +148,7 @@ https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
             const links = extractLinks(text);
             
             if (links.length === 0) {
-                showToast('?? Vui l�ng d�n �t nh?t 1 link video FB h?p l?!', 'error');
+                showToast('⚠️ Vui lòng dán ít nhất 1 link video FB hợp lệ!', 'error');
                 return;
             }
 
@@ -163,7 +160,7 @@ https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
             const progressPercent = document.getElementById('progressPercent');
             
             btn.disabled = true;
-            btn.innerHTML = '? �ang x? l�<span class="loading-dots"></span>';
+            btn.innerHTML = '⏳ Đang xử lý<span class="loading-dots"></span>';
             progressSec.style.display = 'block';
             document.getElementById('progressLog').innerHTML = '';
             
@@ -172,19 +169,19 @@ https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
             let failed = 0;
             const total = links.length;
             
-            addLog(?? B?t d?u x? l�  video...);
-            if (isReup) addLog(??? Ch? d? ch?ng Re-up �� B?T (S? m?t th�m ch�t th?i gian x? l� MD5));
+            addLog(🚀 Bắt đầu xử lý  video...);
+            if (isReup) addLog(🛡️ Chế độ chống Re-up ĐÃ BẬT (Sẽ mất thêm chút thời gian xử lý MD5));
 
             for (let i = 0; i < total; i++) {
                 const url = links[i];
-                addLog(? [/] �ang t?i: ..., 'info');
+                addLog(⏳ [/] Đang tải: ..., 'info');
                 
                 try {
                     const proxyUrl = /fb-download/?url= + encodeURIComponent(url) + (isReup ? &reup=1 : '');
                     const res = await fetch(proxyUrl);
                     
                     if (!res.ok) {
-                        let errStr = 'L?i server';
+                        let errStr = 'Lỗi server';
                         try {
                             const errObj = await res.json();
                             errStr = errObj.error || errStr;
@@ -199,10 +196,10 @@ https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
                     zip.file(fileName, blob);
                     
                     completed++;
-                    addLog(? [/] Th�nh c�ng (MB), 'success');
+                    addLog(✅ [/] Thành công (MB), 'success');
                 } catch (err) {
                     failed++;
-                    addLog(? [/] L?i: , 'error');
+                    addLog(❌ [/] Lỗi: , 'error');
                 }
                 
                 const pct = Math.round(((i + 1) / total) * 100);
@@ -211,7 +208,7 @@ https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
             }
             
             if (completed > 0) {
-                addLog(?? �ang n�n th�nh file ZIP...);
+                addLog(📦 Đang nén thành file ZIP...);
                 try {
                     const content = await zip.generateAsync({ type: "blob" });
                     const a = document.createElement("a");
@@ -220,17 +217,17 @@ https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
-                    showToast(? �� t?i xong  video!, 'success');
-                    addLog(?? Ho�n t?t! T?i th�nh c�ng / video., 'success');
+                    showToast(✅ Đã tải xong  video!, 'success');
+                    addLog(🎉 Hoàn tất! Tải thành công / video., 'success');
                 } catch (err) {
-                    addLog(? L?i t?o ZIP: , 'error');
+                    addLog(❌ Lỗi tạo ZIP: , 'error');
                 }
             } else {
-                showToast('? Kh�ng t?i du?c video n�o!', 'error');
+                showToast('❌ Không tải được video nào!', 'error');
             }
             
             btn.disabled = false;
-            btn.innerHTML = '<span>??</span> T?i xu?ng t?t c?';
+            btn.innerHTML = '<span>⬇️</span> Tải xuống tất cả';
         }
     </script>
 </body>
