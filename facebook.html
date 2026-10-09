@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -89,7 +89,10 @@
                 <span id="linkCount" style="font-size:14px; font-weight:600; color:var(--accent-fb);">0 link</span>
             </div>
             
-            <textarea class="multi-input" id="linksInput" placeholder="Mỗi link một dòng...&#10;Ví dụ:&#10;https://www.facebook.com/watch/?v=123456789&#10;https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
+            <textarea class="multi-input" id="linksInput" placeholder="Mỗi link một dòng...
+Ví dụ:
+https://www.facebook.com/watch/?v=123456789
+https://fb.watch/abcd123/" oninput="updateCount()"></textarea>
             
             <div class="toggle-container">
                 <div class="toggle-switch active" id="reupToggle" onclick="this.classList.toggle('active')"></div>
@@ -122,7 +125,7 @@
         function showToast(msg, type = 'success') {
             const t = document.getElementById('toast');
             t.textContent = msg;
-            t.className = `toast show ${type}`;
+            t.className = 'toast show ' + type;
             setTimeout(() => t.className = 'toast', 3000);
         }
 
@@ -140,7 +143,7 @@
 
         function addLog(msg, type = '') {
             const log = document.getElementById('progressLog');
-            log.innerHTML = `<div class="log-item ${type}">${msg}</div>` + log.innerHTML;
+            log.innerHTML = '<div class="log-item ' + type + '">' + msg + '</div>' + log.innerHTML;
         }
 
         async function startBatch() {
@@ -169,56 +172,70 @@
             let failed = 0;
             const total = links.length;
             
-            addLog(`🚀 Bắt đầu xử lý ${total} video...`);
+            addLog('🚀 Bắt đầu xử lý ' + total + ' video...');
 
             for (let i = 0; i < total; i++) {
                 const url = links[i];
-                addLog(`⏳ [${i+1}/${total}] Đang tải: ${url.substring(0,40)}...`, 'info');
+                addLog('⏳ [' + (i+1) + '/' + total + '] Đang tải: ' + url.substring(0,40) + '...', 'info');
                 
                 try {
-                    const proxyUrl = `/fb-download/?url=${encodeURIComponent(url)}${isReup ? '&reup=1' : ''}`;
+                    const proxyUrl = '/fb-download/?url=' + encodeURIComponent(url) + (isReup ? '&reup=1' : '');
                     const res = await fetch(proxyUrl);
                     
                     if (!res.ok) {
-                        throw new Error('Lỗi tải video');
+                        throw new Error('Lỗi từ máy chủ tải xuống');
                     }
                     
-                    const blob = await res.blob();
-                    const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+                    const payload = await res.json();
+                    
+                    if (payload.error) {
+                        throw new Error(payload.error);
+                    }
+                    
+                    // Fetch the info JSON via the provided URL directly (bypass PowerShell encoding completely)
+                    let fullTitle = 'Facebook Video';
+                    try {
+                        const infoRes = await fetch(payload.infoUrl);
+                        if (infoRes.ok) {
+                            const infoJson = await infoRes.json();
+                            if (infoJson.description) fullTitle = infoJson.description;
+                            else if (infoJson.title) fullTitle = infoJson.title;
+                        }
+                    } catch(e) {
+                        console.error('Info JSON fetch error:', e);
+                    }
                     
                     // Tạo hậu tố ID duy nhất cho mỗi video (chống đè file)
                     const uniqueId = Date.now().toString().slice(-5) + i;
-                    let baseName = `video_${uniqueId}`;
+                    let baseName = 'video_' + uniqueId;
                     
-                    let fullTitle = res.headers.get('X-Video-Title');
-                    if (fullTitle) {
-                        try {
-                            fullTitle = decodeURIComponent(fullTitle);
-                            
-                            // Tạo tiêu đề sạch cho tên file (xóa link, xóa ký tự cấm)
-                            let shortTitle = fullTitle.replace(/https?:\/\/[^\s]+/ig, '').trim();
-                            shortTitle = shortTitle.replace(/[\/:*?"<>|\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
-                            if (shortTitle.length > 80) shortTitle = shortTitle.substring(0, 80).trim();
-                            
-                            // Ghép Tiêu đề + ID duy nhất để đảm bảo không bị đè file ZIP
-                            if (shortTitle) {
-                                baseName = `${shortTitle}_${uniqueId}`;
-                            }
-                            
-                            // Lưu nội dung gốc có chứa link vào file .txt có TÊN TRÙNG KHỚP 100% với video
-                            zip.file(`${baseName}.txt`, fullTitle);
-                            addLog(`📝 Đã lưu nội dung SP vào file .txt`, 'info');
-                        } catch(e) {}
+                    // Tạo tiêu đề sạch cho tên file
+                    let shortTitle = fullTitle.replace(/https?:\/\/[^\s]+/ig, '').trim();
+                    shortTitle = shortTitle.replace(/[\/:*?"<>|\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+                    if (shortTitle.length > 80) shortTitle = shortTitle.substring(0, 80).trim();
+                    
+                    if (shortTitle) {
+                        baseName = shortTitle + '_' + uniqueId;
                     }
                     
+                    // Lưu nội dung gốc có chứa link vào file .txt
+                    zip.file(baseName + '.txt', fullTitle);
+                    addLog('📝 Đã lưu nội dung SP vào file .txt', 'info');
+                    
+                    // Tải video dạng Blob
+                    const vidRes = await fetch(payload.videoUrl);
+                    if (!vidRes.ok) throw new Error('Không tải được video từ server');
+                    const blob = await vidRes.blob();
+                    const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+                    
                     // Lưu video MP4
-                    zip.file(`${baseName}.mp4`, blob);
+                    zip.file(baseName + '.mp4', blob);
                     
                     completed++;
-                    addLog(`✅ [${i+1}/${total}] Thành công (${sizeMB}MB)`, 'success');
+                    addLog('✅ [' + (i+1) + '/' + total + '] Thành công (' + sizeMB + 'MB)', 'success');
                 } catch (err) {
                     failed++;
-                    addLog(`❌ [${i+1}/${total}] Lỗi: ${err.message}`, 'error');
+                    addLog('❌ [' + (i+1) + '/' + total + '] Lỗi: ' + err.message, 'error');
                 }
                 
                 const pct = Math.round(((i + 1) / total) * 100);
@@ -227,18 +244,18 @@
             }
             
             if (completed > 0) {
-                addLog(`📦 Đang nén thành file ZIP...`);
+                addLog('📦 Đang nén thành file ZIP...');
                 try {
                     const content = await zip.generateAsync({ type: "blob" });
                     const a = document.createElement("a");
                     a.href = URL.createObjectURL(content);
-                    a.download = `facebook_videos_${Date.now()}.zip`;
+                    a.download = 'facebook_videos_' + Date.now() + '.zip';
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
-                    showToast(`✅ Đã tải xong ${completed} video!`, 'success');
+                    showToast('✅ Đã tải xong ' + completed + ' video!', 'success');
                 } catch (err) {
-                    addLog(`❌ Lỗi tạo ZIP: ${err.message}`, 'error');
+                    addLog('❌ Lỗi tạo ZIP: ' + err.message, 'error');
                 }
             } else {
                 showToast('❌ Không tải được video nào!', 'error');
