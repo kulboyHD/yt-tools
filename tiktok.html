@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -1164,7 +1164,7 @@
                     addToHistory(videoUrl, originalTitle);
 
                     const badge = quality === '1080p' ? '🔵1080p' : '🟢NoWM';
-                    addLog(`✅ [${i + 1}/${total}] ${badge} ${safeTitle.substring(0, 50)}${safeTitle.length > 50 ? '...' : ''} (${sizeInMB}MB)`, 'success');
+                    addLog(`✅ [${i + 1}/${total}] ${badge} ${cleanTitle.substring(0, 50)}${cleanTitle.length > 50 ? '...' : ''} (${sizeInMB}MB)`, 'success');
 
                 } catch (err) {
                     failed++;
@@ -2067,3 +2067,4 @@
     </script>
 </body>
 </html>
+
