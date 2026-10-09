@@ -1,6 +1,11 @@
 Add-Type -AssemblyName System.Web
 $root = $PSScriptRoot
 $port = 8080
+
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [System.Text.Encoding]::UTF8
+$env:PYTHONIOENCODING = "utf-8"
+
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")
 $listener.Start()
@@ -343,7 +348,7 @@ while ($listener.IsListening) {
             $finalFile = $tempFile
 
             # Extract title and description
-            $titleOutput = & .\yt-dlp.exe --print "%(title)s - %(description)s" $videoUrl 2>&1
+            $titleOutput = & .\yt-dlp.exe --print "%(description)s" $videoUrl 2>&1
             $fullTitle = $titleOutput -join " "
             if ([string]::IsNullOrWhiteSpace($fullTitle) -or $fullTitle -match "ERROR") {
                 $fullTitle = "Facebook Video $tempId"
@@ -450,5 +455,8 @@ while ($listener.IsListening) {
 
     $response.Close()
 }
+
+
+
 
 
