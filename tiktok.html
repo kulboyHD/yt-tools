@@ -1961,20 +1961,6 @@
             // Generate and save ZIP
             if (completed > 0 && !batchCancelled) {
                 try {
-                    // Tạo file metadata Excel (CSV)
-                    let csvContent = "\uFEFF"; // BOM cho UTF-8 Excel
-                    csvContent += "Tên File,Tiêu Đề Gốc,Lượt Xem,Lượt Thích,Bình Luận\n";
-                    for (const v of selectedVideos) {
-                        let safeTitle = v.title.replace(/"/g, '""');
-                        // Find matching filename in tracker (approximate, or we can just reconstruct it)
-                        let cleanTitle = v.title.replace(/[<>:"\/\\|?\*\n\r]/g, '').replace(/\s+/g, ' ').trim();
-                        if (cleanTitle.length > 220) cleanTitle = cleanTitle.substring(0, 220).trim();
-                        if (!cleanTitle) cleanTitle = 'video';
-                        // Note: exact filename matching with the tracker might be slightly complex here without saving it in the loop, so we'll just save the basic info
-                        csvContent += `"${cleanTitle}.mp4","${safeTitle}","${v.plays || 0}","${v.likes || 0}","${v.comments || 0}"\n`;
-                    }
-                    folder.file("thong_tin_video.csv", csvContent);
-
                     progressTitle.textContent = '🗜️ Đang nén file ZIP...';
                     progressDetail.textContent = `Nén ${completed} video (${(totalSize / 1024 / 1024).toFixed(1)}MB)...`;
                     addLog(`\n🗜️ Đang nén ${completed} video thành file ZIP...`, 'info');
