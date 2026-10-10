@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -1125,7 +1125,15 @@
                         progressDetail.textContent = `[${i + 1}/${videos.length}] Kênh @${username}...`;
                         
                         try {
-                            const dlUrl = `https://www.tikwm.com/video/media/hdplay/${v.id}.mp4`;
+                            const videoUrl = `https://www.tiktok.com/@${username}/video/${v.id}`;
+                            const data = await fetchWithProxy('api/', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                                body: `url=${encodeURIComponent(videoUrl)}&hd=1`
+                            });
+                            if (data.code !== 0 || !data.data) throw new Error(data.msg || 'API error');
+                            const dlUrl = data.data.hdplay || data.data.play;
+                            if (!dlUrl) throw new Error('Không có link tải');
                             const blob = await fetchVideoBlob(dlUrl);
                             channelSize += blob.size;
                             
@@ -1193,8 +1201,7 @@
                         const originalTitle = d.title || `video_${d.id || i + 1}`;
                         const videoId = d.id;
 
-                        let downloadLink = (d.hdplay && videoId) ? `https://www.tikwm.com/video/media/hdplay/${videoId}.mp4` :
-                                           (d.play && videoId) ? `https://www.tikwm.com/video/media/play/${videoId}.mp4` : null;
+                        let downloadLink = d.hdplay || d.play;
 
                         if (!downloadLink) throw new Error('Không có link tải');
 
@@ -1385,9 +1392,9 @@
 
             // Use tikwm proxy URLs for reliable downloads (CDN URLs often get blocked)
             // Format: https://www.tikwm.com/video/media/hdplay/{id}.mp4
-            const hdUrl = d.hdplay ? `https://www.tikwm.com/video/media/hdplay/${videoId}.mp4` : null;
-            const noWmUrl = d.play ? `https://www.tikwm.com/video/media/play/${videoId}.mp4` : null;
-            const wmUrl = d.wmplay ? `https://www.tikwm.com/video/media/wmplay/${videoId}.mp4` : null;
+            const hdUrl = d.hdplay;
+            const noWmUrl = d.play;
+            const wmUrl = d.wmplay;
             const musicUrl = d.music ? (d.music.startsWith('http') ? d.music : `https://www.tikwm.com${d.music}`) : null;
 
             // Best quality = hdplay (1080p original) > play (no watermark) > wmplay
@@ -1724,8 +1731,8 @@
                         likes: v.likes || 0,
                         comments: v.comments || 0,
                         shares: 0,
-                        downloadHD: `https://www.tikwm.com/video/media/hdplay/${v.id}.mp4`,
-                        downloadNoWM: `https://www.tikwm.com/video/media/play/${v.id}.mp4`,
+                        downloadHD: null,
+                        downloadNoWM: null,
                         music: null,
                         isSlideshow: false,
                         images: null
@@ -1916,10 +1923,10 @@
                             const vid = d.id || video.id;
                             // Use tikwm proxy URLs for reliable HD downloads
                             if (d.hdplay) {
-                                downloadUrl = `https://www.tikwm.com/video/media/hdplay/${vid}.mp4`;
+                                downloadUrl = d.hdplay;
                                 quality = '1080p';
                             } else if (d.play) {
-                                downloadUrl = `https://www.tikwm.com/video/media/play/${vid}.mp4`;
+                                downloadUrl = d.play;
                                 quality = 'NoWM';
                             }
                         }
@@ -1927,11 +1934,7 @@
                         console.warn(`Original quality fetch failed for ${video.id}:`, e.message);
                     }
 
-                    // Fallback: try tikwm proxy URL directly with video ID
-                    if (!downloadUrl) {
-                        downloadUrl = `https://www.tikwm.com/video/media/hdplay/${video.id}.mp4`;
-                        quality = '1080p';
-                    }
+                    
 
                     if (!downloadUrl) {
                         addLog(`⚠️ [${i + 1}/${total}] Bỏ qua - Không có link tải`, 'error');
@@ -2119,3 +2122,4 @@
     </script>
 </body>
 </html>
+
