@@ -1238,7 +1238,7 @@
             }
         }
 
-        function downloadAllImages(images) {
+        async function downloadAllImages(images) {
             for (let i = 0; i < images.length; i++) {
                 const a = document.createElement('a'); a.href = images[i]; a.target = '_blank'; a.download = `tiktok_slide_${i + 1}.jpg`;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -1854,5 +1854,6 @@
     </script>
 </body>
 </html>
+
 
 
