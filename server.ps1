@@ -114,13 +114,17 @@ while ($listener.IsListening) {
         try {
             $url = "https://www.tiktok.com/@$($username.TrimStart('@'))"
             $ytdlpArgs = @("--impersonate", "chrome", "--dump-json", "--flat-playlist", "--playlist-end", $count, $url)
-            $output = & yt-dlp @ytdlpArgs 2>&1
-            $jsonOutput = $output | Where-Object { $_ -is [string] -and $_ -match '^{' } | ConvertFrom-Json
             $videos = @()
-            if ($jsonOutput) {
-                foreach ($item in $jsonOutput) {
-                    $videos += @{ id = $item.id; title = $item.title; url = $item.url; cover = if ($item.thumbnails) { $item.thumbnails[0].url } else { $null }; duration = $item.duration }
+            for ($i = 0; $i -lt 4; $i++) {
+                $output = & yt-dlp @ytdlpArgs 2>&1
+                $jsonOutput = $output | Where-Object { $_ -is [string] -and $_ -match '^{' } | ConvertFrom-Json
+                if ($jsonOutput) {
+                    foreach ($item in $jsonOutput) {
+                        $videos += @{ id = $item.id; title = $item.title; url = $item.url; cover = if ($item.thumbnails) { $item.thumbnails[0].url } else { $null }; duration = $item.duration }
+                    }
                 }
+                if ($videos.Length -gt 0) { break }
+                Start-Sleep -Seconds 3
             }
             $resultObj = @{ code = 0; data = @{ videos = $videos } }
             $json = $resultObj | ConvertTo-Json -Depth 10 -Compress
