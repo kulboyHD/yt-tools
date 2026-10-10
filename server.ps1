@@ -1,4 +1,4 @@
-Add-Type -AssemblyName System.Web
+﻿Add-Type -AssemblyName System.Web
 $root = $PSScriptRoot
 $port = 8080
 
@@ -113,7 +113,7 @@ while ($listener.IsListening) {
         }
         try {
             $url = "https://www.tiktok.com/@$($username.TrimStart('@'))"
-            $ytdlpArgs = @("--dump-json", "--flat-playlist", "--playlist-end", $count, $url)
+            $ytdlpArgs = @("--impersonate", "chrome", "--dump-json", "--flat-playlist", "--playlist-end", $count, $url)
             $output = & yt-dlp @ytdlpArgs 2>&1
             $jsonOutput = $output | Where-Object { $_ -is [string] -and $_ -match '^{' } | ConvertFrom-Json
             $videos = @()
@@ -217,3 +217,4 @@ while ($listener.IsListening) {
     }
     $response.Close()
 }
+
