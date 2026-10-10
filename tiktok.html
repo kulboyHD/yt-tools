@@ -528,7 +528,7 @@
                             <span>📦</span>
                             <span>Tải tất cả</span>
                         </button>
-                        <span style="font-size:11px;color:var(--text-muted);">💡 Tải chất lượng gốc tốt nhất • Giữ nguyên tên video gốc • Nén thành file ZIP</span>
+                        <span style="font-size:11px;color:var(--text-muted);">💡 Tải chất lượng gốc tốt nhất • Nén thành file ZIP</span><select id="multiChannelCount" style="background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border-color);border-radius:4px;padding:4px;font-size:12px;margin-left:auto;outline:none"><option value="20">Kênh: 20 video</option><option value="30">Kênh: 30 video</option><option value="50">Kênh: 50 video</option></select>
                     </div>
                 </div>
             </div>
@@ -1041,6 +1041,7 @@
             showToast('🗑️ Đã xóa danh sách', 'success');
         }
 
+        
         async function processMultipleLinks() {
             const text = document.getElementById('multiInput').value.trim();
             const urls = extractTikTokUrls(text);
@@ -1050,11 +1051,9 @@
                 return;
             }
 
-            const hasChannel = urls.some(u => detectUrlType(u).type === 'channel');
-            if (hasChannel) {
-                showError('⚠️ Chức năng "Tải nhiều video" không hỗ trợ tải kênh. Vui lòng dán link kênh vào ô nhập liệu chính phía trên và bấm "Tải xuống" để sử dụng chức năng tải kênh chuyên dụng.');
-                return;
-            }
+            // Get channel count preference if the select exists
+            const channelCountEl = document.getElementById('multiChannelCount');
+            const channelVideoCount = channelCountEl ? parseInt(channelCountEl.value) : 20;
 
             multiCancelled = false;
             hideError();
@@ -1071,7 +1070,7 @@
             progressEl.classList.add('active');
             progressLog.innerHTML = '';
             progressBar.style.width = '0%';
-            progressTitle.textContent = `📦 Đang tải ${urls.length} video chất lượng gốc...`;
+            progressTitle.textContent = `📦 Đang xử lý ${urls.length} link...`;
             progressDetail.textContent = '';
             progressEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -1080,415 +1079,166 @@
                 progressLog.scrollTop = progressLog.scrollHeight;
             };
 
-            addLog(`🚀 Bắt đầu tải ${urls.length} video...`, 'info');
+            addLog(`🚀 Bắt đầu xử lý ${urls.length} link...`, 'info');
 
-            // Check history for duplicates
-            const { duplicates: histDups, fresh: histFresh } = checkUrlsAgainstHistory(urls);
-            if (histDups.length > 0) {
-                addLog(`⚠️ ${histDups.length}/${urls.length} link đã tải trước đó (vẫn tải lại)`, 'error');
-                histDups.forEach(d => addLog(`   ↳ ${formatTimeAgo(d.date)}: ${d.title || extractVideoId(d.url)}`, 'error'));
-            }
+            let videoUrls = [];
+            let channelUrls = [];
+            urls.forEach(u => {
+                const type = detectUrlType(u);
+                if (type.type === 'channel') channelUrls.push(type.username);
+                else videoUrls.push(u);
+            });
 
-            const zip = new JSZip();
-            let completed = 0;
-            let failed = 0;
-            let totalSize = 0;
-            const total = urls.length;
-            const usedNames = {};
+            const totalSteps = channelUrls.length + (videoUrls.length > 0 ? 1 : 0);
+            let currentStep = 0;
 
-            for (let i = 0; i < urls.length; i++) {
-                if (multiCancelled) {
-                    addLog(`❌ Đã hủy tải (${completed}/${total} hoàn thành)`, 'error');
-                    break;
-                }
-
-                const videoUrl = urls[i];
-                progressDetail.textContent = `[${i + 1}/${total}] Đang phân tích...`;
-
+            // Process Channels First
+            for (const username of channelUrls) {
+                if (multiCancelled) break;
+                currentStep++;
+                
+                addLog(`\n📺 Đang quét kênh @${username} (${channelVideoCount} video)...`, 'info');
+                
                 try {
-                    const data = await fetchWithProxy('api/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: `url=${encodeURIComponent(videoUrl)}&hd=1`
-                    });
-
-                    if (data.code !== 0 || !data.data) throw new Error(data.msg || 'API error');
-
-                    const d = data.data;
-                    const originalTitle = d.title || `video_${d.id || i + 1}`;
-                    const videoId = d.id;
-
-                    // Use tikwm proxy URLs for reliable HD downloads
-                    let downloadLink = null;
-                    let quality = 'SD';
-                    if (d.hdplay && videoId) {
-                        downloadLink = `https://www.tikwm.com/video/media/hdplay/${videoId}.mp4`;
-                        quality = '1080p';
-                    } else if (d.play && videoId) {
-                        downloadLink = `https://www.tikwm.com/video/media/play/${videoId}.mp4`;
-                        quality = 'NoWM';
-                    }
-
-                    if (!downloadLink) {
-                        addLog(`⚠️ [${i + 1}/${total}] Không có link tải`, 'error');
-                        failed++;
+                    const response = await fetch(`/tiktok-channel/?username=${encodeURIComponent(username)}&count=${channelVideoCount}`);
+                    const json = await response.json();
+                    
+                    if (json.error) throw new Error(json.error);
+                    
+                    const videos = json.data?.videos || [];
+                    if (videos.length === 0) {
+                        addLog(`⚠️ Không tìm thấy video nào trên kênh @${username} (Có thể bị TikTok chặn)`, 'error');
                         continue;
                     }
 
-                    progressDetail.textContent = `[${i + 1}/${total}] Đang tải ${quality}...`;
-                    const blob = await fetchVideoBlob(downloadLink);
-                    const sizeInMB = (blob.size / 1024 / 1024).toFixed(1);
-                    totalSize += blob.size;
-
-                    let cleanTitle = originalTitle
-                        .replace(/[<>:"\/\\|?\*\n\r]/g, '')
-                        .replace(/\s+/g, ' ')
-                        .trim();
-                        
-                    if (cleanTitle.length > 220) {
-                        cleanTitle = cleanTitle.substring(0, 220).trim();
-                    }
-                    if (!cleanTitle) cleanTitle = 'video';
+                    addLog(`✅ Tìm thấy ${videos.length} video. Bắt đầu tải...`, 'success');
                     
-                    let fileName = `${cleanTitle}.mp4`;
-                    let lowerName = cleanTitle.toLowerCase();
-                    if (usedNames[lowerName]) {
-                        usedNames[lowerName]++;
-                        fileName = `${cleanTitle} (${usedNames[lowerName]}).mp4`;
-                    } else {
-                        usedNames[lowerName] = 1;
+                    const zip = new JSZip();
+                    const folder = zip.folder(`tiktok_${username}`);
+                    let channelCompleted = 0;
+                    let channelSize = 0;
+                    const usedNames = {};
+
+                    for (let i = 0; i < videos.length; i++) {
+                        if (multiCancelled) break;
+                        const v = videos[i];
+                        progressDetail.textContent = `[${i + 1}/${videos.length}] Kênh @${username}...`;
+                        
+                        try {
+                            const dlUrl = `https://www.tikwm.com/video/media/hdplay/${v.id}.mp4`;
+                            const blob = await fetchVideoBlob(dlUrl);
+                            channelSize += blob.size;
+                            
+                            let cleanTitle = (v.title || `video_${v.id}`).replace(/[<>:"\/\\|?\*\n\r]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
+                            let lowerName = cleanTitle.toLowerCase();
+                            let fileName = `${cleanTitle}.mp4`;
+                            if (usedNames[lowerName]) {
+                                usedNames[lowerName]++;
+                                fileName = `${cleanTitle} (${usedNames[lowerName]}).mp4`;
+                            } else {
+                                usedNames[lowerName] = 1;
+                            }
+
+                            folder.file(fileName, blob);
+                            channelCompleted++;
+                            addToHistory(`https://www.tiktok.com/@${username}/video/${v.id}`, v.title);
+                            
+                            const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+                            addLog(`  ✅ [${i+1}/${videos.length}] ${cleanTitle.substring(0,40)}... (${sizeMB}MB)`, 'success');
+                        } catch (err) {
+                            addLog(`  ❌ [${i+1}/${videos.length}] Lỗi: ${err.message}`, 'error');
+                        }
                     }
 
-                    zip.file(fileName, blob);
-                    completed++;
-                    addToHistory(videoUrl, originalTitle);
-
-                    const badge = quality === '1080p' ? '🔵1080p' : '🟢NoWM';
-                    addLog(`✅ [${i + 1}/${total}] ${badge} ${cleanTitle.substring(0, 50)}${cleanTitle.length > 50 ? '...' : ''} (${sizeInMB}MB)`, 'success');
-
+                    if (channelCompleted > 0 && !multiCancelled) {
+                        addLog(`📦 Đang nén file ZIP cho kênh @${username}...`, 'info');
+                        const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+                        saveAs(zipBlob, `tiktok_${username}_${channelCompleted}videos.zip`);
+                        addLog(`✅ Đã tải xong kênh @${username} (${(channelSize/1024/1024).toFixed(1)}MB)`, 'success');
+                    }
                 } catch (err) {
-                    failed++;
-                    addLog(`❌ [${i + 1}/${total}] Lỗi: ${err.message}`, 'error');
+                    addLog(`❌ Lỗi quét kênh @${username}: ${err.message}`, 'error');
                 }
-
-                const pct = Math.round(((i + 1) / total) * 100);
-                progressBar.style.width = pct + '%';
-                progressPercent.textContent = pct + '%';
-
-                if (i < urls.length - 1) await sleep(300);
+                
+                progressBar.style.width = Math.round((currentStep / totalSteps) * 100) + '%';
             }
 
-            if (completed > 0 && !multiCancelled) {
-                try {
-                    progressTitle.textContent = '🗜️ Đang nén file ZIP...';
-                    progressDetail.textContent = `Nén ${completed} video (${(totalSize / 1024 / 1024).toFixed(1)}MB)...`;
+            // Process Individual Videos
+            if (videoUrls.length > 0 && !multiCancelled) {
+                currentStep++;
+                addLog(`\n🎥 Đang tải ${videoUrls.length} video lẻ...`, 'info');
+                
+                const zip = new JSZip();
+                let completed = 0;
+                let totalSize = 0;
+                const total = videoUrls.length;
+                const usedNames = {};
 
-                    const zipBlob = await zip.generateAsync(
-                        { type: 'blob', compression: 'STORE' },
-                        (metadata) => { progressDetail.textContent = `Đang nén... ${Math.round(metadata.percent)}%`; }
-                    );
+                for (let i = 0; i < videoUrls.length; i++) {
+                    if (multiCancelled) break;
+                    
+                    const videoUrl = videoUrls[i];
+                    progressDetail.textContent = `[${i + 1}/${total}] Video lẻ...`;
 
-                    const zipSizeMB = (zipBlob.size / 1024 / 1024).toFixed(1);
-                    const zipName = `tiktok_${completed}videos.zip`;
-                    saveAs(zipBlob, zipName);
+                    try {
+                        const data = await fetchWithProxy('api/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: `url=${encodeURIComponent(videoUrl)}&hd=1`
+                        });
 
-                    addLog(`\n🎉 Hoàn thành! Đã tải ${completed} video (${zipSizeMB}MB)`, 'info');
-                    addLog(`📁 File: ${zipName}`, 'success');
-                    progressTitle.textContent = '✅ Hoàn thành!';
-                    progressDetail.textContent = `${zipName} (${zipSizeMB}MB)`;
-                    showToast(`✅ Đã tải ${completed} video thành file ZIP!`, 'success');
-                } catch (err) {
-                    addLog(`❌ Lỗi khi nén ZIP: ${err.message}`, 'error');
+                        if (data.code !== 0 || !data.data) throw new Error(data.msg || 'API error');
+
+                        const d = data.data;
+                        const originalTitle = d.title || `video_${d.id || i + 1}`;
+                        const videoId = d.id;
+
+                        let downloadLink = (d.hdplay && videoId) ? `https://www.tikwm.com/video/media/hdplay/${videoId}.mp4` :
+                                           (d.play && videoId) ? `https://www.tikwm.com/video/media/play/${videoId}.mp4` : null;
+
+                        if (!downloadLink) throw new Error('Không có link tải');
+
+                        const blob = await fetchVideoBlob(downloadLink);
+                        totalSize += blob.size;
+
+                        let cleanTitle = originalTitle.replace(/[<>:"\/\\|?\*\n\r]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
+                        let lowerName = cleanTitle.toLowerCase();
+                        let fileName = `${cleanTitle}.mp4`;
+                        if (usedNames[lowerName]) {
+                            usedNames[lowerName]++;
+                            fileName = `${cleanTitle} (${usedNames[lowerName]}).mp4`;
+                        } else {
+                            usedNames[lowerName] = 1;
+                        }
+
+                        zip.file(fileName, blob);
+                        completed++;
+                        addToHistory(videoUrl, originalTitle);
+                        
+                        const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
+                        addLog(`  ✅ [${i + 1}/${total}] ${cleanTitle.substring(0, 40)}... (${sizeMB}MB)`, 'success');
+                    } catch (err) {
+                        addLog(`  ❌ [${i + 1}/${total}] Lỗi: ${err.message}`, 'error');
+                    }
                 }
-            } else if (completed === 0) {
-                addLog(`\n❌ Không tải được video nào.`, 'error');
-                progressTitle.textContent = '❌ Thất bại';
+
+                if (completed > 0 && !multiCancelled) {
+                    addLog(`📦 Đang nén file ZIP các video lẻ...`, 'info');
+                    const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+                    saveAs(zipBlob, `tiktok_multi_${completed}videos.zip`);
+                    addLog(`✅ Đã tải xong video lẻ (${(totalSize/1024/1024).toFixed(1)}MB)`, 'success');
+                }
+                
+                progressBar.style.width = '100%';
             }
 
-            if (failed > 0 && !multiCancelled) {
-                addLog(`⚠️ ${failed} video bị lỗi`, 'error');
+            if (!multiCancelled) {
+                progressTitle.textContent = '🎉 Hoàn tất quá trình tải!';
+                progressDetail.textContent = '';
             }
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('urlInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') processUrl();
-            });
-
-            // Listen for paste events on the multi-input textarea
-            // This captures Ctrl+V directly and appends URLs properly
-            document.getElementById('multiInput').addEventListener('paste', function(e) {
-                const text = (e.clipboardData || window.clipboardData).getData('text').trim();
-                if (!text) return;
-
-                const newUrls = extractTikTokUrls(text);
-                if (newUrls.length > 0) {
-                    e.preventDefault(); // Prevent default paste behavior
-                    appendUrlsToMultiInput(newUrls);
-                }
-                // If no TikTok URLs found, let default paste behavior happen
-            });
-
-            // Also listen for paste on the single URL input
-            document.getElementById('urlInput').addEventListener('paste', function(e) {
-                const text = (e.clipboardData || window.clipboardData).getData('text').trim();
-                if (!text) return;
-
-                const newUrls = extractTikTokUrls(text);
-                // If multiple URLs pasted into single input, redirect to multi-input
-                if (newUrls.length > 1) {
-                    e.preventDefault();
-                    appendUrlsToMultiInput(newUrls);
-                }
-                // Single URL or non-URL text: let default paste behavior happen normally
-            });
-        });
-
-
-
-        // ============================================
-        // URL DETECTION
-        // ============================================
-        function detectUrlType(url) {
-            url = url.trim().replace(/\?.*$/, '').replace(/\/$/, '');
-
-            if (/tiktok\.com\/@[\w.-]+\/video\/\d+/i.test(url)) return { type: 'video', url };
-            if (/tiktok\.com\/t\/\w+/i.test(url)) return { type: 'video', url };
-            if (/vm\.tiktok\.com\/\w+/i.test(url)) return { type: 'video', url };
-            if (/vt\.tiktok\.com\/\w+/i.test(url)) return { type: 'video', url };
-
-            // Channel URLs - not supported (API blocked by Cloudflare)
-            const channelMatch = url.match(/tiktok\.com\/@([\w.-]+)/i);
-            if (channelMatch) return { type: 'channel', username: channelMatch[1] };
-            if (/^@?[\w.-]+$/.test(url)) return { type: 'channel', username: url.replace(/^@/, '') };
-
-            return { type: 'unknown', url };
-        }
-
-        // ============================================
-        // MAIN PROCESS
-        // ============================================
-        async function processUrl() {
-            const input = document.getElementById('urlInput');
-            const url = input.value.trim();
-
-            if (!url) {
-                showToast('⚠️ Vui lòng dán link TikTok', 'error');
-                input.focus();
-                return;
-            }
-
-            // Check if multiple URLs pasted in single input
-            const multiUrls = extractTikTokUrls(url);
-            if (multiUrls.length > 1) {
-                document.getElementById('multiInput').value = multiUrls.join('\n');
-                document.getElementById('multiInputSection').style.display = 'block';
-                updateMultiLinkCount();
-                showToast(`📦 Phát hiện ${multiUrls.length} link - nhấn "Tải tất cả" để tải`, 'success');
-                return;
-            }
-
-            const detected = detectUrlType(url);
-
-            if (detected.type === 'unknown') {
-                showError('Link không hợp lệ. Vui lòng dán link video hoặc kênh TikTok.');
-                return;
-            }
-
-            hideError();
-            hideResult();
-            hideMultiProgress();
-            
-            // Hide channel section if active
-            const channelSec = document.getElementById('channelSection');
-            if(channelSec) channelSec.classList.remove('active');
-
-            if (detected.type === 'channel') {
-                await processChannelUrl(detected.username);
-            } else if (detected.type === 'video') {
-                await processVideoUrl(detected.url);
-            }
-        }
-
-        // ============================================
-        // SINGLE VIDEO
-        // ============================================
-        async function processVideoUrl(url) {
-            // Check history
-            const histEntry = isInHistory(url);
-            if (histEntry) {
-                showToast(`⚠️ Video này đã tải ${formatTimeAgo(histEntry.date)}`, 'error');
-            }
-
-            setLoading(true, 'Đang phân tích video');
-
-            try {
-                const data = await fetchVideoFromTikWM(url);
-                if (data) {
-                    // Store URL for later history save
-                    data._originalUrl = url;
-                    displayVideoResult(data);
-                } else {
-                    showError('Không thể lấy thông tin video. Vui lòng thử lại.');
-                }
-            } catch (err) {
-                console.error('Error:', err);
-                showError(`Lỗi: ${err.message || 'Không thể kết nối đến server.'}`);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        async function fetchVideoFromTikWM(url) {
-            const body = `url=${encodeURIComponent(url)}&count=12&cursor=0&web=1&hd=1`;
-
-            const json = await fetchWithProxy('api/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: body
-            });
-
-            if (json.code !== 0 || !json.data) throw new Error(json.msg || 'API error');
-
-            const d = json.data;
-            const isSlideshow = d.images && d.images.length > 0;
-            const videoId = d.id;
-
-            // Use tikwm proxy URLs for reliable downloads (CDN URLs often get blocked)
-            // Format: https://www.tikwm.com/video/media/hdplay/{id}.mp4
-            const hdUrl = d.hdplay ? `https://www.tikwm.com/video/media/hdplay/${videoId}.mp4` : null;
-            const noWmUrl = d.play ? `https://www.tikwm.com/video/media/play/${videoId}.mp4` : null;
-            const wmUrl = d.wmplay ? `https://www.tikwm.com/video/media/wmplay/${videoId}.mp4` : null;
-            const musicUrl = d.music ? (d.music.startsWith('http') ? d.music : `https://www.tikwm.com${d.music}`) : null;
-
-            // Best quality = hdplay (1080p original) > play (no watermark) > wmplay
-            const bestUrl = hdUrl || noWmUrl || wmUrl;
-            const bestQuality = hdUrl ? 'Chất lượng gốc 1080p' : noWmUrl ? 'Không watermark' : 'Có watermark';
-
-            return {
-                id: videoId,
-                title: d.title || 'Không có mô tả',
-                author: {
-                    name: d.author?.nickname || d.author?.unique_id || 'Unknown',
-                    username: d.author?.unique_id || 'unknown',
-                    avatar: d.author?.avatar || null,
-                },
-                stats: {
-                    plays: formatNumber(d.play_count || 0),
-                    likes: formatNumber(d.digg_count || 0),
-                    comments: formatNumber(d.comment_count || 0),
-                    shares: formatNumber(d.share_count || 0),
-                    saves: formatNumber(d.collect_count || 0),
-                },
-                duration: d.duration || 0,
-                cover: d.cover || d.origin_cover || null,
-                isSlideshow,
-                images: isSlideshow ? d.images : null,
-                downloads: {
-                    videoNoWatermark: noWmUrl,
-                    videoHD: hdUrl,
-                    videoWatermark: wmUrl,
-                    videoBest: bestUrl,
-                    bestQuality: bestQuality,
-                    music: musicUrl,
-                    musicInfo: { title: d.music_info?.title || 'Unknown', author: d.music_info?.author || 'Unknown' }
-                }
-            };
-        }
-
-        // Direct download: fetch blob → save file (no new tab)
-        async function directDownload(url, filename) {
-            const btn = event?.target?.closest?.('.dl-btn, .video-card-btn');
-            const origHTML = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<span class="dl-icon">⏳</span><span>Đang tải...</span>';
-            }
-            try {
-                showToast('⬇️ Đang tải video...', 'success');
-                const blob = await fetchVideoBlob(url);
-                const blobUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = blobUrl;
-                a.download = filename || 'tiktok_video.mp4';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
-                const sizeMB = (blob.size / 1024 / 1024).toFixed(1);
-                // Save to download history (use original URL if available)
-                const histUrl = currentVideoData?._originalUrl || url;
-                addToHistory(histUrl, filename);
-                showToast(`✅ Đã tải xong (${sizeMB}MB)`, 'success');
-            } catch (err) {
-                console.error('Download error:', err);
-                showToast(`❌ Lỗi tải: ${err.message}`, 'error');
-            } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = origHTML;
-                }
-            }
-        }
-
-        // Store current video data for quick batch
-        let currentVideoData = null;
-        let quickBatchCount = 20;
-
-        function displayVideoResult(data) {
-            currentVideoData = data;
-
-            const previewEl = document.getElementById('videoPreview');
-            if (data.isSlideshow && data.images) {
-                previewEl.innerHTML = `<div style="display:flex;overflow-x:auto;gap:4px;width:100%;padding:8px;">${data.images.map(img => `<img src="${img}" style="max-height:400px;border-radius:8px;" alt="slide">`).join('')}</div>`;
-            } else if (data.cover) {
-                previewEl.innerHTML = `<img class="thumbnail" src="${data.cover}" alt="Video thumbnail">`;
-            } else {
-                previewEl.innerHTML = `<div style="padding:60px;color:var(--text-muted);font-size:48px;">🎬</div>`;
-            }
-
-            const avatarEl = document.getElementById('authorAvatar');
-            if (data.author.avatar) {
-                avatarEl.innerHTML = `<img src="${data.author.avatar}" alt="${data.author.name}" onerror="this.parentElement.textContent='👤'">`;
-            } else {
-                avatarEl.textContent = data.author.name.charAt(0).toUpperCase();
-            }
-
-            document.getElementById('authorName').textContent = data.author.name;
-            document.getElementById('authorId').textContent = `@${data.author.username}`;
-            document.getElementById('videoTitle').textContent = data.title;
-
-            document.getElementById('videoStats').innerHTML = [
-                { icon: '▶️', value: data.stats.plays },
-                { icon: '❤️', value: data.stats.likes },
-                { icon: '💬', value: data.stats.comments },
-                { icon: '🔄', value: data.stats.shares },
-                { icon: '🔖', value: data.stats.saves },
-            ].map(s => `<div class="stat-item"><span class="stat-icon">${s.icon}</span><span class="stat-value">${s.value}</span></div>`).join('');
-
-            const safeTitle = (data.title || 'tiktok_video').replace(/[<>:"\/\\|?*#]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
-            let btnsHTML = '';
-            // Always show best quality button first
-            if (data.downloads.videoBest) {
-                btnsHTML += `<button class="dl-btn primary" onclick="directDownload('${data.downloads.videoBest}', '${safeTitle}.mp4')"><span class="dl-icon">🎬</span><span class="dl-label"><span>Tải Chất Lượng Gốc</span><span class="dl-quality">${data.downloads.bestQuality}</span></span></button>`;
-            }
-            if (data.downloads.videoHD && data.downloads.videoNoWatermark && data.downloads.videoHD !== data.downloads.videoNoWatermark) {
-                btnsHTML += `<button class="dl-btn" onclick="directDownload('${data.downloads.videoNoWatermark}', '${safeTitle}_nowm.mp4')"><span class="dl-icon">📹</span><span class="dl-label"><span>Không Watermark</span><span class="dl-quality">Video sạch • Nhẹ hơn</span></span></button>`;
-            }
-            if (data.downloads.music) {
-                btnsHTML += `<button class="dl-btn music" onclick="directDownload('${data.downloads.music}', '${safeTitle}.mp3')"><span class="dl-icon">🎵</span><span class="dl-label"><span>Tải Nhạc MP3</span><span class="dl-quality">${data.downloads.musicInfo.title}</span></span></button>`;
-            }
-            if (data.isSlideshow && data.images) {
-                btnsHTML += `<button class="dl-btn full-width" onclick="downloadAllImages(${JSON.stringify(data.images).replace(/"/g, '&quot;')})"><span class="dl-icon">🖼️</span><span class="dl-label"><span>Tải tất cả ảnh (${data.images.length})</span><span class="dl-quality">Slideshow images</span></span></button>`;
-            }
-            document.getElementById('downloadBtns').innerHTML = btnsHTML;
-
-            document.getElementById('resultSection').classList.add('active');
-            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        async function downloadAllImages(images) {
+        function downloadAllImages(images) {
             for (let i = 0; i < images.length; i++) {
                 const a = document.createElement('a'); a.href = images[i]; a.target = '_blank'; a.download = `tiktok_slide_${i + 1}.jpg`;
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
