@@ -1079,7 +1079,7 @@
                 progressLog.scrollTop = progressLog.scrollHeight;
             };
 
-            addLog(`🚀 Bắt đầu xử lý ${urls.length} link...`, 'info');
+            addLog(`🚀 Bắt đầu xử lý ${urls.length} link...`, 'info'); try {
 
             let videoUrls = [];
             let channelUrls = [];
@@ -1233,9 +1233,7 @@
             }
 
             if (!multiCancelled) {
-                progressTitle.textContent = '🎉 Hoàn tất quá trình tải!';
-                progressDetail.textContent = '';
-            }
+                progressTitle.textContent = '🎉 Hoàn tất quá trình tải!'; progressDetail.textContent = ''; } } catch (globalErr) { addLog(`🔥 LỖI NGHIÊM TRỌNG: ${globalErr.message} | ${globalErr.stack}`, 'error'); }
         }
 
         async function downloadAllImages(images) {
@@ -1854,6 +1852,7 @@
     </script>
 </body>
 </html>
+
 
 
 
