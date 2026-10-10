@@ -1167,6 +1167,13 @@
                 } catch (err) {
                     addLog(`❌ Lỗi quét kênh @${username}: ${err.message}`, 'error');
                 }
+
+                // ANTI-BOT DELAY: Wait 15-25 seconds between channels to avoid IP ban
+                if (channelUrls.length > 1 && currentStep < channelUrls.length && !multiCancelled) {
+                    const delaySeconds = Math.floor(Math.random() * 11) + 15;
+                    addLog(`⏳ Đang xoay vòng giả lập & Nghỉ ${delaySeconds}s để vượt mặt TikTok...`, 'warning');
+                    await new Promise(r => setTimeout(r, delaySeconds * 1000));
+                }
                 
                 progressBar.style.width = Math.round((currentStep / totalSteps) * 100) + '%';
             }
