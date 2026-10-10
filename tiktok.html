@@ -1814,6 +1814,43 @@
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
+    
+        // Auto-detect multiple URLs on paste
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlInput = document.getElementById('urlInput');
+            const multiInput = document.getElementById('multiInput');
+
+            if (urlInput) {
+                urlInput.addEventListener('input', () => {
+                    const urls = extractTikTokUrls(urlInput.value);
+                    if (urls.length > 1) {
+                        urlInput.value = '';
+                        appendUrlsToMultiInput(urls);
+                    }
+                });
+            }
+
+            if (multiInput) {
+                multiInput.addEventListener('paste', (e) => {
+                    const text = (e.clipboardData || window.clipboardData).getData('text');
+                    const urls = extractTikTokUrls(text);
+                    if (urls.length > 1 || (urls.length === 1 && !text.includes('\n'))) {
+                        e.preventDefault();
+                        appendUrlsToMultiInput(urls);
+                    }
+                });
+                
+                // Format on input/blur to ensure newlines
+                multiInput.addEventListener('blur', () => {
+                    const urls = extractTikTokUrls(multiInput.value);
+                    if (urls.length > 0) {
+                        multiInput.value = urls.join('\n');
+                        updateMultiLinkCount();
+                    }
+                });
+            }
+        });
+
     </script>
 </body>
 </html>
